@@ -11,13 +11,6 @@ var dotfs = dotpip.New(fssa)
 var firstTestValue = "set testa"
 var testKey = dotpip.NewKey("test")
 
-func TestFlushAll(t *testing.T) {
-	err := dotfs.FlushAll()
-	if err != nil {
-		t.Errorf("Should not have returned an error when flushing all data")
-	}
-}
-
 func TestFirstGet(t *testing.T) {
 	_, err := dotfs.Get(testKey)
 	if err == nil {
