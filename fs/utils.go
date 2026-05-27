@@ -59,6 +59,12 @@ func (f *fileSystem) checkExistByKey(key dotpip.Key) (exist bool, err error) {
 
 func (f *fileSystem) removeFileByKey(key dotpip.Key) (err error) {
 	keyFileName := f.keyToAbsoluteFilePath(key)
+
+	exist, err := f.checkExistByKey(key)
+	if !exist {
+		return
+	}
+
 	err = os.Remove(keyFileName)
 	if err != nil {
 		return
