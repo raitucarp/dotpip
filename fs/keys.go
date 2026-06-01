@@ -2,7 +2,6 @@ package fs
 
 import (
 	"dotpip"
-	"errors"
 	"os"
 )
 
@@ -79,26 +78,10 @@ func (f *fileSystem) Exists(keys ...dotpip.Key) ([]bool, error) {
 }
 
 func (f *fileSystem) FlushAll() (err error) {
-
-	_, err = os.Stat(f.pathRoot)
-	if errors.Is(err, os.ErrNotExist) {
-		err = os.MkdirAll(f.pathRoot, 0755)
-		if err != nil {
-			return err
-		}
-	} else if err != nil {
+	err = os.RemoveAll(f.pathRoot)
+	if err != nil {
 		return err
-	} else {
-		err = os.RemoveAll(f.pathRoot)
-		if err != nil {
-			return err
-		}
-
-		err = os.MkdirAll(f.pathRoot, 0755)
-		if err != nil {
-			return err
-		}
 	}
 
-	return
+	return os.MkdirAll(f.pathRoot, 0755)
 }
