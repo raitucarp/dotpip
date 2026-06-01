@@ -106,17 +106,12 @@ func (f *fileSystem) readExByKey(key dotpip.Key) ([]byte, error) {
 func (f *fileSystem) removeFileByKey(key dotpip.Key) (err error) {
 	keyFileName := f.keyToAbsoluteFilePath(key)
 
-	exist, err := f.checkExistByKey(key)
-	if !exist {
-		return
-	}
-
 	err = os.Remove(keyFileName)
-	if err != nil {
-		return
+	if os.IsNotExist(err) {
+		return nil
 	}
 
-	return
+	return err
 }
 
 func (f *fileSystem) readExByPath(path string) ([]byte, error) {

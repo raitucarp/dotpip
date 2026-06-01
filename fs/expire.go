@@ -68,27 +68,35 @@ func (f *fileSystem) PExpireAt(key dotpip.Key, timestamp int, options ...dotpip.
 
 	// If timestamp is in the past, delete key immediately
 	if expireAt <= time.Now().UnixMilli() {
-	    // If options prevent expiration update, do nothing
-	    dataPath := f.keyToAbsoluteFilePath(key)
-	    currentExpireAt, hasTTL := f.getExpiration(dataPath)
-	    if cmd.NX && hasTTL { return false, nil }
-	    if cmd.XX && !hasTTL { return false, nil }
-	    if cmd.GT && (!hasTTL || expireAt <= currentExpireAt) { return false, nil }
-	    if cmd.LT && hasTTL && expireAt >= currentExpireAt { return false, nil }
+		// If options prevent expiration update, do nothing
+		dataPath := f.keyToAbsoluteFilePath(key)
+		currentExpireAt, hasTTL := f.getExpiration(dataPath)
+		if cmd.NX && hasTTL {
+			return false, nil
+		}
+		if cmd.XX && !hasTTL {
+			return false, nil
+		}
+		if cmd.GT && (!hasTTL || expireAt <= currentExpireAt) {
+			return false, nil
+		}
+		if cmd.LT && hasTTL && expireAt >= currentExpireAt {
+			return false, nil
+		}
 
-	    f.Del(key)
-	    return true, nil
+		f.Del(key)
+		return true, nil
 	}
 
 	return f.applyExpireOptions(key, expireAt, cmd)
 }
 
 func (f *fileSystem) ExpireTime(key dotpip.Key) (int64, error) {
-    res, err := f.PExpireTime(key)
-    if res > 0 {
-        return res / 1000, err
-    }
-    return res, err
+	res, err := f.PExpireTime(key)
+	if res > 0 {
+		return res / 1000, err
+	}
+	return res, err
 }
 
 func (f *fileSystem) PExpireTime(key dotpip.Key) (int64, error) {
@@ -110,11 +118,11 @@ func (f *fileSystem) PExpireTime(key dotpip.Key) (int64, error) {
 }
 
 func (f *fileSystem) TTL(key dotpip.Key) (int64, error) {
-    res, err := f.PTTL(key)
-    if res > 0 {
-        return (res + 500) / 1000, err
-    }
-    return res, err
+	res, err := f.PTTL(key)
+	if res > 0 {
+		return (res + 500) / 1000, err
+	}
+	return res, err
 }
 
 func (f *fileSystem) PTTL(key dotpip.Key) (int64, error) {
@@ -134,7 +142,7 @@ func (f *fileSystem) PTTL(key dotpip.Key) (int64, error) {
 
 	ttl := expireAt - time.Now().UnixMilli()
 	if ttl < 0 {
-	    // It's expired but not yet cleaned up
+		// It's expired but not yet cleaned up
 		return -2, nil
 	}
 
