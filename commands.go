@@ -134,6 +134,28 @@ type DotPip interface {
 	SUnion(keys ...Key) ([]string, error)
 	SUnionStore(destination Key, keys ...Key) (int, error)
 
+	ZAdd(key Key, members []Z, options ...ZAddOption) (int, error)
+	ZCard(key Key) (int, error)
+	ZCount(key Key, min float64, max float64) (int, error)
+	ZDiff(keys ...Key) ([]string, error)
+	ZDiffWithScores(keys ...Key) ([]Z, error)
+	ZIncrBy(key Key, increment float64, member string) (float64, error)
+	ZInter(keys ...Key) ([]string, error)
+	ZInterWithScores(keys ...Key) ([]Z, error)
+	ZLexCount(key Key, min string, max string) (int, error)
+	ZPopMax(key Key, count int) ([]Z, error)
+	ZPopMin(key Key, count int) ([]Z, error)
+	ZRandMember(key Key, count int) ([]string, error)
+	ZRandMemberWithScores(key Key, count int) ([]Z, error)
+	ZRange(key Key, start string, stop string, options ...ZRangeOption) ([]string, error)
+	ZRangeWithScores(key Key, start string, stop string, options ...ZRangeOption) ([]Z, error)
+	ZRank(key Key, member string) (int, error)
+	ZRem(key Key, members ...string) (int, error)
+	ZRevRank(key Key, member string) (int, error)
+	ZScore(key Key, member string) (float64, error)
+	ZUnion(keys ...Key) ([]string, error)
+	ZUnionWithScores(keys ...Key) ([]Z, error)
+
 	Formatter(fmap DataTypeFormatter)
 }
 
