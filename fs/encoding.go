@@ -183,3 +183,38 @@ func (f *fileSystem) setDecode(value any) (map[string]any, error) {
 		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
 	}
 }
+
+func (f *fileSystem) sortedSetEncode(value map[string]float64) (any, error) {
+	switch f.encodeType {
+	case JSON:
+		return json.Marshal(value)
+	case YAML:
+		return yaml.Marshal(value)
+	case TOML:
+		return toml.Marshal(value)
+	case RAW:
+		return json.Marshal(value)
+	default:
+		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+	}
+}
+
+func (f *fileSystem) sortedSetDecode(value any) (map[string]float64, error) {
+	finalValue := make(map[string]float64)
+	switch f.encodeType {
+	case JSON:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case YAML:
+		err := yaml.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case TOML:
+		err := toml.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case RAW:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	default:
+		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+	}
+}
