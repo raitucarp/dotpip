@@ -31,6 +31,8 @@ func FileSystem(pathRoot string) *fileSystem {
 
 	f.formatter.StringEncode = f.stringEncode
 	f.formatter.StringDecode = f.stringDecode
+	f.formatter.ListEncode = f.listEncode
+	f.formatter.ListDecode = f.listDecode
 
 	f.loadExpirations()
 	go f.scanExpirations()

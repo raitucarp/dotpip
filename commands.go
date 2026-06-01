@@ -86,6 +86,22 @@ type DotPip interface {
 	PTTL(key Key) (int64, error)
 	Persist(key Key) (bool, error)
 
+	LIndex(key Key, index int) (string, error)
+	LInsert(key Key, option LInsertOption, pivot string, element string) (int, error)
+	LLen(key Key) (int, error)
+	LMove(source Key, destination Key, srcDir LMoveDir, destDir LMoveDir) (string, error)
+	LPop(key Key, count int) ([]string, error)
+	LPos(key Key, element string, options ...LPosOption) ([]int, error)
+	LPush(key Key, elements ...string) (int, error)
+	LPushX(key Key, elements ...string) (int, error)
+	LRange(key Key, start int, stop int) ([]string, error)
+	LRem(key Key, count int, element string) (int, error)
+	LSet(key Key, index int, element string) error
+	LTrim(key Key, start int, stop int) error
+	RPop(key Key, count int) ([]string, error)
+	RPush(key Key, elements ...string) (int, error)
+	RPushX(key Key, elements ...string) (int, error)
+
 	Formatter(fmap DataTypeFormatter)
 }
 
