@@ -47,11 +47,29 @@ type DataTypeFormatter struct {
 	JSONDecode func(value any) (any, error)
 }
 
+type KV struct {
+	Key   Key
+	Value string
+}
+
 type DotPip interface {
 	Append(key Key, value string) int
 	Get(key Key) (string, error)
 	Set(key Key, value string, options ...SetOption) (string, error)
 	Digest(key Key) (string, error)
+
+	StrLen(key Key) int
+	Incr(key Key) (int, error)
+	IncrBy(key Key, increment int) (int, error)
+	IncrByFloat(key Key, increment float64) (float64, error)
+	Decr(key Key) (int, error)
+	DecrBy(key Key, decrement int) (int, error)
+	GetDel(key Key) (string, error)
+	GetRange(key Key, start int, end int) (string, error)
+	SetRange(key Key, offset int, value string) (int, error)
+	MGet(keys ...Key) ([]string, error)
+	MSet(kvs ...KV) error
+	MSetNX(kvs ...KV) (bool, error)
 
 	Del(keys ...Key) int
 	Copy(source Key, destination Key, options ...CopyOption) int
