@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func (f *fileSystem) keyToAbsoluteFilePath(key dotpip.Key) string {
@@ -36,7 +37,24 @@ func (f *fileSystem) keyToAbsoluteExFilePath(key dotpip.Key) string {
 	return dataPath + ".ex"
 }
 
+func (f *fileSystem) isExpired(key dotpip.Key) bool {
+	dataPath := f.keyToAbsoluteFilePath(key)
+	expireAt, hasTTL := f.getExpiration(dataPath)
+	if hasTTL {
+		if time.Now().UnixMilli() >= expireAt {
+			f.removeFileByPath(dataPath)
+			f.removeExByPath(dataPath + ".ex")
+			f.unsetExpiration(dataPath)
+			return true
+		}
+	}
+	return false
+}
+
 func (f *fileSystem) readFileByKey(key dotpip.Key) (content []byte, err error) {
+	if f.isExpired(key) {
+		return nil, os.ErrNotExist
+	}
 	content, err = os.ReadFile(f.keyToAbsoluteFilePath(key))
 	if err != nil {
 		return nil, err
@@ -55,6 +73,9 @@ func (f *fileSystem) writeFileByKey(key dotpip.Key, content []byte) (err error) 
 }
 
 func (f *fileSystem) checkExistByKey(key dotpip.Key) (exist bool, err error) {
+	if f.isExpired(key) {
+		return false, nil
+	}
 	keyFileName := f.keyToAbsoluteFilePath(key)
 	_, err = os.Stat(keyFileName)
 	if err == nil {
@@ -96,4 +117,35 @@ func (f *fileSystem) removeFileByKey(key dotpip.Key) (err error) {
 	}
 
 	return
+}
+
+func (f *fileSystem) readExByPath(path string) ([]byte, error) {
+	return os.ReadFile(path)
+}
+
+func (f *fileSystem) removeFileByPath(path string) error {
+	return os.Remove(path)
+}
+
+func (f *fileSystem) removeExByPath(path string) error {
+	return os.Remove(path)
+}
+
+func (f *fileSystem) setExpiration(dataPath string, expireAt int64) {
+	f.expMutex.Lock()
+	defer f.expMutex.Unlock()
+	f.expirations[dataPath] = expireAt
+}
+
+func (f *fileSystem) unsetExpiration(dataPath string) {
+	f.expMutex.Lock()
+	defer f.expMutex.Unlock()
+	delete(f.expirations, dataPath)
+}
+
+func (f *fileSystem) getExpiration(dataPath string) (int64, bool) {
+	f.expMutex.RLock()
+	defer f.expMutex.RUnlock()
+	val, ok := f.expirations[dataPath]
+	return val, ok
 }

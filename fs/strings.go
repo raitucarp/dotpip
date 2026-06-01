@@ -118,6 +118,11 @@ func (f *fileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOpti
 			expireAt := time.Now().UnixMilli() + ttlMs
 			expireContent := strconv.FormatInt(expireAt, 10)
 			f.writeExByKey(key, []byte(expireContent))
+			dataPath := f.keyToAbsoluteFilePath(key)
+			f.setExpiration(dataPath, expireAt)
+		} else {
+			dataPath := f.keyToAbsoluteFilePath(key)
+			f.unsetExpiration(dataPath)
 		}
 	}
 

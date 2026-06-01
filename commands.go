@@ -76,6 +76,16 @@ type DotPip interface {
 	Exists(keys ...Key) ([]bool, error)
 	FlushAll() error
 
+	Expire(key Key, seconds int, options ...ExpireOption) (bool, error)
+	ExpireAt(key Key, timestamp int, options ...ExpireOption) (bool, error)
+	ExpireTime(key Key) (int64, error)
+	PExpire(key Key, milliseconds int, options ...ExpireOption) (bool, error)
+	PExpireAt(key Key, timestamp int, options ...ExpireOption) (bool, error)
+	PExpireTime(key Key) (int64, error)
+	TTL(key Key) (int64, error)
+	PTTL(key Key) (int64, error)
+	Persist(key Key) (bool, error)
+
 	Formatter(fmap DataTypeFormatter)
 }
 
