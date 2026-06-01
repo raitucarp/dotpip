@@ -102,6 +102,21 @@ type DotPip interface {
 	RPush(key Key, elements ...string) (int, error)
 	RPushX(key Key, elements ...string) (int, error)
 
+	HDel(key Key, fields ...string) (int, error)
+	HExists(key Key, field string) (bool, error)
+	HGet(key Key, field string) (string, error)
+	HGetAll(key Key) (map[string]string, error)
+	HIncrBy(key Key, field string, increment int) (int, error)
+	HIncrByFloat(key Key, field string, increment float64) (float64, error)
+	HKeys(key Key) ([]string, error)
+	HLen(key Key) (int, error)
+	HMGet(key Key, fields ...string) ([]string, error)
+	HRandField(key Key, count int, options ...HRandFieldOption) ([]string, error)
+	HSet(key Key, values map[string]string) (int, error)
+	HSetNX(key Key, field string, value string) (bool, error)
+	HStrLen(key Key, field string) (int, error)
+	HVals(key Key) ([]string, error)
+
 	Formatter(fmap DataTypeFormatter)
 }
 

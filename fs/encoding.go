@@ -87,6 +87,43 @@ func (f *fileSystem) listDecode(value any) ([]any, error) {
 	}
 }
 
+func (f *fileSystem) hashEncode(value map[string]string) (any, error) {
+	switch f.encodeType {
+	case JSON:
+		return json.Marshal(value)
+	case YAML:
+		return yaml.Marshal(value)
+	case TOML:
+		// toml marshaller can handle top-level map, but to be safe and consistent, we can wrap it or just use it directly since it is a map[string]string
+		return toml.Marshal(value)
+	case RAW:
+		// For RAW, we might just store a JSON byte slice or fallback.
+		return json.Marshal(value)
+	default:
+		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+	}
+}
+
+func (f *fileSystem) hashDecode(value any) (map[string]string, error) {
+	finalValue := make(map[string]string)
+	switch f.encodeType {
+	case JSON:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case YAML:
+		err := yaml.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case TOML:
+		err := toml.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case RAW:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	default:
+		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+	}
+}
+
 func (f *fileSystem) stringDecode(value any) (v string, err error) {
 
 	finalValue := ""
