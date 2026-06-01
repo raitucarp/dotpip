@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/zeebo/xxh3"
 )
@@ -56,24 +57,75 @@ func (f *fileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOpti
 	}
 
 	keyExists, err := f.Exists(key)
+	exists := keyExists[0]
 
-	if cmd.NX && keyExists[0] {
+	var oldValue string
+	if cmd.Get || cmd.IfEq != "" || cmd.IfNe != "" || cmd.IfDeq != "" || cmd.IfDne != "" {
+		if exists {
+			oldVal, getErr := f.Get(key)
+			if getErr == nil {
+				oldValue = oldVal
+			}
+		}
+	}
+
+	returnOldValueIfGet := func() (string, error) {
+		if cmd.Get {
+			if exists {
+				return oldValue, nil
+			}
+			return "", nil
+		}
 		return "", nil
-	} else if cmd.XX && !keyExists[0] {
-		return "", nil
-	} else if cmd.IfEq != "" && (!keyExists[0] || value != cmd.IfEq) {
-		return "", nil
-	} else if cmd.IfNe != "" && (!keyExists[0] || value == cmd.IfNe) {
-		return "", nil
-	} else if cmd.IfDeq != "" && (keyExists[0] || value != cmd.IfDeq) {
-		return "", nil
-	} else if cmd.IfDne != "" && (keyExists[0] || value == cmd.IfDne) {
-		return "", nil
+	}
+
+	if cmd.NX && exists {
+		return returnOldValueIfGet()
+	} else if cmd.XX && !exists {
+		return returnOldValueIfGet()
+	} else if cmd.IfEq != "" && (!exists || oldValue != cmd.IfEq) {
+		return returnOldValueIfGet()
+	} else if cmd.IfNe != "" && (!exists || oldValue == cmd.IfNe) {
+		return returnOldValueIfGet()
+	} else if cmd.IfDeq != "" && (exists || oldValue != cmd.IfDeq) {
+		return returnOldValueIfGet()
+	} else if cmd.IfDne != "" && (exists || oldValue == cmd.IfDne) {
+		return returnOldValueIfGet()
 	}
 
 	err = f.writeFileByKey(key, finalValue.([]byte))
 	if err != nil {
 		return "", err
+	}
+
+	if !cmd.KeepTTL {
+		f.removeExByKey(key) // Removing existing ttl first
+
+		var ttlMs int64
+		if cmd.Ex > 0 {
+			ttlMs = int64(cmd.Ex) * 1000
+		} else if cmd.Px > 0 {
+			ttlMs = int64(cmd.Px)
+		} else if cmd.ExAt > 0 {
+			nowMs := time.Now().UnixMilli()
+			ttlMs = int64(cmd.ExAt)*1000 - nowMs
+		} else if cmd.PxAt > 0 {
+			nowMs := time.Now().UnixMilli()
+			ttlMs = int64(cmd.PxAt) - nowMs
+		}
+
+		if ttlMs > 0 {
+			expireAt := time.Now().UnixMilli() + ttlMs
+			expireContent := strconv.FormatInt(expireAt, 10)
+			f.writeExByKey(key, []byte(expireContent))
+		}
+	}
+
+	if cmd.Get {
+		if exists {
+			return oldValue, nil
+		}
+		return "", nil
 	}
 
 	return value, nil
