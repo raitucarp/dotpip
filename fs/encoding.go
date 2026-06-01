@@ -37,7 +37,7 @@ func (f *fileSystem) stringEncode(value string) (finalValue any, err error) {
 		err = marshalErr
 		finalValue = v
 	case RAW:
-		finalValue = value
+		finalValue = []byte(value)
 	default:
 		return "", fmt.Errorf("unsupported encoding type: %s", f.encodeType)
 	}
@@ -58,6 +58,45 @@ func (f *fileSystem) listEncode(value []any) (any, error) {
 		// For RAW, we might just store a JSON byte slice or newline delimited.
 		// For simplicity, falling back to JSON.
 		return json.Marshal(value)
+	default:
+		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+	}
+}
+
+func (f *fileSystem) bitmapEncode(value []uint) (any, error) {
+	switch f.encodeType {
+	case JSON:
+		return json.Marshal(value)
+	case YAML:
+		return yaml.Marshal(value)
+	case TOML:
+		return toml.Marshal(map[string][]uint{"value": value})
+	case RAW:
+		return json.Marshal(value)
+	default:
+		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+	}
+}
+
+func (f *fileSystem) bitmapDecode(value any) ([]uint, error) {
+	var finalValue []uint
+	switch f.encodeType {
+	case JSON:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case YAML:
+		err := yaml.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case TOML:
+		var wrap map[string][]uint
+		err := toml.Unmarshal(value.([]byte), &wrap)
+		if err == nil {
+			finalValue = wrap["value"]
+		}
+		return finalValue, err
+	case RAW:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
 	default:
 		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
 	}
@@ -139,7 +178,13 @@ func (f *fileSystem) stringDecode(value any) (v string, err error) {
 			finalValue = wrap["value"]
 		}
 	case RAW:
-		finalValue = value.(string)
+		if b, ok := value.([]byte); ok {
+			finalValue = string(b)
+		} else if s, ok := value.(string); ok {
+			finalValue = s
+		} else {
+			return "", fmt.Errorf("RAW stringDecode expected []byte or string, got %T", value)
+		}
 	default:
 		return "", fmt.Errorf("unsupported encoding type: %s", f.encodeType)
 	}
