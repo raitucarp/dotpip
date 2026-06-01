@@ -3,6 +3,9 @@ package fs
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/goccy/go-yaml"
+	"github.com/pelletier/go-toml/v2"
 )
 
 type FileEncodeType string
@@ -26,7 +29,13 @@ func (f *fileSystem) stringEncode(value string) (finalValue any, err error) {
 		err = marshalErr
 		finalValue = v
 	case YAML:
+		v, marshalErr := yaml.Marshal(value)
+		err = marshalErr
+		finalValue = v
 	case TOML:
+		v, marshalErr := toml.Marshal(map[string]string{"value": value})
+		err = marshalErr
+		finalValue = v
 	case RAW:
 		finalValue = value
 	default:
@@ -43,7 +52,13 @@ func (f *fileSystem) stringDecode(value any) (v string, err error) {
 	case JSON:
 		err = json.Unmarshal(value.([]byte), &finalValue)
 	case YAML:
+		err = yaml.Unmarshal(value.([]byte), &finalValue)
 	case TOML:
+		var wrap map[string]string
+		err = toml.Unmarshal(value.([]byte), &wrap)
+		if err == nil {
+			finalValue = wrap["value"]
+		}
 	case RAW:
 		finalValue = value.(string)
 	default:
