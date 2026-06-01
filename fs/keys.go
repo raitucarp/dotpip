@@ -11,15 +11,6 @@ func (f *fileSystem) Copy(source dotpip.Key, destination dotpip.Key, options ...
 		option(cmd)
 	}
 
-	sourceExist, err := f.checkExistByKey(source)
-	if err != nil {
-		return 0
-	}
-
-	if !sourceExist {
-		return 0
-	}
-
 	if cmd.Destination != nil {
 		content, err := f.Get(source)
 		if err != nil {
@@ -34,16 +25,16 @@ func (f *fileSystem) Copy(source dotpip.Key, destination dotpip.Key, options ...
 		return 1
 	}
 
+	content, err := f.readFileByKey(source)
+	if err != nil {
+		return 0
+	}
+
 	if cmd.Replace {
 		err = f.removeFileByKey(destination)
 		if err != nil {
 			return 0
 		}
-	}
-
-	content, err := f.readFileByKey(source)
-	if err != nil {
-		return 0
 	}
 
 	err = f.writeFileByKey(destination, content)
