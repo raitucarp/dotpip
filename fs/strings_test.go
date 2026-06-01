@@ -74,3 +74,144 @@ func TestAppend(t *testing.T) {
 		t.Errorf("Append length should %d", len(appendValue)+len(modifiedValue))
 	}
 }
+
+func TestStrLen(t *testing.T) {
+	dotfs.FlushAll()
+
+	strlen := dotfs.StrLen(testKey)
+	if strlen != 0 {
+		t.Errorf("StrLen of non-existent key should be 0")
+	}
+
+	dotfs.Set(testKey, "hello")
+	strlen = dotfs.StrLen(testKey)
+	if strlen != 5 {
+		t.Errorf("StrLen of 'hello' should be 5, got %d", strlen)
+	}
+}
+
+func TestIncrDecr(t *testing.T) {
+	dotfs.FlushAll()
+
+	val, err := dotfs.Incr(testKey)
+	if err != nil || val != 1 {
+		t.Errorf("Incr of new key should be 1")
+	}
+
+	val, err = dotfs.IncrBy(testKey, 10)
+	if err != nil || val != 11 {
+		t.Errorf("IncrBy 10 should be 11, got %d", val)
+	}
+
+	val, err = dotfs.Decr(testKey)
+	if err != nil || val != 10 {
+		t.Errorf("Decr should be 10")
+	}
+
+	val, err = dotfs.DecrBy(testKey, 5)
+	if err != nil || val != 5 {
+		t.Errorf("DecrBy 5 should be 5")
+	}
+
+	dotfs.Set(testKey, "abc")
+	_, err = dotfs.Incr(testKey)
+	if err == nil {
+		t.Errorf("Incr on non-integer string should return error")
+	}
+}
+
+func TestIncrByFloat(t *testing.T) {
+	dotfs.FlushAll()
+
+	val, err := dotfs.IncrByFloat(testKey, 10.5)
+	if err != nil || val != 10.5 {
+		t.Errorf("IncrByFloat of new key should be 10.5")
+	}
+
+	val, err = dotfs.IncrByFloat(testKey, 0.1)
+	if err != nil || val != 10.6 {
+		t.Errorf("IncrByFloat should handle precision")
+	}
+}
+
+func TestGetDel(t *testing.T) {
+	dotfs.FlushAll()
+	dotfs.Set(testKey, "value")
+
+	val, err := dotfs.GetDel(testKey)
+	if err != nil || val != "value" {
+		t.Errorf("GetDel should return value")
+	}
+
+	_, err = dotfs.Get(testKey)
+	if err == nil {
+		t.Errorf("Key should be deleted after GetDel")
+	}
+}
+
+func TestGetRange(t *testing.T) {
+	dotfs.FlushAll()
+	dotfs.Set(testKey, "This is a string")
+
+	val, _ := dotfs.GetRange(testKey, 0, 3)
+	if val != "This" {
+		t.Errorf("GetRange(0, 3) expected 'This', got '%s'", val)
+	}
+
+	val, _ = dotfs.GetRange(testKey, -3, -1)
+	if val != "ing" {
+		t.Errorf("GetRange(-3, -1) expected 'ing', got '%s'", val)
+	}
+}
+
+func TestSetRange(t *testing.T) {
+	dotfs.FlushAll()
+	dotfs.Set(testKey, "Hello World")
+
+	newLen, err := dotfs.SetRange(testKey, 6, "Redis")
+	if err != nil || newLen != 11 {
+		t.Errorf("SetRange failed, newLen: %d", newLen)
+	}
+
+	val, _ := dotfs.Get(testKey)
+	if val != "Hello Redis" {
+		t.Errorf("SetRange value expected 'Hello Redis', got '%s'", val)
+	}
+}
+
+func TestMGetMSet(t *testing.T) {
+	dotfs.FlushAll()
+
+	k1 := dotpip.NewKey("k1")
+	k2 := dotpip.NewKey("k2")
+
+	dotfs.MSet(dotpip.KV{Key: k1, Value: "v1"}, dotpip.KV{Key: k2, Value: "v2"})
+
+	vals, _ := dotfs.MGet(k1, k2, dotpip.NewKey("k3"))
+	if len(vals) != 3 || vals[0] != "v1" || vals[1] != "v2" || vals[2] != "" {
+		t.Errorf("MGet returned incorrect values: %v", vals)
+	}
+}
+
+func TestMSetNX(t *testing.T) {
+	dotfs.FlushAll()
+
+	k1 := dotpip.NewKey("k1")
+	k2 := dotpip.NewKey("k2")
+
+	success, err := dotfs.MSetNX(dotpip.KV{Key: k1, Value: "v1"}, dotpip.KV{Key: k2, Value: "v2"})
+	if err != nil || !success {
+		t.Errorf("MSetNX should succeed on empty DB")
+	}
+
+	k3 := dotpip.NewKey("k3")
+	success, err = dotfs.MSetNX(dotpip.KV{Key: k2, Value: "v2_new"}, dotpip.KV{Key: k3, Value: "v3"})
+	if err != nil || success {
+		t.Errorf("MSetNX should fail if one key exists")
+	}
+
+	val, _ := dotfs.Get(k3)
+	if val != "" {
+		t.Errorf("k3 should not be set because MSetNX failed")
+	}
+}
