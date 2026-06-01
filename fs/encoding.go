@@ -24,7 +24,7 @@ func (f *fileSystem) EncodeType(typeName FileEncodeType) {
 func (f *fileSystem) stringEncode(value string) (finalValue any, err error) {
 	switch f.encodeType {
 	case JSON:
-		
+
 		v, marshalErr := json.Marshal(value)
 		err = marshalErr
 		finalValue = v

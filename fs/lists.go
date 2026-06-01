@@ -219,8 +219,8 @@ func (f *fileSystem) LPop(key dotpip.Key, count int) ([]string, error) {
 
 func (f *fileSystem) LPos(key dotpip.Key, element string, options ...dotpip.LPosOption) ([]int, error) {
 	cmd := &dotpip.LPosCommand{
-		Rank: 1,
-		Count: 1,
+		Rank:   1,
+		Count:  1,
 		MaxLen: 0,
 	}
 	for _, opt := range options {
@@ -254,7 +254,7 @@ func (f *fileSystem) LPos(key dotpip.Key, element string, options ...dotpip.LPos
 			if list[i] == element {
 				matches++
 				if matches >= cmd.Rank {
-					results = append(results, startIndex + i)
+					results = append(results, startIndex+i)
 					if cmd.Count > 0 && len(results) >= cmd.Count {
 						break
 					}
@@ -267,7 +267,7 @@ func (f *fileSystem) LPos(key dotpip.Key, element string, options ...dotpip.LPos
 			if list[i] == element {
 				matches++
 				if matches >= targetRank {
-					results = append(results, startIndex + i)
+					results = append(results, startIndex+i)
 					if cmd.Count > 0 && len(results) >= cmd.Count {
 						break
 					}
