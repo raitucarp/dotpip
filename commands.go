@@ -4,6 +4,15 @@ import "strings"
 
 type Key []string
 
+type BitOp string
+
+const (
+	BitOpAnd BitOp = "AND"
+	BitOpOr  BitOp = "OR"
+	BitOpXor BitOp = "XOR"
+	BitOpNot BitOp = "NOT"
+)
+
 func NewKey(s ...string) Key {
 	return Key(s)
 }
@@ -155,6 +164,13 @@ type DotPip interface {
 	ZScore(key Key, member string) (float64, error)
 	ZUnion(keys ...Key) ([]string, error)
 	ZUnionWithScores(keys ...Key) ([]Z, error)
+
+	BitCount(key Key, start int, end int) (int, error)
+	BitField(key Key, args ...any) ([]any, error)
+	BitOp(operation BitOp, destKey Key, keys ...Key) (int, error)
+	BitPos(key Key, bit int, start int, end int) (int, error)
+	GetBit(key Key, offset int) (int, error)
+	SetBit(key Key, offset int, value int) (int, error)
 
 	Formatter(fmap DataTypeFormatter)
 }
