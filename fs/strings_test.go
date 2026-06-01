@@ -215,3 +215,33 @@ func TestMSetNX(t *testing.T) {
 		t.Errorf("k3 should not be set because MSetNX failed")
 	}
 }
+
+func TestEncodings(t *testing.T) {
+	encodings := []FileEncodeType{JSON, YAML, TOML}
+
+	for _, enc := range encodings {
+		t.Run(string(enc), func(t *testing.T) {
+			testFS := FileSystem("../data")
+			testFS.EncodeType(enc)
+			dfs := dotpip.New(testFS)
+			dfs.FlushAll()
+
+			key := dotpip.NewKey("test_enc")
+			val := "hello encoding"
+
+			_, err := dfs.Set(key, val)
+			if err != nil {
+				t.Fatalf("Failed to set with %s encoding: %v", enc, err)
+			}
+
+			getVal, err := dfs.Get(key)
+			if err != nil {
+				t.Fatalf("Failed to get with %s encoding: %v", enc, err)
+			}
+
+			if getVal != val {
+				t.Errorf("Expected %q, got %q with %s encoding", val, getVal, enc)
+			}
+		})
+	}
+}
