@@ -72,3 +72,9 @@ func TestExists(t *testing.T) {
 		t.Errorf("%s key should exist", newKey)
 	}
 }
+
+func BenchmarkFlushAll(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		dotfs.FlushAll()
+	}
+}
