@@ -117,6 +117,23 @@ type DotPip interface {
 	HStrLen(key Key, field string) (int, error)
 	HVals(key Key) ([]string, error)
 
+	SAdd(key Key, members ...string) (int, error)
+	SCard(key Key) (int, error)
+	SDiff(keys ...Key) ([]string, error)
+	SDiffStore(destination Key, keys ...Key) (int, error)
+	SInter(keys ...Key) ([]string, error)
+	SInterCard(limit int, keys ...Key) (int, error)
+	SInterStore(destination Key, keys ...Key) (int, error)
+	SIsMember(key Key, member string) (bool, error)
+	SMembers(key Key) ([]string, error)
+	SMIsMember(key Key, members ...string) ([]bool, error)
+	SMove(source Key, destination Key, member string) (bool, error)
+	SPop(key Key, count int) ([]string, error)
+	SRandMember(key Key, count int) ([]string, error)
+	SRem(key Key, members ...string) (int, error)
+	SUnion(keys ...Key) ([]string, error)
+	SUnionStore(destination Key, keys ...Key) (int, error)
+
 	Formatter(fmap DataTypeFormatter)
 }
 
