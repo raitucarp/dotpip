@@ -112,7 +112,7 @@ func (f *fileSystem) PExpireTime(key dotpip.Key) (int64, error) {
 func (f *fileSystem) TTL(key dotpip.Key) (int64, error) {
     res, err := f.PTTL(key)
     if res > 0 {
-        return res / 1000, err
+        return (res + 500) / 1000, err
     }
     return res, err
 }
