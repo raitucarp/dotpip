@@ -35,6 +35,8 @@ func FileSystem(pathRoot string) *fileSystem {
 	f.formatter.HashDecode = f.hashDecode
 	f.formatter.ListEncode = f.listEncode
 	f.formatter.ListDecode = f.listDecode
+	f.formatter.SetEncode = f.setEncode
+	f.formatter.SetDecode = f.setDecode
 
 	f.loadExpirations()
 	go f.scanExpirations()
