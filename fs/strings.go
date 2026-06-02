@@ -11,6 +11,11 @@ import (
 )
 
 func (f *FileSystem) Append(key dotpip.Key, value string) (appendedString int) {
+	f.subMutex.Lock()
+	f.suppressSetEvent = true
+	f.subMutex.Unlock()
+	defer func() { f.subMutex.Lock(); f.suppressSetEvent = false; f.subMutex.Unlock(); if appendedString > 0 { f.emitKeyspaceEvent(key, "append", '$') } }()
+
 	content, err := f.readFileByKey(key)
 	if err != nil {
 		return 0
@@ -95,6 +100,9 @@ func (f *FileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOpti
 	}
 
 	err = f.writeFileByKey(key, finalValue.([]byte))
+	if err == nil {
+		if !f.suppressSetEvent { f.emitKeyspaceEvent(key, "set", '$') }
+	}
 	if err != nil {
 		return "", err
 	}
@@ -162,7 +170,12 @@ func (f *FileSystem) Incr(key dotpip.Key) (int, error) {
 	return f.IncrBy(key, 1)
 }
 
-func (f *FileSystem) IncrBy(key dotpip.Key, increment int) (int, error) {
+func (f *FileSystem) IncrBy(key dotpip.Key, increment int) (ret int, err error) {
+	f.subMutex.Lock()
+	f.suppressSetEvent = true
+	f.subMutex.Unlock()
+	defer func() { f.subMutex.Lock(); f.suppressSetEvent = false; f.subMutex.Unlock(); if err == nil { f.emitKeyspaceEvent(key, "incrby", '$') } }()
+
 	val, err := f.Get(key)
 	if err != nil {
 		// If key does not exist or error reading, default to 0
@@ -184,7 +197,12 @@ func (f *FileSystem) IncrBy(key dotpip.Key, increment int) (int, error) {
 	return num, nil
 }
 
-func (f *FileSystem) IncrByFloat(key dotpip.Key, increment float64) (float64, error) {
+func (f *FileSystem) IncrByFloat(key dotpip.Key, increment float64) (ret float64, err error) {
+	f.subMutex.Lock()
+	f.suppressSetEvent = true
+	f.subMutex.Unlock()
+	defer func() { f.subMutex.Lock(); f.suppressSetEvent = false; f.subMutex.Unlock(); if err == nil { f.emitKeyspaceEvent(key, "incrbyfloat", '$') } }()
+
 	val, err := f.Get(key)
 	if err != nil {
 		val = "0"
@@ -263,7 +281,12 @@ func (f *FileSystem) GetRange(key dotpip.Key, start int, end int) (string, error
 	return val[start : end+1], nil
 }
 
-func (f *FileSystem) SetRange(key dotpip.Key, offset int, value string) (int, error) {
+func (f *FileSystem) SetRange(key dotpip.Key, offset int, value string) (ret int, err error) {
+	f.subMutex.Lock()
+	f.suppressSetEvent = true
+	f.subMutex.Unlock()
+	defer func() { f.subMutex.Lock(); f.suppressSetEvent = false; f.subMutex.Unlock(); if err == nil { f.emitKeyspaceEvent(key, "setrange", '$') } }()
+
 	if offset < 0 {
 		return 0, errors.New("ERR offset is out of range")
 	}

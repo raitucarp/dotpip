@@ -28,6 +28,8 @@ type FileSystem struct {
 	watcher       *fsnotify.Watcher
 
 	pubsubOffsets map[string]int64
+	config map[string]string
+	suppressSetEvent bool
 }
 
 func NewFileSystem(pathRoot string) *FileSystem {
@@ -283,4 +285,41 @@ func (f *FileSystem) readTail(path string) ([]string, error) {
 	}
 
 	return newLines, scanner.Err()
+}
+
+func (f *FileSystem) emitKeyspaceEvent(key dotpip.Key, event string, typeChar rune) {
+	if key == nil {
+		return
+	}
+	f.subMutex.RLock()
+	notifyEvents := f.config["notify-keyspace-events"]
+	f.subMutex.RUnlock()
+
+	if notifyEvents == "" {
+		return
+	}
+
+	keyspaceEnabled := strings.Contains(notifyEvents, "K")
+	keyeventEnabled := strings.Contains(notifyEvents, "E")
+
+	if !keyspaceEnabled && !keyeventEnabled {
+		return
+	}
+
+	// 'A' alias for "g$lshztdxea" - but exclude m, n, o, c
+	matchAll := strings.Contains(notifyEvents, "A")
+	isExcludedFromA := typeChar == 'm' || typeChar == 'n' || typeChar == 'o' || typeChar == 'c'
+
+	if !(matchAll && !isExcludedFromA) && !strings.ContainsRune(notifyEvents, typeChar) {
+		return // Not enabled
+	}
+
+	keyString := strings.Join(key, string(filepath.Separator)) // simple joined key
+
+	if keyspaceEnabled {
+		f.notifySubscribers("__keyspace@0__:"+keyString, event)
+	}
+	if keyeventEnabled {
+		f.notifySubscribers("__keyevent@0__:"+event, keyString)
+	}
 }
