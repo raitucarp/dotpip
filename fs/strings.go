@@ -56,7 +56,7 @@ func (f *fileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOpti
 		return "", err
 	}
 
-	keyExists, err := f.Exists(key)
+	keyExists, _ := f.Exists(key)
 	exists := keyExists[0]
 
 	var oldValue string
@@ -99,7 +99,7 @@ func (f *fileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOpti
 	}
 
 	if !cmd.KeepTTL {
-		f.removeExByKey(key) // Removing existing ttl first
+		_ = f.removeExByKey(key) // Removing existing ttl first
 
 		var ttlMs int64
 		if cmd.Ex > 0 {
@@ -117,7 +117,7 @@ func (f *fileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOpti
 		if ttlMs > 0 {
 			expireAt := time.Now().UnixMilli() + ttlMs
 			expireContent := strconv.FormatInt(expireAt, 10)
-			f.writeExByKey(key, []byte(expireContent))
+			_ = f.writeExByKey(key, []byte(expireContent))
 			dataPath := f.keyToAbsoluteFilePath(key)
 			f.setExpiration(dataPath, expireAt)
 		} else {

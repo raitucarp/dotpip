@@ -14,7 +14,7 @@ func TestSetsCommands(t *testing.T) {
 	for _, encoding := range encodings {
 		t.Run(string(encoding), func(t *testing.T) {
 			pathRoot := filepath.Join(os.TempDir(), "dotpip_sets_test_"+string(encoding))
-			os.MkdirAll(pathRoot, os.ModePerm)
+	_ = os.MkdirAll(pathRoot, os.ModePerm)
 			defer os.RemoveAll(pathRoot)
 
 			db := fs.FileSystem(pathRoot)
@@ -77,7 +77,7 @@ func TestSetsCommands(t *testing.T) {
 			}
 
 			// SMove
-			db.SAdd(key2, "x", "y")
+			_, _ = db.SAdd(key2, "x", "y")
 			moved, _ := db.SMove(key1, key2, "a")
 			if !moved {
 				t.Errorf("SMove failed")
@@ -92,8 +92,8 @@ func TestSetsCommands(t *testing.T) {
 			}
 
 			// SDiff
-			db.SAdd(key1, "1", "2", "3")
-			db.SAdd(key2, "2", "3", "4")
+			_, _ = db.SAdd(key1, "1", "2", "3")
+			_, _ = db.SAdd(key2, "2", "3", "4")
 			diff, _ := db.SDiff(key1, key2)
 			if len(diff) != 2 { // '1', 'b' (b was left from previous ops)
 				t.Errorf("Expected diff length 2, got %d: %v", len(diff), diff)

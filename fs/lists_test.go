@@ -6,7 +6,7 @@ import (
 )
 
 func TestListPushPop(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 	lk := dotpip.NewKey("mylist")
 
 	// LPush
@@ -41,10 +41,10 @@ func TestListPushPop(t *testing.T) {
 }
 
 func TestListRange(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 	lk := dotpip.NewKey("mylist2")
 
-	dotfs.RPush(lk, "one", "two", "three", "four")
+	_, _ = dotfs.RPush(lk, "one", "two", "three", "four")
 
 	vals, _ := dotfs.LRange(lk, 0, 2)
 	if len(vals) != 3 || vals[0] != "one" || vals[1] != "two" || vals[2] != "three" {
@@ -58,10 +58,10 @@ func TestListRange(t *testing.T) {
 }
 
 func TestListIndexSetInsertTrim(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 	lk := dotpip.NewKey("mylist3")
 
-	dotfs.RPush(lk, "a", "b", "c")
+	_, _ = dotfs.RPush(lk, "a", "b", "c")
 
 	// LIndex
 	val, err := dotfs.LIndex(lk, 1)
@@ -104,10 +104,10 @@ func TestListIndexSetInsertTrim(t *testing.T) {
 }
 
 func TestListRemPosMove(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 	lk := dotpip.NewKey("mylist4")
 
-	dotfs.RPush(lk, "a", "b", "c", "b", "d")
+	_, _ = dotfs.RPush(lk, "a", "b", "c", "b", "d")
 
 	// LRem
 	n, err := dotfs.LRem(lk, 1, "b")
@@ -152,7 +152,7 @@ func TestListEncodings(t *testing.T) {
 			testFS := FileSystem("../data")
 			testFS.EncodeType(enc)
 			dfs := dotpip.New(testFS)
-			dfs.FlushAll()
+			_ = dfs.FlushAll()
 
 			key := dotpip.NewKey("test_list_enc")
 
@@ -174,7 +174,7 @@ func TestListEncodings(t *testing.T) {
 }
 
 func TestPushX(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 	lk := dotpip.NewKey("mylist5")
 
 	n, err := dotfs.LPushX(lk, "a")
@@ -182,7 +182,7 @@ func TestPushX(t *testing.T) {
 		t.Errorf("LPushX expected 0, got %d", n)
 	}
 
-	dotfs.RPush(lk, "b")
+	_, _ = dotfs.RPush(lk, "b")
 
 	n, err = dotfs.LPushX(lk, "a")
 	if err != nil || n != 2 {
@@ -196,10 +196,10 @@ func TestPushX(t *testing.T) {
 }
 
 func TestLMoveSameKey(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 	lk := dotpip.NewKey("mylist_same")
 
-	dotfs.RPush(lk, "a", "b", "c")
+	_, _ = dotfs.RPush(lk, "a", "b", "c")
 
 	val, err := dotfs.LMove(lk, lk, dotpip.Right, dotpip.Left)
 	if err != nil || val != "c" {
@@ -213,10 +213,10 @@ func TestLMoveSameKey(t *testing.T) {
 }
 
 func TestLPosMaxLenNegative(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 	lk := dotpip.NewKey("mylist_pos")
 
-	dotfs.RPush(lk, "a", "b", "c", "b", "d")
+	_, _ = dotfs.RPush(lk, "a", "b", "c", "b", "d")
 
 	pos, err := dotfs.LPos(lk, "b", dotpip.WithLPosRank(-1), dotpip.WithLPosMaxLen(3))
 	if err != nil || len(pos) != 1 || pos[0] != 3 {

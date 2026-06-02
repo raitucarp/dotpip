@@ -14,7 +14,7 @@ func TestZSetsCommands(t *testing.T) {
 	for _, encoding := range encodings {
 		t.Run(string(encoding), func(t *testing.T) {
 			pathRoot := filepath.Join(os.TempDir(), "dotpip_zsets_test_"+string(encoding))
-			os.MkdirAll(pathRoot, os.ModePerm)
+	_ = os.MkdirAll(pathRoot, os.ModePerm)
 			defer os.RemoveAll(pathRoot)
 
 			db := fs.FileSystem(pathRoot)
@@ -100,11 +100,11 @@ func TestZSetsCommands(t *testing.T) {
 			}
 
 			// ZInter / ZUnion
-			db.ZAdd(key1, []dotpip.Z{
+	_, _ = db.ZAdd(key1, []dotpip.Z{
 				{Score: 1, Member: "a"},
 				{Score: 2, Member: "b"},
 			})
-			db.ZAdd(key2, []dotpip.Z{
+	_, _ = db.ZAdd(key2, []dotpip.Z{
 				{Score: 2, Member: "b"},
 				{Score: 3, Member: "c"},
 			})
@@ -133,7 +133,7 @@ func TestZRangeCommands(t *testing.T) {
 	for _, encoding := range encodings {
 		t.Run(string(encoding), func(t *testing.T) {
 			pathRoot := filepath.Join(os.TempDir(), "dotpip_zrange_test_"+string(encoding))
-			os.MkdirAll(pathRoot, os.ModePerm)
+	_ = os.MkdirAll(pathRoot, os.ModePerm)
 			defer os.RemoveAll(pathRoot)
 
 			db := fs.FileSystem(pathRoot)
@@ -141,7 +141,7 @@ func TestZRangeCommands(t *testing.T) {
 
 			key := dotpip.NewKey("zset_range")
 
-			db.ZAdd(key, []dotpip.Z{
+	_, _ = db.ZAdd(key, []dotpip.Z{
 				{Score: 1, Member: "a"},
 				{Score: 2, Member: "b"},
 				{Score: 3, Member: "c"},

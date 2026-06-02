@@ -25,7 +25,7 @@ func (f *fileSystem) applyExpireOptions(key dotpip.Key, expireAt int64, cmd *dot
 
 	f.setExpiration(dataPath, expireAt)
 	expireContent := strconv.FormatInt(expireAt, 10)
-	f.writeExByKey(key, []byte(expireContent))
+	_ = f.writeExByKey(key, []byte(expireContent))
 
 	return true, nil
 }
@@ -162,6 +162,6 @@ func (f *fileSystem) Persist(key dotpip.Key) (bool, error) {
 	}
 
 	f.unsetExpiration(dataPath)
-	f.removeExByKey(key)
+	_ = f.removeExByKey(key)
 	return true, nil
 }

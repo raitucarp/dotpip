@@ -42,8 +42,8 @@ func (f *fileSystem) isExpired(key dotpip.Key) bool {
 	expireAt, hasTTL := f.getExpiration(dataPath)
 	if hasTTL {
 		if time.Now().UnixMilli() >= expireAt {
-			f.removeFileByPath(dataPath)
-			f.removeExByPath(dataPath + ".ex")
+			_ = f.removeFileByPath(dataPath)
+			_ = f.removeExByPath(dataPath + ".ex")
 			f.unsetExpiration(dataPath)
 			return true
 		}
@@ -99,9 +99,6 @@ func (f *fileSystem) removeExByKey(key dotpip.Key) error {
 	return err
 }
 
-func (f *fileSystem) readExByKey(key dotpip.Key) ([]byte, error) {
-	return os.ReadFile(f.keyToAbsoluteExFilePath(key))
-}
 
 func (f *fileSystem) removeFileByKey(key dotpip.Key) (err error) {
 	keyFileName := f.keyToAbsoluteFilePath(key)

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/goccy/go-yaml"
-	"github.com/pelletier/go-toml/v2"
+	yaml "github.com/goccy/go-yaml"
+	toml "github.com/pelletier/go-toml/v2"
 )
 
 type FileEncodeType string
