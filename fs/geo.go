@@ -363,7 +363,7 @@ func (f *fileSystem) GeoSearchStore(destination dotpip.Key, source dotpip.Key, s
 	}
 
 	// Remove the old key entirely if we are overwriting it (Redis behavior)
-	f.removeFileByKey(destination)
+	_ = f.removeFileByKey(destination)
 
 	if len(zmembers) > 0 {
 		_, err = f.ZAdd(destination, zmembers)

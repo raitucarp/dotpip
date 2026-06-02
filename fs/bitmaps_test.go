@@ -46,7 +46,7 @@ func runBitmapTests(t *testing.T, f dotpip.DotPip) {
 		t.Fatalf("expected count 1, got %d", count)
 	}
 
-	f.SetBit(key, 101, 1)
+	_, _ = f.SetBit(key, 101, 1)
 	count, err = f.BitCount(key, 0, -1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -67,8 +67,8 @@ func runBitmapTests(t *testing.T, f dotpip.DotPip) {
 
 	// BitOp
 	key2 := dotpip.NewKey("mybitmap2")
-	f.SetBit(key2, 100, 1) // 100 is 1
-	f.SetBit(key2, 102, 1) // 102 is 1
+	_, _ = f.SetBit(key2, 100, 1) // 100 is 1
+	_, _ = f.SetBit(key2, 102, 1) // 102 is 1
 
 	destKey := dotpip.NewKey("dest")
 	opLen, err := f.BitOp(dotpip.BitOpAnd, destKey, key, key2)
@@ -95,7 +95,7 @@ func TestBitmap(t *testing.T) {
 	for _, encoding := range encodings {
 		t.Run(string(encoding), func(t *testing.T) {
 			path := "./test_data_" + string(encoding)
-			os.MkdirAll(path, 0755)
+			_ = os.MkdirAll(path, 0755)
 			defer os.RemoveAll(path)
 
 			fs := FileSystem(path)
@@ -108,7 +108,7 @@ func TestBitmap(t *testing.T) {
 
 // BitField test
 func TestBitField(t *testing.T) {
-	os.MkdirAll("./test_bitfield", 0755)
+	_ = os.MkdirAll("./test_bitfield", 0755)
 	fs := FileSystem("./test_bitfield")
 	fs.EncodeType(RAW) // Use RAW to avoid JSON invalid UTF-8 string encoding corruption
 	defer os.RemoveAll("./test_bitfield")

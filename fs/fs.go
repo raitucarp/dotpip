@@ -60,7 +60,7 @@ func (f *fileSystem) loadExpirations() {
 	f.expMutex.Lock()
 	defer f.expMutex.Unlock()
 
-	filepath.WalkDir(f.pathRoot, func(path string, d fs.DirEntry, err error) error {
+	_ = filepath.WalkDir(f.pathRoot, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return nil
 		}
@@ -104,8 +104,8 @@ func (f *fileSystem) processExpirations() {
 	for dataPath, expireAt := range f.expirations {
 		if now >= expireAt {
 			// Expired!
-			f.removeFileByPath(dataPath)
-			f.removeExByPath(dataPath + ".ex")
+			_ = f.removeFileByPath(dataPath)
+			_ = f.removeExByPath(dataPath + ".ex")
 			delete(f.expirations, dataPath)
 		}
 	}

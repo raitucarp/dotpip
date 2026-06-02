@@ -58,7 +58,7 @@ func TestExists(t *testing.T) {
 	}
 
 	newKey := dotpip.NewKey("newkey")
-	_, err = dotfs.Set(newKey, "new value")
+	_, _ = dotfs.Set(newKey, "new value")
 	exists, err = dotfs.Exists(newKey)
 	if err != nil {
 		t.Errorf("Should have returned an error for key %s %s", srcKey, dstKey)
@@ -75,6 +75,6 @@ func TestExists(t *testing.T) {
 
 func BenchmarkFlushAll(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		dotfs.FlushAll()
+		_ = dotfs.FlushAll()
 	}
 }

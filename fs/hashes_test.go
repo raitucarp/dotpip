@@ -75,7 +75,7 @@ func runHashTests(t *testing.T, encodeType FileEncodeType) {
 	})
 
 	t.Run("HIncrBy", func(t *testing.T) {
-		db.HSet(key, map[string]string{"counter": "10"})
+		_, _ = db.HSet(key, map[string]string{"counter": "10"})
 		val, err := db.HIncrBy(key, "counter", 5)
 		if err != nil {
 			t.Fatalf("HIncrBy error: %v", err)
@@ -86,7 +86,7 @@ func runHashTests(t *testing.T, encodeType FileEncodeType) {
 	})
 
 	t.Run("HIncrByFloat", func(t *testing.T) {
-		db.HSet(key, map[string]string{"fcounter": "10.5"})
+		_, _ = db.HSet(key, map[string]string{"fcounter": "10.5"})
 		val, err := db.HIncrByFloat(key, "fcounter", 0.5)
 		if err != nil {
 			t.Fatalf("HIncrByFloat error: %v", err)
@@ -98,7 +98,7 @@ func runHashTests(t *testing.T, encodeType FileEncodeType) {
 
 	t.Run("HKeys and HVals", func(t *testing.T) {
 		db.Del(key)
-		db.HSet(key, map[string]string{"k1": "v1", "k2": "v2"})
+		_, _ = db.HSet(key, map[string]string{"k1": "v1", "k2": "v2"})
 
 		keys, err := db.HKeys(key)
 		if err != nil || len(keys) != 2 {

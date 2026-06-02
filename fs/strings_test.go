@@ -76,14 +76,14 @@ func TestAppend(t *testing.T) {
 }
 
 func TestStrLen(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 
 	strlen := dotfs.StrLen(testKey)
 	if strlen != 0 {
 		t.Errorf("StrLen of non-existent key should be 0")
 	}
 
-	dotfs.Set(testKey, "hello")
+	_, _ = dotfs.Set(testKey, "hello")
 	strlen = dotfs.StrLen(testKey)
 	if strlen != 5 {
 		t.Errorf("StrLen of 'hello' should be 5, got %d", strlen)
@@ -91,7 +91,7 @@ func TestStrLen(t *testing.T) {
 }
 
 func TestIncrDecr(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 
 	val, err := dotfs.Incr(testKey)
 	if err != nil || val != 1 {
@@ -113,7 +113,7 @@ func TestIncrDecr(t *testing.T) {
 		t.Errorf("DecrBy 5 should be 5")
 	}
 
-	dotfs.Set(testKey, "abc")
+	_, _ = dotfs.Set(testKey, "abc")
 	_, err = dotfs.Incr(testKey)
 	if err == nil {
 		t.Errorf("Incr on non-integer string should return error")
@@ -121,7 +121,7 @@ func TestIncrDecr(t *testing.T) {
 }
 
 func TestIncrByFloat(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 
 	val, err := dotfs.IncrByFloat(testKey, 10.5)
 	if err != nil || val != 10.5 {
@@ -135,8 +135,8 @@ func TestIncrByFloat(t *testing.T) {
 }
 
 func TestGetDel(t *testing.T) {
-	dotfs.FlushAll()
-	dotfs.Set(testKey, "value")
+	_ = dotfs.FlushAll()
+	_, _ = dotfs.Set(testKey, "value")
 
 	val, err := dotfs.GetDel(testKey)
 	if err != nil || val != "value" {
@@ -150,8 +150,8 @@ func TestGetDel(t *testing.T) {
 }
 
 func TestGetRange(t *testing.T) {
-	dotfs.FlushAll()
-	dotfs.Set(testKey, "This is a string")
+	_ = dotfs.FlushAll()
+	_, _ = dotfs.Set(testKey, "This is a string")
 
 	val, _ := dotfs.GetRange(testKey, 0, 3)
 	if val != "This" {
@@ -165,8 +165,8 @@ func TestGetRange(t *testing.T) {
 }
 
 func TestSetRange(t *testing.T) {
-	dotfs.FlushAll()
-	dotfs.Set(testKey, "Hello World")
+	_ = dotfs.FlushAll()
+	_, _ = dotfs.Set(testKey, "Hello World")
 
 	newLen, err := dotfs.SetRange(testKey, 6, "Redis")
 	if err != nil || newLen != 11 {
@@ -180,12 +180,12 @@ func TestSetRange(t *testing.T) {
 }
 
 func TestMGetMSet(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 
 	k1 := dotpip.NewKey("k1")
 	k2 := dotpip.NewKey("k2")
 
-	dotfs.MSet(dotpip.KV{Key: k1, Value: "v1"}, dotpip.KV{Key: k2, Value: "v2"})
+	_ = dotfs.MSet(dotpip.KV{Key: k1, Value: "v1"}, dotpip.KV{Key: k2, Value: "v2"})
 
 	vals, _ := dotfs.MGet(k1, k2, dotpip.NewKey("k3"))
 	if len(vals) != 3 || vals[0] != "v1" || vals[1] != "v2" || vals[2] != "" {
@@ -194,7 +194,7 @@ func TestMGetMSet(t *testing.T) {
 }
 
 func TestMSetNX(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 
 	k1 := dotpip.NewKey("k1")
 	k2 := dotpip.NewKey("k2")
@@ -224,7 +224,7 @@ func TestEncodings(t *testing.T) {
 			testFS := FileSystem("../data")
 			testFS.EncodeType(enc)
 			dfs := dotpip.New(testFS)
-			dfs.FlushAll()
+			_ = dfs.FlushAll()
 
 			key := dotpip.NewKey("test_enc")
 			val := "hello encoding"

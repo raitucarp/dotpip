@@ -7,10 +7,10 @@ import (
 )
 
 func TestExpire(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 	k := dotpip.NewKey("expire_test")
 
-	dotfs.Set(k, "value")
+	_, _ = dotfs.Set(k, "value")
 
 	res, err := dotfs.Expire(k, 1)
 	if err != nil || !res {
@@ -31,10 +31,10 @@ func TestExpire(t *testing.T) {
 }
 
 func TestPExpire(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 	k := dotpip.NewKey("pexpire_test")
 
-	dotfs.Set(k, "value")
+	_, _ = dotfs.Set(k, "value")
 
 	res, err := dotfs.PExpire(k, 100)
 	if err != nil || !res {
@@ -55,11 +55,11 @@ func TestPExpire(t *testing.T) {
 }
 
 func TestPersist(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 	k := dotpip.NewKey("persist_test")
 
-	dotfs.Set(k, "value")
-	dotfs.Expire(k, 1)
+	_, _ = dotfs.Set(k, "value")
+	_, _ = dotfs.Expire(k, 1)
 
 	res, err := dotfs.Persist(k)
 	if err != nil || !res {
@@ -80,9 +80,9 @@ func TestPersist(t *testing.T) {
 }
 
 func TestExpireOptions(t *testing.T) {
-	dotfs.FlushAll()
+	_ = dotfs.FlushAll()
 	k := dotpip.NewKey("expire_options_test")
-	dotfs.Set(k, "value")
+	_, _ = dotfs.Set(k, "value")
 
 	// NX on key without TTL should work
 	res, _ := dotfs.Expire(k, 10, dotpip.WithExpireNX())
