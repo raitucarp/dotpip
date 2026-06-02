@@ -41,6 +41,8 @@ func FileSystem(pathRoot string) *fileSystem {
 	f.formatter.SortedSetDecode = f.sortedSetDecode
 	f.formatter.BitmapEncode = f.bitmapEncode
 	f.formatter.BitmapDecode = f.bitmapDecode
+	f.formatter.GeospatialEncode = f.geospatialEncode
+	f.formatter.GeospatialDecode = f.geospatialDecode
 
 	f.loadExpirations()
 	go f.scanExpirations()
