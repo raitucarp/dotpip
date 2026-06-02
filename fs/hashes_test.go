@@ -13,7 +13,7 @@ func runHashTests(t *testing.T, encodeType FileEncodeType) {
 	}
 	defer os.RemoveAll(tempDir)
 
-	db := FileSystem(tempDir)
+	db := NewFileSystem(tempDir)
 	defer db.Close()
 	db.EncodeType(encodeType)
 

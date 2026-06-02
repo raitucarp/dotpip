@@ -2,6 +2,6 @@ package fs
 
 import "dotpip"
 
-func (f *fileSystem) Formatter(formatter dotpip.DataTypeFormatter) {
+func (f *FileSystem) Formatter(formatter dotpip.DataTypeFormatter) {
 	f.formatter = &formatter
 }

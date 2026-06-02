@@ -6,7 +6,7 @@ import (
 	"github.com/axiomhq/hyperloglog"
 )
 
-func (f *fileSystem) PFAdd(key dotpip.Key, elements ...string) (int, error) {
+func (f *FileSystem) PFAdd(key dotpip.Key, elements ...string) (int, error) {
 	// 1. Get or create the sketch
 	var sk *hyperloglog.Sketch
 	content, err := f.readFileByKey(key)
@@ -51,7 +51,7 @@ func (f *fileSystem) PFAdd(key dotpip.Key, elements ...string) (int, error) {
 	return changed, nil
 }
 
-func (f *fileSystem) PFCount(keys ...dotpip.Key) (int, error) {
+func (f *FileSystem) PFCount(keys ...dotpip.Key) (int, error) {
 	if len(keys) == 0 {
 		return 0, nil
 	}
@@ -75,7 +75,7 @@ func (f *fileSystem) PFCount(keys ...dotpip.Key) (int, error) {
 	return int(mergedSketch.Estimate()), nil
 }
 
-func (f *fileSystem) PFMerge(destKey dotpip.Key, sourceKeys ...dotpip.Key) error {
+func (f *FileSystem) PFMerge(destKey dotpip.Key, sourceKeys ...dotpip.Key) error {
 	destSketch := hyperloglog.New14()
 	content, err := f.readFileByKey(destKey)
 	if err == nil {

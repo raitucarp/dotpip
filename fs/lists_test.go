@@ -149,7 +149,7 @@ func TestListEncodings(t *testing.T) {
 
 	for _, enc := range encodings {
 		t.Run(string(enc), func(t *testing.T) {
-			testFS := FileSystem("../data")
+			testFS := NewFileSystem("../data")
 			testFS.EncodeType(enc)
 			dfs := dotpip.New(testFS)
 			_ = dfs.FlushAll()

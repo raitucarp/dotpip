@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func (f *fileSystem) readList(key dotpip.Key) ([]string, error) {
+func (f *FileSystem) readList(key dotpip.Key) ([]string, error) {
 	content, err := f.readFileByKey(key)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -37,7 +37,7 @@ func (f *fileSystem) readList(key dotpip.Key) ([]string, error) {
 	return strList, nil
 }
 
-func (f *fileSystem) writeList(key dotpip.Key, list []string) error {
+func (f *FileSystem) writeList(key dotpip.Key, list []string) error {
 	if len(list) == 0 {
 		return f.removeFileByKey(key)
 	}
@@ -55,7 +55,7 @@ func (f *fileSystem) writeList(key dotpip.Key, list []string) error {
 	return f.writeFileByKey(key, encoded.([]byte))
 }
 
-func (f *fileSystem) LIndex(key dotpip.Key, index int) (string, error) {
+func (f *FileSystem) LIndex(key dotpip.Key, index int) (string, error) {
 	list, err := f.readList(key)
 	if err != nil {
 		return "", err
@@ -77,7 +77,7 @@ func (f *fileSystem) LIndex(key dotpip.Key, index int) (string, error) {
 	return list[index], nil
 }
 
-func (f *fileSystem) LInsert(key dotpip.Key, option dotpip.LInsertOption, pivot string, element string) (int, error) {
+func (f *FileSystem) LInsert(key dotpip.Key, option dotpip.LInsertOption, pivot string, element string) (int, error) {
 	list, err := f.readList(key)
 	if err != nil {
 		return 0, err
@@ -114,7 +114,7 @@ func (f *fileSystem) LInsert(key dotpip.Key, option dotpip.LInsertOption, pivot 
 	return len(list), nil
 }
 
-func (f *fileSystem) LLen(key dotpip.Key) (int, error) {
+func (f *FileSystem) LLen(key dotpip.Key) (int, error) {
 	list, err := f.readList(key)
 	if err != nil {
 		return 0, err
@@ -122,7 +122,7 @@ func (f *fileSystem) LLen(key dotpip.Key) (int, error) {
 	return len(list), nil
 }
 
-func (f *fileSystem) LMove(source dotpip.Key, destination dotpip.Key, srcDir dotpip.LMoveDir, destDir dotpip.LMoveDir) (string, error) {
+func (f *FileSystem) LMove(source dotpip.Key, destination dotpip.Key, srcDir dotpip.LMoveDir, destDir dotpip.LMoveDir) (string, error) {
 	srcList, err := f.readList(source)
 	if err != nil {
 		return "", err
@@ -188,7 +188,7 @@ func (f *fileSystem) LMove(source dotpip.Key, destination dotpip.Key, srcDir dot
 	return val, nil
 }
 
-func (f *fileSystem) LPop(key dotpip.Key, count int) ([]string, error) {
+func (f *FileSystem) LPop(key dotpip.Key, count int) ([]string, error) {
 	list, err := f.readList(key)
 	if err != nil {
 		return nil, err
@@ -217,7 +217,7 @@ func (f *fileSystem) LPop(key dotpip.Key, count int) ([]string, error) {
 	return popped, nil
 }
 
-func (f *fileSystem) LPos(key dotpip.Key, element string, options ...dotpip.LPosOption) ([]int, error) {
+func (f *FileSystem) LPos(key dotpip.Key, element string, options ...dotpip.LPosOption) ([]int, error) {
 	cmd := &dotpip.LPosCommand{
 		Rank:   1,
 		Count:  1,
@@ -283,7 +283,7 @@ func (f *fileSystem) LPos(key dotpip.Key, element string, options ...dotpip.LPos
 	return results, nil
 }
 
-func (f *fileSystem) LPush(key dotpip.Key, elements ...string) (int, error) {
+func (f *FileSystem) LPush(key dotpip.Key, elements ...string) (int, error) {
 	if len(elements) == 0 {
 		return f.LLen(key)
 	}
@@ -307,7 +307,7 @@ func (f *fileSystem) LPush(key dotpip.Key, elements ...string) (int, error) {
 	return len(list), nil
 }
 
-func (f *fileSystem) LPushX(key dotpip.Key, elements ...string) (int, error) {
+func (f *FileSystem) LPushX(key dotpip.Key, elements ...string) (int, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil {
 		return 0, err
@@ -318,7 +318,7 @@ func (f *fileSystem) LPushX(key dotpip.Key, elements ...string) (int, error) {
 	return f.LPush(key, elements...)
 }
 
-func (f *fileSystem) LRange(key dotpip.Key, start int, stop int) ([]string, error) {
+func (f *FileSystem) LRange(key dotpip.Key, start int, stop int) ([]string, error) {
 	list, err := f.readList(key)
 	if err != nil {
 		return nil, err
@@ -354,7 +354,7 @@ func (f *fileSystem) LRange(key dotpip.Key, start int, stop int) ([]string, erro
 	return list[start : stop+1], nil
 }
 
-func (f *fileSystem) LRem(key dotpip.Key, count int, element string) (int, error) {
+func (f *FileSystem) LRem(key dotpip.Key, count int, element string) (int, error) {
 	list, err := f.readList(key)
 	if err != nil {
 		return 0, err
@@ -367,7 +367,8 @@ func (f *fileSystem) LRem(key dotpip.Key, count int, element string) (int, error
 	removed := 0
 	var newList []string
 
-	if count > 0 {
+	switch {
+	case count > 0:
 		for _, v := range list {
 			if v == element && removed < count {
 				removed++
@@ -375,7 +376,7 @@ func (f *fileSystem) LRem(key dotpip.Key, count int, element string) (int, error
 				newList = append(newList, v)
 			}
 		}
-	} else if count < 0 {
+	case count < 0:
 		targetCount := -count
 		// Iterate backwards to remove from end
 		for i := len(list) - 1; i >= 0; i-- {
@@ -385,7 +386,7 @@ func (f *fileSystem) LRem(key dotpip.Key, count int, element string) (int, error
 				newList = append([]string{list[i]}, newList...)
 			}
 		}
-	} else {
+	default:
 		for _, v := range list {
 			if v == element {
 				removed++
@@ -405,7 +406,7 @@ func (f *fileSystem) LRem(key dotpip.Key, count int, element string) (int, error
 	return removed, nil
 }
 
-func (f *fileSystem) LSet(key dotpip.Key, index int, element string) error {
+func (f *FileSystem) LSet(key dotpip.Key, index int, element string) error {
 	list, err := f.readList(key)
 	if err != nil {
 		return err
@@ -428,7 +429,7 @@ func (f *fileSystem) LSet(key dotpip.Key, index int, element string) error {
 	return f.writeList(key, list)
 }
 
-func (f *fileSystem) LTrim(key dotpip.Key, start int, stop int) error {
+func (f *FileSystem) LTrim(key dotpip.Key, start int, stop int) error {
 	list, err := f.readList(key)
 	if err != nil {
 		return err
@@ -462,7 +463,7 @@ func (f *fileSystem) LTrim(key dotpip.Key, start int, stop int) error {
 	return f.writeList(key, list[start:stop+1])
 }
 
-func (f *fileSystem) RPop(key dotpip.Key, count int) ([]string, error) {
+func (f *FileSystem) RPop(key dotpip.Key, count int) ([]string, error) {
 	list, err := f.readList(key)
 	if err != nil {
 		return nil, err
@@ -497,7 +498,7 @@ func (f *fileSystem) RPop(key dotpip.Key, count int) ([]string, error) {
 	return popped, nil
 }
 
-func (f *fileSystem) RPush(key dotpip.Key, elements ...string) (int, error) {
+func (f *FileSystem) RPush(key dotpip.Key, elements ...string) (int, error) {
 	if len(elements) == 0 {
 		return f.LLen(key)
 	}
@@ -517,7 +518,7 @@ func (f *fileSystem) RPush(key dotpip.Key, elements ...string) (int, error) {
 	return len(list), nil
 }
 
-func (f *fileSystem) RPushX(key dotpip.Key, elements ...string) (int, error) {
+func (f *FileSystem) RPushX(key dotpip.Key, elements ...string) (int, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil {
 		return 0, err

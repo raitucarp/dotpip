@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func (f *fileSystem) Copy(source dotpip.Key, destination dotpip.Key, options ...dotpip.CopyOption) int {
+func (f *FileSystem) Copy(source dotpip.Key, destination dotpip.Key, options ...dotpip.CopyOption) int {
 	cmd := &dotpip.CopyCommand{}
 	for _, option := range options {
 		option(cmd)
@@ -45,7 +45,7 @@ func (f *fileSystem) Copy(source dotpip.Key, destination dotpip.Key, options ...
 	return 1
 }
 
-func (f *fileSystem) Del(keys ...dotpip.Key) int {
+func (f *FileSystem) Del(keys ...dotpip.Key) int {
 	count := 0
 	for _, key := range keys {
 		err := f.removeFileByKey(key)
@@ -58,7 +58,7 @@ func (f *fileSystem) Del(keys ...dotpip.Key) int {
 	return count
 }
 
-func (f *fileSystem) Exists(keys ...dotpip.Key) ([]bool, error) {
+func (f *FileSystem) Exists(keys ...dotpip.Key) ([]bool, error) {
 	results := make([]bool, len(keys))
 	for i, key := range keys {
 		exist, err := f.checkExistByKey(key)
@@ -68,7 +68,7 @@ func (f *fileSystem) Exists(keys ...dotpip.Key) ([]bool, error) {
 	return results, nil
 }
 
-func (f *fileSystem) FlushAll() (err error) {
+func (f *FileSystem) FlushAll() (err error) {
 	err = os.RemoveAll(f.pathRoot)
 	if err != nil {
 		return err

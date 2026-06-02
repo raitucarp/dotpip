@@ -98,7 +98,7 @@ func TestBitmap(t *testing.T) {
 			_ = os.MkdirAll(path, 0755)
 			defer os.RemoveAll(path)
 
-			fs := FileSystem(path)
+			fs := NewFileSystem(path)
 			fs.EncodeType(encoding)
 
 			runBitmapTests(t, fs)
@@ -109,7 +109,7 @@ func TestBitmap(t *testing.T) {
 // BitField test
 func TestBitField(t *testing.T) {
 	_ = os.MkdirAll("./test_bitfield", 0755)
-	fs := FileSystem("./test_bitfield")
+	fs := NewFileSystem("./test_bitfield")
 	fs.EncodeType(RAW) // Use RAW to avoid JSON invalid UTF-8 string encoding corruption
 	defer os.RemoveAll("./test_bitfield")
 

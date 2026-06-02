@@ -17,7 +17,7 @@ func TestStreams(t *testing.T) {
 			_ = os.RemoveAll(path)
 			_ = os.MkdirAll(path, 0755)
 
-			fs := FileSystem(path)
+			fs := NewFileSystem(path)
 			fs.EncodeType(encoding)
 
 			key := dotpip.NewKey("mystream")
@@ -202,7 +202,7 @@ func TestStreams(t *testing.T) {
 }
 
 func TestStreamIDParsing(t *testing.T) {
-	fs := &fileSystem{}
+	fs := &FileSystem{}
 
 	ms, seq, err := fs.parseStreamID("12345-67")
 	if err != nil || ms != 12345 || seq != 67 {

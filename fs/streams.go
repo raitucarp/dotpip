@@ -10,7 +10,7 @@ import (
 	"dotpip"
 )
 
-func (f *fileSystem) parseStreamID(id string) (int64, int64, error) {
+func (f *FileSystem) parseStreamID(id string) (int64, int64, error) {
 	if id == "*" {
 		return time.Now().UnixMilli(), 0, nil
 	}
@@ -69,7 +69,7 @@ func parseIDString(id string) (int64, int64) {
 	return ms, seq
 }
 
-func (f *fileSystem) getStream(key dotpip.Key) (dotpip.Stream, error) {
+func (f *FileSystem) getStream(key dotpip.Key) (dotpip.Stream, error) {
 	var stream dotpip.Stream
 	content, err := f.readFileByKey(key)
 	if err != nil {
@@ -90,7 +90,7 @@ func (f *fileSystem) getStream(key dotpip.Key) (dotpip.Stream, error) {
 	return f.formatter.StreamDecode(content)
 }
 
-func (f *fileSystem) setStream(key dotpip.Key, stream dotpip.Stream) error {
+func (f *FileSystem) setStream(key dotpip.Key, stream dotpip.Stream) error {
 	encoded, err := f.formatter.StreamEncode(stream)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (f *fileSystem) setStream(key dotpip.Key, stream dotpip.Stream) error {
 	return f.writeFileByKey(key, encoded.([]byte))
 }
 
-func (f *fileSystem) XAck(key dotpip.Key, group string, ids ...string) (int, error) {
+func (f *FileSystem) XAck(key dotpip.Key, group string, ids ...string) (int, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return 0, err
@@ -132,7 +132,7 @@ func (f *fileSystem) XAck(key dotpip.Key, group string, ids ...string) (int, err
 	return acked, err
 }
 
-func (f *fileSystem) XAdd(key dotpip.Key, id string, values map[string]string, options ...dotpip.XAddOption) (string, error) {
+func (f *FileSystem) XAdd(key dotpip.Key, id string, values map[string]string, options ...dotpip.XAddOption) (string, error) {
 	cmd := &dotpip.XAddCommand{}
 	for _, opt := range options {
 		opt(cmd)
@@ -158,25 +158,28 @@ func (f *fileSystem) XAdd(key dotpip.Key, id string, values map[string]string, o
 		lastMs, lastSeq = parseIDString(lastEntry.ID)
 	}
 
-	if id == "*" {
+	switch {
+	case id == "*":
 		ms = time.Now().UnixMilli()
-		if ms == lastMs {
+		switch {
+		case ms == lastMs:
 			seq = lastSeq + 1
-		} else if ms < lastMs {
+		case ms < lastMs:
 			ms = lastMs
 			seq = lastSeq + 1
-		} else {
+		default:
 			seq = 0
 		}
-	} else if strings.HasSuffix(id, "-*") {
-		if ms == lastMs {
+	case strings.HasSuffix(id, "-*"):
+		switch {
+		case ms == lastMs:
 			seq = lastSeq + 1
-		} else if ms < lastMs {
+		case ms < lastMs:
 			return "", fmt.Errorf("ERR The ID specified in XADD is equal or smaller than the target stream top item")
-		} else {
+		default:
 			seq = 0
 		}
-	} else {
+	default:
 		if compareIDs(ms, seq, lastMs, lastSeq) <= 0 {
 			if ms == 0 && seq == 0 {
 				return "", fmt.Errorf("ERR The ID specified in XADD must be greater than 0-0")
@@ -207,7 +210,7 @@ func (f *fileSystem) XAdd(key dotpip.Key, id string, values map[string]string, o
 	return newID, nil
 }
 
-func (f *fileSystem) XDel(key dotpip.Key, ids ...string) (int, error) {
+func (f *FileSystem) XDel(key dotpip.Key, ids ...string) (int, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return 0, err
@@ -236,7 +239,7 @@ func (f *fileSystem) XDel(key dotpip.Key, ids ...string) (int, error) {
 	return deleted, err
 }
 
-func (f *fileSystem) XGroupCreate(key dotpip.Key, group string, id string, mkStream bool) (string, error) {
+func (f *FileSystem) XGroupCreate(key dotpip.Key, group string, id string, mkStream bool) (string, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return "", err
@@ -255,15 +258,16 @@ func (f *fileSystem) XGroupCreate(key dotpip.Key, group string, id string, mkStr
 	}
 
 	var lastDeliveredID string
-	if id == "$" {
+	switch {
+	case id == "$":
 		if len(stream.Entries) > 0 {
 			lastDeliveredID = stream.Entries[len(stream.Entries)-1].ID
 		} else {
 			lastDeliveredID = "0-0"
 		}
-	} else if id == "0" {
+	case id == "0":
 		lastDeliveredID = "0-0"
-	} else {
+	default:
 		// Validating format
 		_, _, err := f.parseStreamID(id)
 		if err != nil {
@@ -271,7 +275,7 @@ func (f *fileSystem) XGroupCreate(key dotpip.Key, group string, id string, mkStr
 		}
 		// In case they pass just "123", we should convert to "123-0"
 		if !strings.Contains(id, "-") {
-			id = id + "-0"
+			id += "-0"
 		}
 		lastDeliveredID = id
 	}
@@ -290,7 +294,7 @@ func (f *fileSystem) XGroupCreate(key dotpip.Key, group string, id string, mkStr
 	return "OK", nil
 }
 
-func (f *fileSystem) XGroupCreateConsumer(key dotpip.Key, group string, consumer string) (int, error) {
+func (f *FileSystem) XGroupCreateConsumer(key dotpip.Key, group string, consumer string) (int, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return 0, err
@@ -318,7 +322,7 @@ func (f *fileSystem) XGroupCreateConsumer(key dotpip.Key, group string, consumer
 	return 1, err
 }
 
-func (f *fileSystem) XGroupDelConsumer(key dotpip.Key, group string, consumer string) (int, error) {
+func (f *FileSystem) XGroupDelConsumer(key dotpip.Key, group string, consumer string) (int, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return 0, err
@@ -348,7 +352,7 @@ func (f *fileSystem) XGroupDelConsumer(key dotpip.Key, group string, consumer st
 	return pendingCount, err
 }
 
-func (f *fileSystem) XGroupDestroy(key dotpip.Key, group string) (int, error) {
+func (f *FileSystem) XGroupDestroy(key dotpip.Key, group string) (int, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return 0, err
@@ -363,7 +367,7 @@ func (f *fileSystem) XGroupDestroy(key dotpip.Key, group string) (int, error) {
 	return 1, err
 }
 
-func (f *fileSystem) XGroupSetID(key dotpip.Key, group string, id string) (string, error) {
+func (f *FileSystem) XGroupSetID(key dotpip.Key, group string, id string) (string, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return "", err
@@ -375,21 +379,22 @@ func (f *fileSystem) XGroupSetID(key dotpip.Key, group string, id string) (strin
 	}
 
 	var lastDeliveredID string
-	if id == "$" {
+	switch {
+	case id == "$":
 		if len(stream.Entries) > 0 {
 			lastDeliveredID = stream.Entries[len(stream.Entries)-1].ID
 		} else {
 			lastDeliveredID = "0-0"
 		}
-	} else if id == "0" {
+	case id == "0":
 		lastDeliveredID = "0-0"
-	} else {
+	default:
 		_, _, err := f.parseStreamID(id)
 		if err != nil {
 			return "", err
 		}
 		if !strings.Contains(id, "-") {
-			id = id + "-0"
+			id += "-0"
 		}
 		lastDeliveredID = id
 	}
@@ -405,7 +410,7 @@ func (f *fileSystem) XGroupSetID(key dotpip.Key, group string, id string) (strin
 	return "OK", nil
 }
 
-func (f *fileSystem) XLen(key dotpip.Key) (int, error) {
+func (f *FileSystem) XLen(key dotpip.Key) (int, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return 0, err
@@ -413,7 +418,7 @@ func (f *fileSystem) XLen(key dotpip.Key) (int, error) {
 	return len(stream.Entries), nil
 }
 
-func (f *fileSystem) XRange(key dotpip.Key, start string, end string, count int) ([]dotpip.StreamEntry, error) {
+func (f *FileSystem) XRange(key dotpip.Key, start string, end string, count int) ([]dotpip.StreamEntry, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return nil, err
@@ -464,7 +469,7 @@ func (f *fileSystem) XRange(key dotpip.Key, start string, end string, count int)
 	return results, nil
 }
 
-func (f *fileSystem) XRevRange(key dotpip.Key, end string, start string, count int) ([]dotpip.StreamEntry, error) {
+func (f *FileSystem) XRevRange(key dotpip.Key, end string, start string, count int) ([]dotpip.StreamEntry, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return nil, err
@@ -515,7 +520,7 @@ func (f *fileSystem) XRevRange(key dotpip.Key, end string, start string, count i
 	return results, nil
 }
 
-func (f *fileSystem) XRead(keys []dotpip.Key, ids []string, options ...dotpip.XReadOption) (map[string][]dotpip.StreamEntry, error) {
+func (f *FileSystem) XRead(keys []dotpip.Key, ids []string, options ...dotpip.XReadOption) (map[string][]dotpip.StreamEntry, error) {
 	cmd := &dotpip.XReadCommand{}
 	for _, opt := range options {
 		opt(cmd)
@@ -574,7 +579,7 @@ func (f *fileSystem) XRead(keys []dotpip.Key, ids []string, options ...dotpip.XR
 	return results, nil
 }
 
-func (f *fileSystem) XReadGroup(group string, consumer string, keys []dotpip.Key, ids []string, options ...dotpip.XReadGroupOption) (map[string][]dotpip.StreamEntry, error) {
+func (f *FileSystem) XReadGroup(group string, consumer string, keys []dotpip.Key, ids []string, options ...dotpip.XReadGroupOption) (map[string][]dotpip.StreamEntry, error) {
 	cmd := &dotpip.XReadGroupCommand{}
 	for _, opt := range options {
 		opt(cmd)
@@ -693,7 +698,7 @@ func (f *fileSystem) XReadGroup(group string, consumer string, keys []dotpip.Key
 	return results, nil
 }
 
-func (f *fileSystem) XTrim(key dotpip.Key, options ...dotpip.XTrimOption) (int, error) {
+func (f *FileSystem) XTrim(key dotpip.Key, options ...dotpip.XTrimOption) (int, error) {
 	cmd := &dotpip.XTrimCommand{}
 	for _, opt := range options {
 		opt(cmd)
@@ -748,7 +753,7 @@ func (f *fileSystem) XTrim(key dotpip.Key, options ...dotpip.XTrimOption) (int, 
 	return deleted, err
 }
 
-func (f *fileSystem) XPending(key dotpip.Key, group string, options ...dotpip.XPendingOption) ([]any, error) {
+func (f *FileSystem) XPending(key dotpip.Key, group string, options ...dotpip.XPendingOption) ([]any, error) {
 	cmd := &dotpip.XPendingCommand{}
 	for _, opt := range options {
 		opt(cmd)
@@ -852,7 +857,7 @@ func (f *fileSystem) XPending(key dotpip.Key, group string, options ...dotpip.XP
 	return results, nil
 }
 
-func (f *fileSystem) XClaim(key dotpip.Key, group string, consumer string, minIdleTime int, ids []string, options ...dotpip.XClaimOption) ([]dotpip.StreamEntry, error) {
+func (f *FileSystem) XClaim(key dotpip.Key, group string, consumer string, minIdleTime int, ids []string, options ...dotpip.XClaimOption) ([]dotpip.StreamEntry, error) {
 	cmd := &dotpip.XClaimCommand{}
 	for _, opt := range options {
 		opt(cmd)
@@ -942,7 +947,7 @@ func (f *fileSystem) XClaim(key dotpip.Key, group string, consumer string, minId
 	return entries, err
 }
 
-func (f *fileSystem) XAutoClaim(key dotpip.Key, group string, consumer string, minIdleTime int, start string, options ...dotpip.XAutoClaimOption) (string, []dotpip.StreamEntry, error) {
+func (f *FileSystem) XAutoClaim(key dotpip.Key, group string, consumer string, minIdleTime int, start string, options ...dotpip.XAutoClaimOption) (string, []dotpip.StreamEntry, error) {
 	cmd := &dotpip.XAutoClaimCommand{Count: 100}
 	for _, opt := range options {
 		opt(cmd)
@@ -979,7 +984,7 @@ func (f *fileSystem) XAutoClaim(key dotpip.Key, group string, consumer string, m
 
 	now := time.Now().UnixMilli()
 	var entries []dotpip.StreamEntry
-	var nextID string = "0-0"
+	nextID := "0-0"
 	changed := false
 
 	count := 0
@@ -1042,7 +1047,7 @@ func (f *fileSystem) XAutoClaim(key dotpip.Key, group string, consumer string, m
 	return nextID, entries, err
 }
 
-func (f *fileSystem) XInfoStream(key dotpip.Key) (map[string]any, error) {
+func (f *FileSystem) XInfoStream(key dotpip.Key) (map[string]any, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return nil, err
@@ -1060,7 +1065,7 @@ func (f *fileSystem) XInfoStream(key dotpip.Key) (map[string]any, error) {
 	return info, nil
 }
 
-func (f *fileSystem) XInfoGroups(key dotpip.Key) ([]map[string]any, error) {
+func (f *FileSystem) XInfoGroups(key dotpip.Key) ([]map[string]any, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return nil, err
@@ -1079,7 +1084,7 @@ func (f *fileSystem) XInfoGroups(key dotpip.Key) ([]map[string]any, error) {
 	return groups, nil
 }
 
-func (f *fileSystem) XInfoConsumers(key dotpip.Key, group string) ([]map[string]any, error) {
+func (f *FileSystem) XInfoConsumers(key dotpip.Key, group string) ([]map[string]any, error) {
 	stream, err := f.getStream(key)
 	if err != nil {
 		return nil, err
@@ -1097,7 +1102,7 @@ func (f *fileSystem) XInfoConsumers(key dotpip.Key, group string) ([]map[string]
 		consInfo["pending"] = len(cons.Pending)
 
 		// Find max idle
-		var maxIdle int64 = 0
+		var maxIdle int64
 		now := time.Now().UnixMilli()
 		for id := range cons.Pending {
 			if pEntry, pOk := g.Pending[id]; pOk {

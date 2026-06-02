@@ -14,7 +14,7 @@ func testHLL(t *testing.T, encodeType FileEncodeType) {
 		}
 		defer os.RemoveAll(tempDir)
 
-		f := FileSystem(tempDir)
+		f := NewFileSystem(tempDir)
 		f.EncodeType(encodeType)
 
 		// PFAdd

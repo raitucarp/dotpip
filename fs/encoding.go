@@ -19,11 +19,11 @@ const (
 	RAW  FileEncodeType = "raw"
 )
 
-func (f *fileSystem) EncodeType(typeName FileEncodeType) {
+func (f *FileSystem) EncodeType(typeName FileEncodeType) {
 	f.encodeType = typeName
 }
 
-func (f *fileSystem) stringEncode(value string) (finalValue any, err error) {
+func (f *FileSystem) stringEncode(value string) (finalValue any, err error) {
 	switch f.encodeType {
 	case JSON:
 
@@ -47,7 +47,7 @@ func (f *fileSystem) stringEncode(value string) (finalValue any, err error) {
 	return finalValue, err
 }
 
-func (f *fileSystem) listEncode(value []any) (any, error) {
+func (f *FileSystem) listEncode(value []any) (any, error) {
 	switch f.encodeType {
 	case JSON:
 		return json.Marshal(value)
@@ -65,7 +65,7 @@ func (f *fileSystem) listEncode(value []any) (any, error) {
 	}
 }
 
-func (f *fileSystem) bitmapEncode(value []uint) (any, error) {
+func (f *FileSystem) bitmapEncode(value []uint) (any, error) {
 	switch f.encodeType {
 	case JSON:
 		return json.Marshal(value)
@@ -80,7 +80,7 @@ func (f *fileSystem) bitmapEncode(value []uint) (any, error) {
 	}
 }
 
-func (f *fileSystem) bitmapDecode(value any) ([]uint, error) {
+func (f *FileSystem) bitmapDecode(value any) ([]uint, error) {
 	var finalValue []uint
 	switch f.encodeType {
 	case JSON:
@@ -104,7 +104,7 @@ func (f *fileSystem) bitmapDecode(value any) ([]uint, error) {
 	}
 }
 
-func (f *fileSystem) listDecode(value any) ([]any, error) {
+func (f *FileSystem) listDecode(value any) ([]any, error) {
 	var finalValue []any
 	switch f.encodeType {
 	case JSON:
@@ -128,7 +128,7 @@ func (f *fileSystem) listDecode(value any) ([]any, error) {
 	}
 }
 
-func (f *fileSystem) hashEncode(value map[string]string) (any, error) {
+func (f *FileSystem) hashEncode(value map[string]string) (any, error) {
 	switch f.encodeType {
 	case JSON:
 		return json.Marshal(value)
@@ -145,7 +145,7 @@ func (f *fileSystem) hashEncode(value map[string]string) (any, error) {
 	}
 }
 
-func (f *fileSystem) hashDecode(value any) (map[string]string, error) {
+func (f *FileSystem) hashDecode(value any) (map[string]string, error) {
 	finalValue := make(map[string]string)
 	switch f.encodeType {
 	case JSON:
@@ -165,7 +165,7 @@ func (f *fileSystem) hashDecode(value any) (map[string]string, error) {
 	}
 }
 
-func (f *fileSystem) stringDecode(value any) (v string, err error) {
+func (f *FileSystem) stringDecode(value any) (v string, err error) {
 
 	finalValue := ""
 	switch f.encodeType {
@@ -194,7 +194,7 @@ func (f *fileSystem) stringDecode(value any) (v string, err error) {
 	return finalValue, err
 }
 
-func (f *fileSystem) setEncode(value map[string]any) (any, error) {
+func (f *FileSystem) setEncode(value map[string]any) (any, error) {
 	switch f.encodeType {
 	case JSON:
 		return json.Marshal(value)
@@ -211,7 +211,7 @@ func (f *fileSystem) setEncode(value map[string]any) (any, error) {
 	}
 }
 
-func (f *fileSystem) setDecode(value any) (map[string]any, error) {
+func (f *FileSystem) setDecode(value any) (map[string]any, error) {
 	finalValue := make(map[string]any)
 	switch f.encodeType {
 	case JSON:
@@ -231,7 +231,7 @@ func (f *fileSystem) setDecode(value any) (map[string]any, error) {
 	}
 }
 
-func (f *fileSystem) sortedSetEncode(value map[string]float64) (any, error) {
+func (f *FileSystem) sortedSetEncode(value map[string]float64) (any, error) {
 	switch f.encodeType {
 	case JSON:
 		return json.Marshal(value)
@@ -246,7 +246,7 @@ func (f *fileSystem) sortedSetEncode(value map[string]float64) (any, error) {
 	}
 }
 
-func (f *fileSystem) sortedSetDecode(value any) (map[string]float64, error) {
+func (f *FileSystem) sortedSetDecode(value any) (map[string]float64, error) {
 	finalValue := make(map[string]float64)
 	switch f.encodeType {
 	case JSON:
@@ -266,7 +266,7 @@ func (f *fileSystem) sortedSetDecode(value any) (map[string]float64, error) {
 	}
 }
 
-func (f *fileSystem) hyperLogLogEncode(value []byte) (any, error) {
+func (f *FileSystem) hyperLogLogEncode(value []byte) (any, error) {
 	switch f.encodeType {
 	case JSON:
 		return json.Marshal(value)
@@ -281,7 +281,7 @@ func (f *fileSystem) hyperLogLogEncode(value []byte) (any, error) {
 	}
 }
 
-func (f *fileSystem) hyperLogLogDecode(value any) ([]byte, error) {
+func (f *FileSystem) hyperLogLogDecode(value any) ([]byte, error) {
 	var finalValue []byte
 	switch f.encodeType {
 	case JSON:
@@ -305,7 +305,7 @@ func (f *fileSystem) hyperLogLogDecode(value any) ([]byte, error) {
 	}
 }
 
-func (f *fileSystem) streamEncode(value dotpip.Stream) (any, error) {
+func (f *FileSystem) streamEncode(value dotpip.Stream) (any, error) {
 	switch f.encodeType {
 	case JSON:
 		return json.Marshal(value)
@@ -321,7 +321,7 @@ func (f *fileSystem) streamEncode(value dotpip.Stream) (any, error) {
 	}
 }
 
-func (f *fileSystem) streamDecode(value any) (dotpip.Stream, error) {
+func (f *FileSystem) streamDecode(value any) (dotpip.Stream, error) {
 	var finalValue dotpip.Stream
 	switch f.encodeType {
 	case JSON:

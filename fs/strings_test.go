@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var fssa = FileSystem("../data")
+var fssa = NewFileSystem("../data")
 var dotfs = dotpip.New(fssa)
 
 var firstTestValue = "set testa"
@@ -221,7 +221,7 @@ func TestEncodings(t *testing.T) {
 
 	for _, enc := range encodings {
 		t.Run(string(enc), func(t *testing.T) {
-			testFS := FileSystem("../data")
+			testFS := NewFileSystem("../data")
 			testFS.EncodeType(enc)
 			dfs := dotpip.New(testFS)
 			_ = dfs.FlushAll()
