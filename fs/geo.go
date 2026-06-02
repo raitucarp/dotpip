@@ -4,9 +4,9 @@ import (
 	"dotpip"
 	"encoding/json"
 	"fmt"
-	"github.com/goccy/go-yaml"
+	yaml "github.com/goccy/go-yaml"
 	"github.com/mmcloughlin/geohash"
-	"github.com/pelletier/go-toml/v2"
+	toml "github.com/pelletier/go-toml/v2"
 	"math"
 	"sort"
 )
