@@ -1,13 +1,17 @@
 package fs
 
 import (
+	"bufio"
 	"dotpip"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 type FileSystem struct {
@@ -18,15 +22,29 @@ type FileSystem struct {
 	expirations map[string]int64
 	expMutex    sync.RWMutex
 	expStop     chan struct{}
+
+	subscriptions map[*PubSubSubscription]struct{}
+	subMutex      sync.RWMutex
+	watcher       *fsnotify.Watcher
+
+	pubsubOffsets map[string]int64
 }
 
 func NewFileSystem(pathRoot string) *FileSystem {
+	watcher, _ := fsnotify.NewWatcher()
+	if watcher != nil {
+		_ = watcher.Add(pathRoot)
+	}
+
 	f := FileSystem{
-		pathRoot:    pathRoot,
-		formatter:   &dotpip.DataTypeFormatter{},
-		encodeType:  JSON,
-		expirations: make(map[string]int64),
-		expStop:     make(chan struct{}),
+		pathRoot:      pathRoot,
+		formatter:     &dotpip.DataTypeFormatter{},
+		encodeType:    JSON,
+		expirations:   make(map[string]int64),
+		expStop:       make(chan struct{}),
+		subscriptions: make(map[*PubSubSubscription]struct{}),
+		watcher:       watcher,
+		pubsubOffsets: make(map[string]int64),
 	}
 
 	f.formatter.StringEncode = f.stringEncode
@@ -50,6 +68,9 @@ func NewFileSystem(pathRoot string) *FileSystem {
 
 	f.loadExpirations()
 	go f.scanExpirations()
+	if f.watcher != nil {
+		go f.watchFS()
+	}
 
 	return &f
 }
@@ -58,6 +79,59 @@ func (f *FileSystem) Close() {
 	if f.expStop != nil {
 		close(f.expStop)
 	}
+	if f.watcher != nil {
+		_ = f.watcher.Close()
+	}
+}
+
+func (f *FileSystem) addSubscription(sub *PubSubSubscription) {
+	f.subMutex.Lock()
+	f.subscriptions[sub] = struct{}{}
+	f.subMutex.Unlock()
+}
+
+func (f *FileSystem) removeSubscription(sub *PubSubSubscription) {
+	f.subMutex.Lock()
+	delete(f.subscriptions, sub)
+	f.subMutex.Unlock()
+}
+
+func (f *FileSystem) notifySubscribers(channel string, message string) int {
+	f.subMutex.RLock()
+	defer f.subMutex.RUnlock()
+
+	count := 0
+	for sub := range f.subscriptions {
+		sub.mu.RLock()
+		matched := false
+		if _, ok := sub.channels[channel]; ok {
+			matched = true
+		}
+		if !matched {
+			for pat := range sub.patterns {
+				if matchPattern(pat, channel) {
+					matched = true
+					break
+				}
+			}
+		}
+		if !matched {
+			if _, ok := sub.shardChannels[channel]; ok {
+				matched = true
+			}
+		}
+		sub.mu.RUnlock()
+
+		if matched {
+			select {
+			case sub.ch <- dotpip.PubSubMessage{Channel: channel, Payload: message}:
+				count++
+			default:
+				// channel full, drop message
+			}
+		}
+	}
+	return count
 }
 
 func (f *FileSystem) loadExpirations() {
@@ -113,4 +187,100 @@ func (f *FileSystem) processExpirations() {
 			delete(f.expirations, dataPath)
 		}
 	}
+}
+
+func (f *FileSystem) watchFS() {
+	for {
+		select {
+		case <-f.expStop:
+			return
+		case event, ok := <-f.watcher.Events:
+			if !ok {
+				return
+			}
+			f.handleFSEvent(event)
+		case err, ok := <-f.watcher.Errors:
+			if !ok {
+				return
+			}
+			_ = err
+		}
+	}
+}
+
+func (f *FileSystem) handleFSEvent(event fsnotify.Event) {
+	// Emit keyspace and keyevent notifications
+	// e.g. for SET we might get a CREATE or WRITE event.
+	baseName := filepath.Base(event.Name)
+
+	// Ignore internal files
+	if strings.HasPrefix(baseName, ".") || strings.HasSuffix(baseName, ".ex") {
+		if strings.HasPrefix(baseName, ".pubsub_") && (event.Op&fsnotify.Write == fsnotify.Write) {
+			channel := strings.TrimPrefix(baseName, ".pubsub_")
+			lines, _ := f.readTail(event.Name)
+			for _, line := range lines {
+				decodedMsg, err := f.formatter.StringDecode([]byte(line))
+				if err == nil {
+					f.notifySubscribers(channel, decodedMsg)
+				} else {
+					f.notifySubscribers(channel, line)
+				}
+			}
+		}
+		return
+	}
+
+	// Strip file extension to get the key name
+	key := strings.TrimSuffix(baseName, filepath.Ext(baseName))
+	var action string
+
+	switch {
+	case event.Op&fsnotify.Create == fsnotify.Create:
+		action = "set" // simplified
+	case event.Op&fsnotify.Write == fsnotify.Write:
+		action = "set"
+	case event.Op&fsnotify.Remove == fsnotify.Remove:
+		action = "del"
+	}
+
+	if action != "" {
+		keyspaceChannel := "__keyspace@0__:" + key
+		keyeventChannel := "__keyevent@0__:" + action
+		f.notifySubscribers(keyspaceChannel, action)
+		f.notifySubscribers(keyeventChannel, key)
+	}
+}
+
+func (f *FileSystem) readTail(path string) ([]string, error) {
+	f.subMutex.Lock()
+	defer f.subMutex.Unlock()
+
+	if f.pubsubOffsets == nil {
+		f.pubsubOffsets = make(map[string]int64)
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	offset := f.pubsubOffsets[path]
+	_, err = file.Seek(offset, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	var newLines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		newLines = append(newLines, scanner.Text())
+	}
+
+	newOffset, err := file.Seek(0, 1) // current position
+	if err == nil {
+		f.pubsubOffsets[path] = newOffset
+	}
+
+	return newLines, scanner.Err()
 }
