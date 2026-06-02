@@ -207,7 +207,32 @@ type DotPip interface {
 	XInfoGroups(key Key) ([]map[string]any, error)
 	XInfoConsumers(key Key, group string) ([]map[string]any, error)
 
+	Publish(channel string, message string) (int, error)
+	Subscribe(channels ...string) (PubSubSubscription, error)
+	PSubscribe(patterns ...string) (PubSubSubscription, error)
+	SSubscribe(shardChannels ...string) (PubSubSubscription, error)
+	PubSubChannels(pattern string) ([]string, error)
+	PubSubNumPat() (int, error)
+	PubSubNumSub(channels ...string) (map[string]int, error)
+	PubSubShardChannels(pattern string) ([]string, error)
+	PubSubShardNumSub(shardChannels ...string) (map[string]int, error)
+
 	Formatter(fmap DataTypeFormatter)
+}
+
+type PubSubMessage struct {
+	Type    string
+	Pattern string
+	Channel string
+	Payload string
+}
+
+type PubSubSubscription interface {
+	Channel() <-chan PubSubMessage
+	Unsubscribe(channels ...string) error
+	PUnsubscribe(patterns ...string) error
+	SUnsubscribe(shardChannels ...string) error
+	Close() error
 }
 
 func New(dotface DotPip) DotPip {
