@@ -40,8 +40,8 @@ type DataTypeFormatter struct {
 	VectorSetDecode func(value any) ([]float64, error)
 	VectorSetEncode func(value []float64) (any, error)
 
-	StreamEncode func(value []any) (any, error)
-	StreamDecode func(value any) ([]any, error)
+	StreamEncode func(value Stream) (any, error)
+	StreamDecode func(value any) (Stream, error)
 
 	BitmapEncode func(value []uint) (any, error)
 	BitmapDecode func(value any) ([]uint, error)
@@ -185,6 +185,27 @@ type DotPip interface {
 	PFAdd(key Key, elements ...string) (int, error)
 	PFCount(keys ...Key) (int, error)
 	PFMerge(destKey Key, sourceKeys ...Key) error
+
+	XAck(key Key, group string, ids ...string) (int, error)
+	XAdd(key Key, id string, values map[string]string, options ...XAddOption) (string, error)
+	XDel(key Key, ids ...string) (int, error)
+	XGroupCreate(key Key, group string, id string, mkStream bool) (string, error)
+	XGroupCreateConsumer(key Key, group string, consumer string) (int, error)
+	XGroupDelConsumer(key Key, group string, consumer string) (int, error)
+	XGroupDestroy(key Key, group string) (int, error)
+	XGroupSetID(key Key, group string, id string) (string, error)
+	XLen(key Key) (int, error)
+	XRange(key Key, start string, end string, count int) ([]StreamEntry, error)
+	XRevRange(key Key, end string, start string, count int) ([]StreamEntry, error)
+	XRead(keys []Key, ids []string, options ...XReadOption) (map[string][]StreamEntry, error)
+	XReadGroup(group string, consumer string, keys []Key, ids []string, options ...XReadGroupOption) (map[string][]StreamEntry, error)
+	XTrim(key Key, options ...XTrimOption) (int, error)
+	XPending(key Key, group string, options ...XPendingOption) ([]any, error)
+	XClaim(key Key, group string, consumer string, minIdleTime int, ids []string, options ...XClaimOption) ([]StreamEntry, error)
+	XAutoClaim(key Key, group string, consumer string, minIdleTime int, start string, options ...XAutoClaimOption) (string, []StreamEntry, error)
+	XInfoStream(key Key) (map[string]any, error)
+	XInfoGroups(key Key) ([]map[string]any, error)
+	XInfoConsumers(key Key, group string) ([]map[string]any, error)
 
 	Formatter(fmap DataTypeFormatter)
 }
