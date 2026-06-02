@@ -49,8 +49,8 @@ type DataTypeFormatter struct {
 	BitfieldEncode func(value any) ([]any, error)
 	BitfieldDecode func(value []any) (any, error)
 
-	GeospatialEncode func(value any) ([]float64, error)
-	GeospatialDecode func(value []float64) (any, error)
+	GeospatialEncode func(value map[string]GeoLocation) (any, error)
+	GeospatialDecode func(value any) (map[string]GeoLocation, error)
 
 	JSONEncode func(value any) (any, error)
 	JSONDecode func(value any) (any, error)
@@ -171,6 +171,13 @@ type DotPip interface {
 	BitPos(key Key, bit int, start int, end int) (int, error)
 	GetBit(key Key, offset int) (int, error)
 	SetBit(key Key, offset int, value int) (int, error)
+
+	GeoAdd(key Key, members []GeoLocation, options ...GeoAddOption) (int, error)
+	GeoDist(key Key, member1 string, member2 string, unit GeoUnit) (float64, error)
+	GeoHash(key Key, members ...string) ([]string, error)
+	GeoPos(key Key, members ...string) ([]*GeoLocation, error)
+	GeoSearch(key Key, options ...GeoSearchOption) ([]GeoSearchResult, error)
+	GeoSearchStore(destination Key, source Key, searchOptions []GeoSearchOption, storeOptions ...GeoSearchStoreOption) (int, error)
 
 	Formatter(fmap DataTypeFormatter)
 }
