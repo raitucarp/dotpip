@@ -24,7 +24,7 @@ func (f *fileSystem) parseStreamID(id string) (int64, int64, error) {
 		return 0, 0, fmt.Errorf("ERR Invalid stream ID specified as string")
 	}
 
-	var seq int64 = 0
+	var seq int64
 	if len(parts) == 2 {
 		if parts[1] == "*" {
 			// handled dynamically based on last ID
@@ -419,7 +419,7 @@ func (f *fileSystem) XRange(key dotpip.Key, start string, end string, count int)
 		return nil, err
 	}
 
-	var startMs, startSeq int64 = 0, 0
+	var startMs, startSeq int64
 	if start != "-" {
 		startMs, startSeq, err = f.parseStreamID(start)
 		if err != nil {
@@ -481,7 +481,7 @@ func (f *fileSystem) XRevRange(key dotpip.Key, end string, start string, count i
 		}
 	}
 
-	var startMs, startSeq int64 = 0, 0
+	var startMs, startSeq int64
 	if start != "-" {
 		startMs, startSeq, err = f.parseStreamID(start)
 		if err != nil {
@@ -538,7 +538,7 @@ func (f *fileSystem) XRead(keys []dotpip.Key, ids []string, options ...dotpip.XR
 			continue // skip or return err? Redis might just return empty for non-existent.
 		}
 
-		var startMs, startSeq int64 = 0, 0
+		var startMs, startSeq int64
 		if idStr == "$" {
 			if len(stream.Entries) > 0 {
 				startMs, startSeq = parseIDString(stream.Entries[len(stream.Entries)-1].ID)
@@ -650,7 +650,7 @@ func (f *fileSystem) XReadGroup(group string, consumer string, keys []dotpip.Key
 		} else {
 			// Read from pending messages for this consumer
 			// "0" usually means read from the beginning of consumer's pending list
-			var startMs, startSeq int64 = 0, 0
+			var startMs, startSeq int64
 			if idStr != "0" && idStr != "0-0" {
 				startMs, startSeq, err = f.parseStreamID(idStr)
 				if err != nil {
@@ -789,7 +789,7 @@ func (f *fileSystem) XPending(key dotpip.Key, group string, options ...dotpip.XP
 	}
 
 	// Extended mode
-	var startMs, startSeq int64 = 0, 0
+	var startMs, startSeq int64
 	if cmd.Start != "-" {
 		startMs, startSeq, err = f.parseStreamID(cmd.Start)
 		if err != nil {
@@ -969,7 +969,7 @@ func (f *fileSystem) XAutoClaim(key dotpip.Key, group string, consumer string, m
 		cons.Pending = make(map[string]int64)
 	}
 
-	var startMs, startSeq int64 = 0, 0
+	var startMs, startSeq int64
 	if start != "-" && start != "0-0" {
 		startMs, startSeq, err = f.parseStreamID(start)
 		if err != nil {
