@@ -1,2 +1,8 @@
 run:
   go: "1.24"
+
+linters:
+  enable:
+    - staticcheck
+    - gocritic
+    - revive

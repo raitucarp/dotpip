@@ -47,7 +47,7 @@ func TestExists(t *testing.T) {
 		t.Errorf("Should have returned an error for key %s %s", srcKey, dstKey)
 	}
 
-	if len(exists) <= 0 {
+	if len(exists) == 0 {
 		t.Errorf("Exists should have len %d", len(keys))
 	}
 
@@ -64,7 +64,7 @@ func TestExists(t *testing.T) {
 		t.Errorf("Should have returned an error for key %s %s", srcKey, dstKey)
 	}
 
-	if len(exists) <= 0 {
+	if len(exists) == 0 {
 		t.Errorf("Exists should have len %d", len(keys))
 	}
 

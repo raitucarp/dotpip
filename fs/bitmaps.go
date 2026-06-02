@@ -10,7 +10,7 @@ import (
 
 // In Redis, bit operations work on string values.
 // We decode the string, operate on bits, and encode back.
-func (f *fileSystem) getBitmapBytes(key dotpip.Key) ([]byte, error) {
+func (f *FileSystem) getBitmapBytes(key dotpip.Key) ([]byte, error) {
 	content, err := f.readFileByKey(key)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -25,12 +25,12 @@ func (f *fileSystem) getBitmapBytes(key dotpip.Key) ([]byte, error) {
 	return []byte(strVal), nil
 }
 
-func (f *fileSystem) setBitmapBytes(key dotpip.Key, b []byte) error {
+func (f *FileSystem) setBitmapBytes(key dotpip.Key, b []byte) error {
 	_, err := f.Set(key, string(b))
 	return err
 }
 
-func (f *fileSystem) SetBit(key dotpip.Key, offset int, value int) (int, error) {
+func (f *FileSystem) SetBit(key dotpip.Key, offset int, value int) (int, error) {
 	b, err := f.getBitmapBytes(key)
 	if err != nil {
 		return 0, err
@@ -62,7 +62,7 @@ func (f *fileSystem) SetBit(key dotpip.Key, offset int, value int) (int, error) 
 	return origBit, nil
 }
 
-func (f *fileSystem) GetBit(key dotpip.Key, offset int) (int, error) {
+func (f *FileSystem) GetBit(key dotpip.Key, offset int) (int, error) {
 	b, err := f.getBitmapBytes(key)
 	if err != nil {
 		return 0, err
@@ -78,7 +78,7 @@ func (f *fileSystem) GetBit(key dotpip.Key, offset int) (int, error) {
 	return bit, nil
 }
 
-func (f *fileSystem) BitCount(key dotpip.Key, start int, end int) (int, error) {
+func (f *FileSystem) BitCount(key dotpip.Key, start int, end int) (int, error) {
 	b, err := f.getBitmapBytes(key)
 	if err != nil {
 		return 0, err
@@ -127,7 +127,7 @@ func (f *fileSystem) BitCount(key dotpip.Key, start int, end int) (int, error) {
 	return count, nil
 }
 
-func (f *fileSystem) BitOp(operation dotpip.BitOp, destKey dotpip.Key, keys ...dotpip.Key) (int, error) {
+func (f *FileSystem) BitOp(operation dotpip.BitOp, destKey dotpip.Key, keys ...dotpip.Key) (int, error) {
 	var maxLen int
 	var byteArrays [][]byte
 
@@ -198,7 +198,7 @@ func (f *fileSystem) BitOp(operation dotpip.BitOp, destKey dotpip.Key, keys ...d
 	return maxLen, nil
 }
 
-func (f *fileSystem) BitPos(key dotpip.Key, bit int, start int, end int) (int, error) {
+func (f *FileSystem) BitPos(key dotpip.Key, bit int, start int, end int) (int, error) {
 	// We need to implement BITPOS properly with the start/end options which are byte indexes
 	b, err := f.getBitmapBytes(key)
 	if err != nil {
@@ -333,16 +333,16 @@ func setBitFieldValue(b []byte, offset int, bits int, value int64) []byte {
 
 func getMinMaxForType(signed bool, bits int) (int64, int64) {
 	if signed {
-		min := int64(-1) << (bits - 1)
-		max := (int64(1) << (bits - 1)) - 1
-		return min, max
+		minVal := int64(-1) << (bits - 1)
+		maxVal := (int64(1) << (bits - 1)) - 1
+		return minVal, maxVal
 	}
-	max := (int64(1) << bits) - 1
-	return 0, max
+	maxVal := (int64(1) << bits) - 1
+	return 0, maxVal
 }
 
 // BitField operates on multiple bit fields in a string.
-func (f *fileSystem) BitField(key dotpip.Key, args ...any) ([]any, error) {
+func (f *FileSystem) BitField(key dotpip.Key, args ...any) ([]any, error) {
 	b, err := f.getBitmapBytes(key)
 	if err != nil {
 		return nil, err
@@ -471,10 +471,10 @@ func (f *fileSystem) BitField(key dotpip.Key, args ...any) ([]any, error) {
 
 			// For SET, we still check bounds for bits, but typically value is just truncated.
 			// Wrap logic applies
-			min, max := getMinMaxForType(signed, bits)
-			if value < min || value > max {
+			minVal, maxVal := getMinMaxForType(signed, bits)
+			if value < minVal || value > maxVal {
 				mask := (int64(1) << bits) - 1
-				value = value & mask
+				value &= mask
 				if signed {
 					signBit := (value >> (bits - 1)) & 1
 					if signBit == 1 {
@@ -536,14 +536,14 @@ func (f *fileSystem) BitField(key dotpip.Key, args ...any) ([]any, error) {
 
 			oldVal, _ := getBitFieldValue(b, offset, bits, signed)
 			newVal := oldVal + inc
-			min, max := getMinMaxForType(signed, bits)
+			minVal, maxVal := getMinMaxForType(signed, bits)
 
 			fail := false
-			if newVal < min || newVal > max {
+			if newVal < minVal || newVal > maxVal {
 				switch overflow {
 				case overflowWrap:
 					mask := (int64(1) << bits) - 1
-					newVal = newVal & mask
+					newVal &= mask
 					if signed {
 						signBit := (newVal >> (bits - 1)) & 1
 						if signBit == 1 {
@@ -552,10 +552,10 @@ func (f *fileSystem) BitField(key dotpip.Key, args ...any) ([]any, error) {
 						}
 					}
 				case overflowSat:
-					if newVal < min {
-						newVal = min
+					if newVal < minVal {
+						newVal = minVal
 					} else {
-						newVal = max
+						newVal = maxVal
 					}
 				case overflowFail:
 					fail = true

@@ -17,7 +17,7 @@ func TestZSetsCommands(t *testing.T) {
 			_ = os.MkdirAll(pathRoot, os.ModePerm)
 			defer os.RemoveAll(pathRoot)
 
-			db := fs.FileSystem(pathRoot)
+			db := fs.NewFileSystem(pathRoot)
 			db.EncodeType(encoding)
 
 			key1 := dotpip.NewKey("zset1")
@@ -136,7 +136,7 @@ func TestZRangeCommands(t *testing.T) {
 			_ = os.MkdirAll(pathRoot, os.ModePerm)
 			defer os.RemoveAll(pathRoot)
 
-			db := fs.FileSystem(pathRoot)
+			db := fs.NewFileSystem(pathRoot)
 			db.EncodeType(encoding)
 
 			key := dotpip.NewKey("zset_range")

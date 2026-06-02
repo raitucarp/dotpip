@@ -127,10 +127,10 @@ func WithGeoSearchDesc() GeoSearchOption {
 	}
 }
 
-func WithGeoSearchCount(count int, any bool) GeoSearchOption {
+func WithGeoSearchCount(count int, anyCount bool) GeoSearchOption {
 	return func(cmd *GeoSearchCommand) {
 		cmd.Count = count
-		cmd.Any = any
+		cmd.Any = anyCount
 	}
 }
 

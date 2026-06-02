@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-type fileSystem struct {
+type FileSystem struct {
 	pathRoot   string
 	formatter  *dotpip.DataTypeFormatter
 	encodeType FileEncodeType
@@ -20,8 +20,8 @@ type fileSystem struct {
 	expStop     chan struct{}
 }
 
-func FileSystem(pathRoot string) *fileSystem {
-	f := fileSystem{
+func NewFileSystem(pathRoot string) *FileSystem {
+	f := FileSystem{
 		pathRoot:    pathRoot,
 		formatter:   &dotpip.DataTypeFormatter{},
 		encodeType:  JSON,
@@ -54,13 +54,13 @@ func FileSystem(pathRoot string) *fileSystem {
 	return &f
 }
 
-func (f *fileSystem) Close() {
+func (f *FileSystem) Close() {
 	if f.expStop != nil {
 		close(f.expStop)
 	}
 }
 
-func (f *fileSystem) loadExpirations() {
+func (f *FileSystem) loadExpirations() {
 	f.expMutex.Lock()
 	defer f.expMutex.Unlock()
 
@@ -86,7 +86,7 @@ func (f *fileSystem) loadExpirations() {
 	})
 }
 
-func (f *fileSystem) scanExpirations() {
+func (f *FileSystem) scanExpirations() {
 	ticker := time.NewTicker(10 * time.Millisecond)
 	defer ticker.Stop()
 
@@ -100,7 +100,7 @@ func (f *fileSystem) scanExpirations() {
 	}
 }
 
-func (f *fileSystem) processExpirations() {
+func (f *FileSystem) processExpirations() {
 	f.expMutex.Lock()
 	defer f.expMutex.Unlock()
 

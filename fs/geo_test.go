@@ -37,7 +37,7 @@ func runGeoTests(t *testing.T, encodeType FileEncodeType) {
 	_ = os.MkdirAll(testDir, 0755)
 	defer os.RemoveAll(testDir)
 
-	fs := FileSystem(testDir + "/")
+	fs := NewFileSystem(testDir + "/")
 	fs.EncodeType(encodeType)
 	defer fs.Close()
 
@@ -131,7 +131,7 @@ func runGeoSearchTests(t *testing.T, encodeType FileEncodeType) {
 	_ = os.MkdirAll(testDir, 0755)
 	defer os.RemoveAll(testDir)
 
-	fs := FileSystem(testDir + "/")
+	fs := NewFileSystem(testDir + "/")
 	fs.EncodeType(encodeType)
 	defer fs.Close()
 

@@ -17,7 +17,7 @@ func TestSetsCommands(t *testing.T) {
 			_ = os.MkdirAll(pathRoot, os.ModePerm)
 			defer os.RemoveAll(pathRoot)
 
-			db := fs.FileSystem(pathRoot)
+			db := fs.NewFileSystem(pathRoot)
 			db.EncodeType(encoding)
 
 			key1 := dotpip.NewKey("set1")

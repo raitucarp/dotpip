@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (f *fileSystem) applyExpireOptions(key dotpip.Key, expireAt int64, cmd *dotpip.ExpireCommand) (bool, error) {
+func (f *FileSystem) applyExpireOptions(key dotpip.Key, expireAt int64, cmd *dotpip.ExpireCommand) (bool, error) {
 	dataPath := f.keyToAbsoluteFilePath(key)
 	currentExpireAt, hasTTL := f.getExpiration(dataPath)
 
@@ -30,11 +30,11 @@ func (f *fileSystem) applyExpireOptions(key dotpip.Key, expireAt int64, cmd *dot
 	return true, nil
 }
 
-func (f *fileSystem) Expire(key dotpip.Key, seconds int, options ...dotpip.ExpireOption) (bool, error) {
+func (f *FileSystem) Expire(key dotpip.Key, seconds int, options ...dotpip.ExpireOption) (bool, error) {
 	return f.PExpire(key, seconds*1000, options...)
 }
 
-func (f *fileSystem) PExpire(key dotpip.Key, milliseconds int, options ...dotpip.ExpireOption) (bool, error) {
+func (f *FileSystem) PExpire(key dotpip.Key, milliseconds int, options ...dotpip.ExpireOption) (bool, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {
 		return false, err
@@ -49,11 +49,11 @@ func (f *fileSystem) PExpire(key dotpip.Key, milliseconds int, options ...dotpip
 	return f.applyExpireOptions(key, expireAt, cmd)
 }
 
-func (f *fileSystem) ExpireAt(key dotpip.Key, timestamp int, options ...dotpip.ExpireOption) (bool, error) {
+func (f *FileSystem) ExpireAt(key dotpip.Key, timestamp int, options ...dotpip.ExpireOption) (bool, error) {
 	return f.PExpireAt(key, timestamp*1000, options...)
 }
 
-func (f *fileSystem) PExpireAt(key dotpip.Key, timestamp int, options ...dotpip.ExpireOption) (bool, error) {
+func (f *FileSystem) PExpireAt(key dotpip.Key, timestamp int, options ...dotpip.ExpireOption) (bool, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {
 		return false, err
@@ -91,7 +91,7 @@ func (f *fileSystem) PExpireAt(key dotpip.Key, timestamp int, options ...dotpip.
 	return f.applyExpireOptions(key, expireAt, cmd)
 }
 
-func (f *fileSystem) ExpireTime(key dotpip.Key) (int64, error) {
+func (f *FileSystem) ExpireTime(key dotpip.Key) (int64, error) {
 	res, err := f.PExpireTime(key)
 	if res > 0 {
 		return res / 1000, err
@@ -99,7 +99,7 @@ func (f *fileSystem) ExpireTime(key dotpip.Key) (int64, error) {
 	return res, err
 }
 
-func (f *fileSystem) PExpireTime(key dotpip.Key) (int64, error) {
+func (f *FileSystem) PExpireTime(key dotpip.Key) (int64, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil {
 		return -2, err
@@ -117,7 +117,7 @@ func (f *fileSystem) PExpireTime(key dotpip.Key) (int64, error) {
 	return expireAt, nil
 }
 
-func (f *fileSystem) TTL(key dotpip.Key) (int64, error) {
+func (f *FileSystem) TTL(key dotpip.Key) (int64, error) {
 	res, err := f.PTTL(key)
 	if res > 0 {
 		return (res + 500) / 1000, err
@@ -125,7 +125,7 @@ func (f *fileSystem) TTL(key dotpip.Key) (int64, error) {
 	return res, err
 }
 
-func (f *fileSystem) PTTL(key dotpip.Key) (int64, error) {
+func (f *FileSystem) PTTL(key dotpip.Key) (int64, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil {
 		return -2, err
@@ -149,7 +149,7 @@ func (f *fileSystem) PTTL(key dotpip.Key) (int64, error) {
 	return ttl, nil
 }
 
-func (f *fileSystem) Persist(key dotpip.Key) (bool, error) {
+func (f *FileSystem) Persist(key dotpip.Key) (bool, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {
 		return false, err

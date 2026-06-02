@@ -10,7 +10,7 @@ import (
 	"github.com/zeebo/xxh3"
 )
 
-func (f *fileSystem) Append(key dotpip.Key, value string) (appendedString int) {
+func (f *FileSystem) Append(key dotpip.Key, value string) (appendedString int) {
 	content, err := f.readFileByKey(key)
 	if err != nil {
 		return 0
@@ -30,7 +30,7 @@ func (f *fileSystem) Append(key dotpip.Key, value string) (appendedString int) {
 	return len(newValue)
 }
 
-func (f *fileSystem) Get(key dotpip.Key) (result string, err error) {
+func (f *FileSystem) Get(key dotpip.Key) (result string, err error) {
 	content, err := f.readFileByKey(key)
 
 	if err != nil {
@@ -45,7 +45,7 @@ func (f *fileSystem) Get(key dotpip.Key) (result string, err error) {
 	return value, nil
 }
 
-func (f *fileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOption) (result string, err error) {
+func (f *FileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOption) (result string, err error) {
 	cmd := &dotpip.SetCommand{}
 	for _, option := range options {
 		option(cmd)
@@ -79,17 +79,18 @@ func (f *fileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOpti
 		return "", nil
 	}
 
-	if cmd.NX && exists {
+	switch {
+	case cmd.NX && exists:
 		return returnOldValueIfGet()
-	} else if cmd.XX && !exists {
+	case cmd.XX && !exists:
 		return returnOldValueIfGet()
-	} else if cmd.IfEq != "" && (!exists || oldValue != cmd.IfEq) {
+	case cmd.IfEq != "" && (!exists || oldValue != cmd.IfEq):
 		return returnOldValueIfGet()
-	} else if cmd.IfNe != "" && (!exists || oldValue == cmd.IfNe) {
+	case cmd.IfNe != "" && (!exists || oldValue == cmd.IfNe):
 		return returnOldValueIfGet()
-	} else if cmd.IfDeq != "" && (exists || oldValue != cmd.IfDeq) {
+	case cmd.IfDeq != "" && (exists || oldValue != cmd.IfDeq):
 		return returnOldValueIfGet()
-	} else if cmd.IfDne != "" && (exists || oldValue == cmd.IfDne) {
+	case cmd.IfDne != "" && (exists || oldValue == cmd.IfDne):
 		return returnOldValueIfGet()
 	}
 
@@ -102,14 +103,15 @@ func (f *fileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOpti
 		_ = f.removeExByKey(key) // Removing existing ttl first
 
 		var ttlMs int64
-		if cmd.Ex > 0 {
+		switch {
+		case cmd.Ex > 0:
 			ttlMs = int64(cmd.Ex) * 1000
-		} else if cmd.Px > 0 {
+		case cmd.Px > 0:
 			ttlMs = int64(cmd.Px)
-		} else if cmd.ExAt > 0 {
+		case cmd.ExAt > 0:
 			nowMs := time.Now().UnixMilli()
 			ttlMs = int64(cmd.ExAt)*1000 - nowMs
-		} else if cmd.PxAt > 0 {
+		case cmd.PxAt > 0:
 			nowMs := time.Now().UnixMilli()
 			ttlMs = int64(cmd.PxAt) - nowMs
 		}
@@ -136,7 +138,7 @@ func (f *fileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOpti
 	return value, nil
 }
 
-func (f *fileSystem) Digest(key dotpip.Key) (hexHash string, err error) {
+func (f *FileSystem) Digest(key dotpip.Key) (hexHash string, err error) {
 	content, err := f.readFileByKey(key)
 	if err != nil {
 		return "", err
@@ -148,7 +150,7 @@ func (f *fileSystem) Digest(key dotpip.Key) (hexHash string, err error) {
 	return hexHash, nil
 }
 
-func (f *fileSystem) StrLen(key dotpip.Key) int {
+func (f *FileSystem) StrLen(key dotpip.Key) int {
 	val, err := f.Get(key)
 	if err != nil {
 		return 0
@@ -156,11 +158,11 @@ func (f *fileSystem) StrLen(key dotpip.Key) int {
 	return len(val)
 }
 
-func (f *fileSystem) Incr(key dotpip.Key) (int, error) {
+func (f *FileSystem) Incr(key dotpip.Key) (int, error) {
 	return f.IncrBy(key, 1)
 }
 
-func (f *fileSystem) IncrBy(key dotpip.Key, increment int) (int, error) {
+func (f *FileSystem) IncrBy(key dotpip.Key, increment int) (int, error) {
 	val, err := f.Get(key)
 	if err != nil {
 		// If key does not exist or error reading, default to 0
@@ -182,7 +184,7 @@ func (f *fileSystem) IncrBy(key dotpip.Key, increment int) (int, error) {
 	return num, nil
 }
 
-func (f *fileSystem) IncrByFloat(key dotpip.Key, increment float64) (float64, error) {
+func (f *FileSystem) IncrByFloat(key dotpip.Key, increment float64) (float64, error) {
 	val, err := f.Get(key)
 	if err != nil {
 		val = "0"
@@ -205,15 +207,15 @@ func (f *fileSystem) IncrByFloat(key dotpip.Key, increment float64) (float64, er
 	return num, nil
 }
 
-func (f *fileSystem) Decr(key dotpip.Key) (int, error) {
+func (f *FileSystem) Decr(key dotpip.Key) (int, error) {
 	return f.DecrBy(key, 1)
 }
 
-func (f *fileSystem) DecrBy(key dotpip.Key, decrement int) (int, error) {
+func (f *FileSystem) DecrBy(key dotpip.Key, decrement int) (int, error) {
 	return f.IncrBy(key, -decrement)
 }
 
-func (f *fileSystem) GetDel(key dotpip.Key) (string, error) {
+func (f *FileSystem) GetDel(key dotpip.Key) (string, error) {
 	val, err := f.Get(key)
 	if err != nil {
 		return "", err
@@ -222,7 +224,7 @@ func (f *fileSystem) GetDel(key dotpip.Key) (string, error) {
 	return val, nil
 }
 
-func (f *fileSystem) GetRange(key dotpip.Key, start int, end int) (string, error) {
+func (f *FileSystem) GetRange(key dotpip.Key, start int, end int) (string, error) {
 	val, err := f.Get(key)
 	if err != nil {
 		return "", err
@@ -261,7 +263,7 @@ func (f *fileSystem) GetRange(key dotpip.Key, start int, end int) (string, error
 	return val[start : end+1], nil
 }
 
-func (f *fileSystem) SetRange(key dotpip.Key, offset int, value string) (int, error) {
+func (f *FileSystem) SetRange(key dotpip.Key, offset int, value string) (int, error) {
 	if offset < 0 {
 		return 0, errors.New("ERR offset is out of range")
 	}
@@ -297,7 +299,7 @@ func (f *fileSystem) SetRange(key dotpip.Key, offset int, value string) (int, er
 	return len(newVal), nil
 }
 
-func (f *fileSystem) MGet(keys ...dotpip.Key) ([]string, error) {
+func (f *FileSystem) MGet(keys ...dotpip.Key) ([]string, error) {
 	res := make([]string, len(keys))
 	for i, key := range keys {
 		val, err := f.Get(key)
@@ -312,7 +314,7 @@ func (f *fileSystem) MGet(keys ...dotpip.Key) ([]string, error) {
 	return res, nil
 }
 
-func (f *fileSystem) MSet(kvs ...dotpip.KV) error {
+func (f *FileSystem) MSet(kvs ...dotpip.KV) error {
 	for _, kv := range kvs {
 		_, err := f.Set(kv.Key, kv.Value)
 		if err != nil {
@@ -322,7 +324,7 @@ func (f *fileSystem) MSet(kvs ...dotpip.KV) error {
 	return nil
 }
 
-func (f *fileSystem) MSetNX(kvs ...dotpip.KV) (bool, error) {
+func (f *FileSystem) MSetNX(kvs ...dotpip.KV) (bool, error) {
 	// First check if any keys exist
 	keys := make([]dotpip.Key, len(kvs))
 	for i, kv := range kvs {

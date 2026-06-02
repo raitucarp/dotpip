@@ -5,7 +5,7 @@ import (
 	"math/rand"
 )
 
-func (f *fileSystem) readSet(key dotpip.Key) (map[string]any, error) {
+func (f *FileSystem) readSet(key dotpip.Key) (map[string]any, error) {
 	content, err := f.readFileByKey(key)
 	if err != nil {
 		return make(map[string]any), nil // Return empty set if not exists
@@ -22,7 +22,7 @@ func (f *fileSystem) readSet(key dotpip.Key) (map[string]any, error) {
 	return set, nil
 }
 
-func (f *fileSystem) writeSet(key dotpip.Key, set map[string]any) error {
+func (f *FileSystem) writeSet(key dotpip.Key, set map[string]any) error {
 	if len(set) == 0 {
 		f.Del(key)
 		return nil
@@ -34,7 +34,7 @@ func (f *fileSystem) writeSet(key dotpip.Key, set map[string]any) error {
 	return f.writeFileByKey(key, content.([]byte))
 }
 
-func (f *fileSystem) SAdd(key dotpip.Key, members ...string) (int, error) {
+func (f *FileSystem) SAdd(key dotpip.Key, members ...string) (int, error) {
 	set, err := f.readSet(key)
 	if err != nil {
 		return 0, err
@@ -58,7 +58,7 @@ func (f *fileSystem) SAdd(key dotpip.Key, members ...string) (int, error) {
 	return added, nil
 }
 
-func (f *fileSystem) SCard(key dotpip.Key) (int, error) {
+func (f *FileSystem) SCard(key dotpip.Key) (int, error) {
 	set, err := f.readSet(key)
 	if err != nil {
 		return 0, err
@@ -66,7 +66,7 @@ func (f *fileSystem) SCard(key dotpip.Key) (int, error) {
 	return len(set), nil
 }
 
-func (f *fileSystem) SDiff(keys ...dotpip.Key) ([]string, error) {
+func (f *FileSystem) SDiff(keys ...dotpip.Key) ([]string, error) {
 	if len(keys) == 0 {
 		return []string{}, nil
 	}
@@ -99,7 +99,7 @@ func (f *fileSystem) SDiff(keys ...dotpip.Key) ([]string, error) {
 	return result, nil
 }
 
-func (f *fileSystem) SDiffStore(destination dotpip.Key, keys ...dotpip.Key) (int, error) {
+func (f *FileSystem) SDiffStore(destination dotpip.Key, keys ...dotpip.Key) (int, error) {
 	diff, err := f.SDiff(keys...)
 	if err != nil {
 		return 0, err
@@ -118,7 +118,7 @@ func (f *fileSystem) SDiffStore(destination dotpip.Key, keys ...dotpip.Key) (int
 	return len(diff), nil
 }
 
-func (f *fileSystem) SInter(keys ...dotpip.Key) ([]string, error) {
+func (f *FileSystem) SInter(keys ...dotpip.Key) ([]string, error) {
 	if len(keys) == 0 {
 		return []string{}, nil
 	}
@@ -153,7 +153,7 @@ func (f *fileSystem) SInter(keys ...dotpip.Key) ([]string, error) {
 	return result, nil
 }
 
-func (f *fileSystem) SInterCard(limit int, keys ...dotpip.Key) (int, error) {
+func (f *FileSystem) SInterCard(limit int, keys ...dotpip.Key) (int, error) {
 	inter, err := f.SInter(keys...)
 	if err != nil {
 		return 0, err
@@ -167,7 +167,7 @@ func (f *fileSystem) SInterCard(limit int, keys ...dotpip.Key) (int, error) {
 	return count, nil
 }
 
-func (f *fileSystem) SInterStore(destination dotpip.Key, keys ...dotpip.Key) (int, error) {
+func (f *FileSystem) SInterStore(destination dotpip.Key, keys ...dotpip.Key) (int, error) {
 	inter, err := f.SInter(keys...)
 	if err != nil {
 		return 0, err
@@ -186,7 +186,7 @@ func (f *fileSystem) SInterStore(destination dotpip.Key, keys ...dotpip.Key) (in
 	return len(inter), nil
 }
 
-func (f *fileSystem) SIsMember(key dotpip.Key, member string) (bool, error) {
+func (f *FileSystem) SIsMember(key dotpip.Key, member string) (bool, error) {
 	set, err := f.readSet(key)
 	if err != nil {
 		return false, err
@@ -195,7 +195,7 @@ func (f *fileSystem) SIsMember(key dotpip.Key, member string) (bool, error) {
 	return exists, nil
 }
 
-func (f *fileSystem) SMembers(key dotpip.Key) ([]string, error) {
+func (f *FileSystem) SMembers(key dotpip.Key) ([]string, error) {
 	set, err := f.readSet(key)
 	if err != nil {
 		return nil, err
@@ -209,7 +209,7 @@ func (f *fileSystem) SMembers(key dotpip.Key) ([]string, error) {
 	return result, nil
 }
 
-func (f *fileSystem) SMIsMember(key dotpip.Key, members ...string) ([]bool, error) {
+func (f *FileSystem) SMIsMember(key dotpip.Key, members ...string) ([]bool, error) {
 	set, err := f.readSet(key)
 	if err != nil {
 		return nil, err
@@ -224,7 +224,7 @@ func (f *fileSystem) SMIsMember(key dotpip.Key, members ...string) ([]bool, erro
 	return result, nil
 }
 
-func (f *fileSystem) SMove(source dotpip.Key, destination dotpip.Key, member string) (bool, error) {
+func (f *FileSystem) SMove(source dotpip.Key, destination dotpip.Key, member string) (bool, error) {
 	sourceSet, err := f.readSet(source)
 	if err != nil {
 		return false, err
@@ -255,7 +255,7 @@ func (f *fileSystem) SMove(source dotpip.Key, destination dotpip.Key, member str
 	return true, nil
 }
 
-func (f *fileSystem) SPop(key dotpip.Key, count int) ([]string, error) {
+func (f *FileSystem) SPop(key dotpip.Key, count int) ([]string, error) {
 	set, err := f.readSet(key)
 	if err != nil {
 		return nil, err
@@ -296,7 +296,7 @@ func (f *fileSystem) SPop(key dotpip.Key, count int) ([]string, error) {
 	return popped, nil
 }
 
-func (f *fileSystem) SRandMember(key dotpip.Key, count int) ([]string, error) {
+func (f *FileSystem) SRandMember(key dotpip.Key, count int) ([]string, error) {
 	set, err := f.readSet(key)
 	if err != nil {
 		return nil, err
@@ -338,7 +338,7 @@ func (f *fileSystem) SRandMember(key dotpip.Key, count int) ([]string, error) {
 	return members[:limit], nil
 }
 
-func (f *fileSystem) SRem(key dotpip.Key, members ...string) (int, error) {
+func (f *FileSystem) SRem(key dotpip.Key, members ...string) (int, error) {
 	set, err := f.readSet(key)
 	if err != nil {
 		return 0, err
@@ -362,7 +362,7 @@ func (f *fileSystem) SRem(key dotpip.Key, members ...string) (int, error) {
 	return removed, nil
 }
 
-func (f *fileSystem) SUnion(keys ...dotpip.Key) ([]string, error) {
+func (f *FileSystem) SUnion(keys ...dotpip.Key) ([]string, error) {
 	union := make(map[string]any)
 
 	for _, key := range keys {
@@ -383,7 +383,7 @@ func (f *fileSystem) SUnion(keys ...dotpip.Key) ([]string, error) {
 	return result, nil
 }
 
-func (f *fileSystem) SUnionStore(destination dotpip.Key, keys ...dotpip.Key) (int, error) {
+func (f *FileSystem) SUnionStore(destination dotpip.Key, keys ...dotpip.Key) (int, error) {
 	union, err := f.SUnion(keys...)
 	if err != nil {
 		return 0, err

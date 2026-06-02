@@ -11,7 +11,7 @@ import (
 	"sort"
 )
 
-func (f *fileSystem) geospatialEncode(value map[string]dotpip.GeoLocation) (any, error) {
+func (f *FileSystem) geospatialEncode(value map[string]dotpip.GeoLocation) (any, error) {
 	switch f.encodeType {
 	case JSON:
 		return json.Marshal(value)
@@ -27,7 +27,7 @@ func (f *fileSystem) geospatialEncode(value map[string]dotpip.GeoLocation) (any,
 	}
 }
 
-func (f *fileSystem) geospatialDecode(value any) (map[string]dotpip.GeoLocation, error) {
+func (f *FileSystem) geospatialDecode(value any) (map[string]dotpip.GeoLocation, error) {
 	finalValue := make(map[string]dotpip.GeoLocation)
 	switch f.encodeType {
 	case JSON:
@@ -47,7 +47,7 @@ func (f *fileSystem) geospatialDecode(value any) (map[string]dotpip.GeoLocation,
 	}
 }
 
-func (f *fileSystem) readGeo(key dotpip.Key) (map[string]dotpip.GeoLocation, error) {
+func (f *FileSystem) readGeo(key dotpip.Key) (map[string]dotpip.GeoLocation, error) {
 	content, err := f.readFileByKey(key)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (f *fileSystem) readGeo(key dotpip.Key) (map[string]dotpip.GeoLocation, err
 	return nil, fmt.Errorf("geospatial decoder not configured")
 }
 
-func (f *fileSystem) writeGeo(key dotpip.Key, geo map[string]dotpip.GeoLocation) error {
+func (f *FileSystem) writeGeo(key dotpip.Key, geo map[string]dotpip.GeoLocation) error {
 	if f.formatter.GeospatialEncode != nil {
 		content, err := f.formatter.GeospatialEncode(geo)
 		if err != nil {
@@ -69,7 +69,7 @@ func (f *fileSystem) writeGeo(key dotpip.Key, geo map[string]dotpip.GeoLocation)
 	return fmt.Errorf("geospatial encoder not configured")
 }
 
-func (f *fileSystem) GeoAdd(key dotpip.Key, members []dotpip.GeoLocation, options ...dotpip.GeoAddOption) (int, error) {
+func (f *FileSystem) GeoAdd(key dotpip.Key, members []dotpip.GeoLocation, options ...dotpip.GeoAddOption) (int, error) {
 	cmd := &dotpip.GeoAddCommand{}
 	for _, opt := range options {
 		opt(cmd)
@@ -120,7 +120,7 @@ func (f *fileSystem) GeoAdd(key dotpip.Key, members []dotpip.GeoLocation, option
 	return added, nil
 }
 
-func (f *fileSystem) GeoDist(key dotpip.Key, member1 string, member2 string, unit dotpip.GeoUnit) (float64, error) {
+func (f *FileSystem) GeoDist(key dotpip.Key, member1 string, member2 string, unit dotpip.GeoUnit) (float64, error) {
 	geoMap, err := f.readGeo(key)
 	if err != nil {
 		return 0, err
@@ -149,7 +149,7 @@ func (f *fileSystem) GeoDist(key dotpip.Key, member1 string, member2 string, uni
 	}
 }
 
-func (f *fileSystem) GeoHash(key dotpip.Key, members ...string) ([]string, error) {
+func (f *FileSystem) GeoHash(key dotpip.Key, members ...string) ([]string, error) {
 	geoMap, err := f.readGeo(key)
 	if err != nil {
 		geoMap = make(map[string]dotpip.GeoLocation)
@@ -169,7 +169,7 @@ func (f *fileSystem) GeoHash(key dotpip.Key, members ...string) ([]string, error
 	return hashes, nil
 }
 
-func (f *fileSystem) GeoPos(key dotpip.Key, members ...string) ([]*dotpip.GeoLocation, error) {
+func (f *FileSystem) GeoPos(key dotpip.Key, members ...string) ([]*dotpip.GeoLocation, error) {
 	geoMap, err := f.readGeo(key)
 	if err != nil {
 		geoMap = make(map[string]dotpip.GeoLocation)
@@ -218,7 +218,7 @@ func convertFromKmToUnit(distKm float64, unit dotpip.GeoUnit) float64 {
 	}
 }
 
-func (f *fileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption) ([]dotpip.GeoSearchResult, error) {
+func (f *FileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption) ([]dotpip.GeoSearchResult, error) {
 	cmd := &dotpip.GeoSearchCommand{}
 	for _, opt := range options {
 		opt(cmd)
@@ -230,17 +230,18 @@ func (f *fileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption
 	}
 
 	var centerLat, centerLon float64
-	if cmd.UseLonLat {
+	switch {
+	case cmd.UseLonLat:
 		centerLat = cmd.FromLatitude
 		centerLon = cmd.FromLongitude
-	} else if cmd.FromMember != "" {
+	case cmd.FromMember != "":
 		loc, ok := geoMap[cmd.FromMember]
 		if !ok {
 			return nil, fmt.Errorf("ERR could not decode requested zset member")
 		}
 		centerLat = loc.Latitude
 		centerLon = loc.Longitude
-	} else {
+	default:
 		return nil, fmt.Errorf("ERR either FROMMEMBER or FROMLONLAT must be provided")
 	}
 
@@ -256,13 +257,14 @@ func (f *fileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption
 		match := false
 		var distToReturn float64
 
-		if cmd.UseRadius {
+		switch {
+		case cmd.UseRadius:
 			radiusMeters := extractMeters(cmd.ByRadius, cmd.RadiusUnit)
 			if distKm*1000 <= radiusMeters {
 				match = true
 				distToReturn = convertFromKmToUnit(distKm, cmd.RadiusUnit)
 			}
-		} else if cmd.UseBox {
+		case cmd.UseBox:
 			// A highly simplified bounding box check. True bounding box requires more complex math (like taking longitude scaling by latitude into account).
 			// We approximate by converting width/height to km and checking Haversine distances to edges.
 
@@ -283,7 +285,7 @@ func (f *fileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption
 				match = true
 				distToReturn = convertFromKmToUnit(distKm, cmd.BoxUnit)
 			}
-		} else {
+		default:
 			return nil, fmt.Errorf("ERR either BYRADIUS or BYBOX must be provided")
 		}
 
@@ -291,15 +293,12 @@ func (f *fileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption
 			res := dotpip.GeoSearchResult{
 				Name: name,
 			}
-			if cmd.WithDist {
-				res.Distance = distToReturn
-			} else {
-				// We need distance for sorting, but use a negative value or specific logic if needed.
-				// However, Redis sorting relies on distance. We'll store it here so we can sort,
-				// but in a real system we'd strip this before returning to the client if WithDist is false.
-				// For the sake of dotpip's API design, we can return it and the caller handles presentation.
-				res.Distance = distToReturn
-			}
+
+			// We need distance for sorting, but use a negative value or specific logic if needed.
+			// However, Redis sorting relies on distance. We'll store it here so we can sort,
+			// but in a real system we'd strip this before returning to the client if WithDist is false.
+			// For the sake of dotpip's API design, we can return it and the caller handles presentation.
+			res.Distance = distToReturn
 
 			if cmd.WithCoord {
 				res.Latitude = loc.Latitude
@@ -330,7 +329,7 @@ func (f *fileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption
 	return results, nil
 }
 
-func (f *fileSystem) GeoSearchStore(destination dotpip.Key, source dotpip.Key, searchOptions []dotpip.GeoSearchOption, storeOptions ...dotpip.GeoSearchStoreOption) (int, error) {
+func (f *FileSystem) GeoSearchStore(destination dotpip.Key, source dotpip.Key, searchOptions []dotpip.GeoSearchOption, storeOptions ...dotpip.GeoSearchStoreOption) (int, error) {
 	// First, run the search but make sure we get the distance and coordinates
 	// since we need them to store them as a ZSet.
 
