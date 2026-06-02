@@ -21,5 +21,14 @@ jobs:
         go-version-file: 'go.mod'
         cache: true
 
-    - name: Test
-      run: go test -v ./...
+    - name: Test with Coverage
+      run: |
+        go test -v -coverprofile=coverage.out -covermode=atomic ./...
+
+    - name: Coverage Summary
+      if: always()
+      run: |
+        echo "## Test Coverage" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        go tool cover -func=coverage.out >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
