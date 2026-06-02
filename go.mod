@@ -10,6 +10,10 @@ require (
 )
 
 require (
+	github.com/axiomhq/hyperloglog v0.2.6 // indirect
+	github.com/clarkduvall/hyperloglog v0.0.0-20171127014514-a0107a5d8004 // indirect
+	github.com/dgryski/go-metro v0.0.0-20250106013310-edb8663e5e33 // indirect
+	github.com/kamstrup/intmap v0.5.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 )

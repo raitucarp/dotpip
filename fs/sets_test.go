@@ -14,7 +14,7 @@ func TestSetsCommands(t *testing.T) {
 	for _, encoding := range encodings {
 		t.Run(string(encoding), func(t *testing.T) {
 			pathRoot := filepath.Join(os.TempDir(), "dotpip_sets_test_"+string(encoding))
-	_ = os.MkdirAll(pathRoot, os.ModePerm)
+			_ = os.MkdirAll(pathRoot, os.ModePerm)
 			defer os.RemoveAll(pathRoot)
 
 			db := fs.FileSystem(pathRoot)

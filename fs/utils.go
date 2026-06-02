@@ -99,7 +99,6 @@ func (f *fileSystem) removeExByKey(key dotpip.Key) error {
 	return err
 }
 
-
 func (f *fileSystem) removeFileByKey(key dotpip.Key) (err error) {
 	keyFileName := f.keyToAbsoluteFilePath(key)
 
