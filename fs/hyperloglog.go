@@ -66,7 +66,7 @@ func (f *fileSystem) PFCount(keys ...dotpip.Key) (int, error) {
 				sk := hyperloglog.New14()
 				err = sk.UnmarshalBinary(b)
 				if err == nil {
-					mergedSketch.Merge(sk)
+					_ = mergedSketch.Merge(sk)
 				}
 			}
 		}
@@ -95,7 +95,7 @@ func (f *fileSystem) PFMerge(destKey dotpip.Key, sourceKeys ...dotpip.Key) error
 			if decErr == nil {
 				sk := hyperloglog.New14()
 				if err = sk.UnmarshalBinary(b); err == nil {
-					destSketch.Merge(sk)
+					_ = destSketch.Merge(sk)
 				}
 			}
 		}
