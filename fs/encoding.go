@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"dotpip"
+
 	yaml "github.com/goccy/go-yaml"
 	toml "github.com/pelletier/go-toml/v2"
 )
@@ -300,5 +302,41 @@ func (f *fileSystem) hyperLogLogDecode(value any) ([]byte, error) {
 		return finalValue, err
 	default:
 		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+	}
+}
+
+func (f *fileSystem) streamEncode(value dotpip.Stream) (any, error) {
+	switch f.encodeType {
+	case JSON:
+		return json.Marshal(value)
+	case YAML:
+		return yaml.Marshal(value)
+	case TOML:
+		// Pelletier's go-toml requires a map at the root level.
+		return toml.Marshal(value)
+	case RAW:
+		return json.Marshal(value)
+	default:
+		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+	}
+}
+
+func (f *fileSystem) streamDecode(value any) (dotpip.Stream, error) {
+	var finalValue dotpip.Stream
+	switch f.encodeType {
+	case JSON:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case YAML:
+		err := yaml.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case TOML:
+		err := toml.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case RAW:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	default:
+		return finalValue, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
 	}
 }

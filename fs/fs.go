@@ -45,6 +45,8 @@ func FileSystem(pathRoot string) *fileSystem {
 	f.formatter.GeospatialDecode = f.geospatialDecode
 	f.formatter.HyperLogLogEncode = f.hyperLogLogEncode
 	f.formatter.HyperLogLogDecode = f.hyperLogLogDecode
+	f.formatter.StreamEncode = f.streamEncode
+	f.formatter.StreamDecode = f.streamDecode
 
 	f.loadExpirations()
 	go f.scanExpirations()

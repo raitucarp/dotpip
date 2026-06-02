@@ -64,7 +64,11 @@ func (f *fileSystem) readFileByKey(key dotpip.Key) (content []byte, err error) {
 }
 
 func (f *fileSystem) writeFileByKey(key dotpip.Key, content []byte) (err error) {
-	err = os.WriteFile(f.keyToAbsoluteFilePath(key), content, 0644)
+	path := f.keyToAbsoluteFilePath(key)
+	if err = os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return err
+	}
+	err = os.WriteFile(path, content, 0644)
 	if err != nil {
 		return err
 	}
