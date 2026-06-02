@@ -43,6 +43,8 @@ func FileSystem(pathRoot string) *fileSystem {
 	f.formatter.BitmapDecode = f.bitmapDecode
 	f.formatter.GeospatialEncode = f.geospatialEncode
 	f.formatter.GeospatialDecode = f.geospatialDecode
+	f.formatter.HyperLogLogEncode = f.hyperLogLogEncode
+	f.formatter.HyperLogLogDecode = f.hyperLogLogDecode
 
 	f.loadExpirations()
 	go f.scanExpirations()

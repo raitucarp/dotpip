@@ -54,6 +54,9 @@ type DataTypeFormatter struct {
 
 	JSONEncode func(value any) (any, error)
 	JSONDecode func(value any) (any, error)
+
+	HyperLogLogEncode func(value []byte) (any, error)
+	HyperLogLogDecode func(value any) ([]byte, error)
 }
 
 type KV struct {
@@ -178,6 +181,10 @@ type DotPip interface {
 	GeoPos(key Key, members ...string) ([]*GeoLocation, error)
 	GeoSearch(key Key, options ...GeoSearchOption) ([]GeoSearchResult, error)
 	GeoSearchStore(destination Key, source Key, searchOptions []GeoSearchOption, storeOptions ...GeoSearchStoreOption) (int, error)
+
+	PFAdd(key Key, elements ...string) (int, error)
+	PFCount(keys ...Key) (int, error)
+	PFMerge(destKey Key, sourceKeys ...Key) error
 
 	Formatter(fmap DataTypeFormatter)
 }
