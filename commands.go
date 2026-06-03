@@ -240,7 +240,88 @@ type DotPip interface {
 	ConfigGet(parameter string) (map[string]string, error)
 	ConfigSet(parameter string, value string) error
 
+	JSONArrAppend(key Key, path string, values ...any) ([]any, error)
+	JSONArrIndex(key Key, path string, value any, startAndStop ...int) ([]any, error)
+	JSONArrInsert(key Key, path string, index int, values ...any) ([]any, error)
+	JSONArrLen(key Key, path string) ([]any, error)
+	JSONArrPop(key Key, path string, index ...int) ([]any, error)
+	JSONArrTrim(key Key, path string, start int, stop int) ([]any, error)
+	JSONClear(key Key, path string) (int, error)
+	JSONDebug(subcommand string, key Key, path string) (any, error)
+	JSONDel(key Key, path string) (int, error)
+	JSONForget(key Key, path string) (int, error)
+	JSONGet(key Key, paths ...string) (any, error)
+	JSONMerge(key Key, path string, value any) (string, error)
+	JSONMGet(path string, keys ...Key) ([]any, error)
+	JSONMSet(args ...JSONMSetArg) (string, error)
+	JSONNumIncrBy(key Key, path string, value float64) ([]any, error)
+	JSONNumMultBy(key Key, path string, value float64) ([]any, error)
+	JSONObjKeys(key Key, path string) ([]any, error)
+	JSONObjLen(key Key, path string) ([]any, error)
+	JSONResp(key Key, path string) (any, error)
+	JSONSet(key Key, path string, value any) (string, error)
+	JSONStrAppend(key Key, path string, value string) ([]any, error)
+	JSONStrLen(key Key, path string) ([]any, error)
+	JSONToggle(key Key, path string) ([]any, error)
+	JSONType(key Key, path string) ([]any, error)
+
+	YAMLArrAppend(key Key, path string, values ...any) ([]any, error)
+	YAMLArrIndex(key Key, path string, value any, startAndStop ...int) ([]any, error)
+	YAMLArrInsert(key Key, path string, index int, values ...any) ([]any, error)
+	YAMLArrLen(key Key, path string) ([]any, error)
+	YAMLArrPop(key Key, path string, index ...int) ([]any, error)
+	YAMLArrTrim(key Key, path string, start int, stop int) ([]any, error)
+	YAMLClear(key Key, path string) (int, error)
+	YAMLDebug(subcommand string, key Key, path string) (any, error)
+	YAMLDel(key Key, path string) (int, error)
+	YAMLForget(key Key, path string) (int, error)
+	YAMLGet(key Key, paths ...string) (any, error)
+	YAMLMerge(key Key, path string, value any) (string, error)
+	YAMLMGet(path string, keys ...Key) ([]any, error)
+	YAMLMSet(args ...JSONMSetArg) (string, error)
+	YAMLNumIncrBy(key Key, path string, value float64) ([]any, error)
+	YAMLNumMultBy(key Key, path string, value float64) ([]any, error)
+	YAMLObjKeys(key Key, path string) ([]any, error)
+	YAMLObjLen(key Key, path string) ([]any, error)
+	YAMLResp(key Key, path string) (any, error)
+	YAMLSet(key Key, path string, value any) (string, error)
+	YAMLStrAppend(key Key, path string, value string) ([]any, error)
+	YAMLStrLen(key Key, path string) ([]any, error)
+	YAMLToggle(key Key, path string) ([]any, error)
+	YAMLType(key Key, path string) ([]any, error)
+
+	TOMLArrAppend(key Key, path string, values ...any) ([]any, error)
+	TOMLArrIndex(key Key, path string, value any, startAndStop ...int) ([]any, error)
+	TOMLArrInsert(key Key, path string, index int, values ...any) ([]any, error)
+	TOMLArrLen(key Key, path string) ([]any, error)
+	TOMLArrPop(key Key, path string, index ...int) ([]any, error)
+	TOMLArrTrim(key Key, path string, start int, stop int) ([]any, error)
+	TOMLClear(key Key, path string) (int, error)
+	TOMLDebug(subcommand string, key Key, path string) (any, error)
+	TOMLDel(key Key, path string) (int, error)
+	TOMLForget(key Key, path string) (int, error)
+	TOMLGet(key Key, paths ...string) (any, error)
+	TOMLMerge(key Key, path string, value any) (string, error)
+	TOMLMGet(path string, keys ...Key) ([]any, error)
+	TOMLMSet(args ...JSONMSetArg) (string, error)
+	TOMLNumIncrBy(key Key, path string, value float64) ([]any, error)
+	TOMLNumMultBy(key Key, path string, value float64) ([]any, error)
+	TOMLObjKeys(key Key, path string) ([]any, error)
+	TOMLObjLen(key Key, path string) ([]any, error)
+	TOMLResp(key Key, path string) (any, error)
+	TOMLSet(key Key, path string, value any) (string, error)
+	TOMLStrAppend(key Key, path string, value string) ([]any, error)
+	TOMLStrLen(key Key, path string) ([]any, error)
+	TOMLToggle(key Key, path string) ([]any, error)
+	TOMLType(key Key, path string) ([]any, error)
+
 	Formatter(fmap DataTypeFormatter)
+}
+
+type JSONMSetArg struct {
+	Key   Key
+	Path  string
+	Value any
 }
 
 type PubSubMessage struct {
@@ -260,4 +341,11 @@ type PubSubSubscription interface {
 
 func New(dotface DotPip) DotPip {
 	return dotface
+}
+
+func (f *DataTypeFormatter) JSONSetEncode(value any) (any, error) {
+	if f.JSONEncode != nil {
+		return f.JSONEncode(value)
+	}
+	return value, nil
 }
