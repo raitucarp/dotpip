@@ -67,6 +67,8 @@ func NewFileSystem(pathRoot string) *FileSystem {
 	f.formatter.HyperLogLogDecode = f.hyperLogLogDecode
 	f.formatter.StreamEncode = f.streamEncode
 	f.formatter.StreamDecode = f.streamDecode
+	f.formatter.ArrayEncode = f.arrayEncode
+	f.formatter.ArrayDecode = f.arrayDecode
 
 	f.loadExpirations()
 	go f.scanExpirations()

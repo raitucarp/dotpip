@@ -49,6 +49,9 @@ type DataTypeFormatter struct {
 	BitfieldEncode func(value any) ([]any, error)
 	BitfieldDecode func(value []any) (any, error)
 
+	ArrayEncode func(value []string) (any, error)
+	ArrayDecode func(value any) ([]string, error)
+
 	GeospatialEncode func(value map[string]GeoLocation) (any, error)
 	GeospatialDecode func(value any) (map[string]GeoLocation, error)
 
@@ -315,7 +318,44 @@ type DotPip interface {
 	TOMLToggle(key Key, path string) ([]any, error)
 	TOMLType(key Key, path string) ([]any, error)
 
+	ARCount(key Key) (int, error)
+	ARDel(key Key, indices ...int) (int, error)
+	ARDelRange(key Key, ranges ...[2]int) (int, error)
+	ARGet(key Key, index int) (string, error)
+	ARGetRange(key Key, start, end int) ([]string, error)
+	ARGrep(key Key, start, end string, predicates []ARGrepPredicate, options ARGrepOptions) ([]any, error)
+	ARInfo(key Key, full bool) (map[string]any, error)
+	ARInsert(key Key, values ...string) (int, error)
+	ARLastItems(key Key, count int) ([]string, error)
+	ARLen(key Key) (int, error)
+	ARMGet(key Key, indices ...int) ([]string, error)
+	ARMSet(key Key, indexValues []ARIndexValue) (int, error)
+	ARNext(key Key) (int, error)
+	AROp(key Key, start, end int, operation string, matchValue *string) (any, error)
+	ARRing(key Key, size int, values ...string) (int, error)
+	ARScan(key Key, start, end int, limit *int) ([]any, error)
+	ARSeek(key Key, index int) (int, error)
+	ARSet(key Key, index int, values ...string) (int, error)
+
 	Formatter(fmap DataTypeFormatter)
+}
+
+type ARIndexValue struct {
+	Index int
+	Value string
+}
+
+type ARGrepPredicate struct {
+	Type  string
+	Value string
+}
+
+type ARGrepOptions struct {
+	And        bool
+	Or         bool
+	Limit      *int
+	WithValues bool
+	NoCase     bool
 }
 
 type JSONMSetArg struct {
