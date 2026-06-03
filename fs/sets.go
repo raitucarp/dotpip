@@ -24,7 +24,7 @@ func (f *FileSystem) readSet(key dotpip.Key) (map[string]any, error) {
 
 func (f *FileSystem) writeSet(key dotpip.Key, set map[string]any) error {
 	if len(set) == 0 {
-		f.Del(key)
+		f.Del(key) // Del internally emits "del" event already!
 		return nil
 	}
 	content, err := f.formatter.SetEncode(set)
@@ -50,6 +50,9 @@ func (f *FileSystem) SAdd(key dotpip.Key, members ...string) (int, error) {
 
 	if added > 0 {
 		err = f.writeSet(key, set)
+		if err == nil {
+			f.emitKeyspaceEvent(key, "sadd", 's')
+		}
 		if err != nil {
 			return 0, err
 		}
@@ -111,6 +114,9 @@ func (f *FileSystem) SDiffStore(destination dotpip.Key, keys ...dotpip.Key) (int
 	}
 
 	err = f.writeSet(destination, set)
+	if err == nil {
+		f.emitKeyspaceEvent(destination, "sdiffstore", 's')
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -179,6 +185,9 @@ func (f *FileSystem) SInterStore(destination dotpip.Key, keys ...dotpip.Key) (in
 	}
 
 	err = f.writeSet(destination, set)
+	if err == nil {
+		f.emitKeyspaceEvent(destination, "sinterstore", 's')
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -248,6 +257,10 @@ func (f *FileSystem) SMove(source dotpip.Key, destination dotpip.Key, member str
 	}
 
 	err = f.writeSet(destination, destSet)
+	if err == nil {
+		f.emitKeyspaceEvent(source, "srem", 's')
+		f.emitKeyspaceEvent(destination, "sadd", 's')
+	}
 	if err != nil {
 		return false, err
 	}
@@ -289,6 +302,9 @@ func (f *FileSystem) SPop(key dotpip.Key, count int) ([]string, error) {
 	}
 
 	err = f.writeSet(key, set)
+	if err == nil {
+		f.emitKeyspaceEvent(key, "spop", 's')
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -354,6 +370,9 @@ func (f *FileSystem) SRem(key dotpip.Key, members ...string) (int, error) {
 
 	if removed > 0 {
 		err = f.writeSet(key, set)
+		if err == nil {
+			f.emitKeyspaceEvent(key, "srem", 's')
+		}
 		if err != nil {
 			return 0, err
 		}
@@ -395,6 +414,9 @@ func (f *FileSystem) SUnionStore(destination dotpip.Key, keys ...dotpip.Key) (in
 	}
 
 	err = f.writeSet(destination, set)
+	if err == nil {
+		f.emitKeyspaceEvent(destination, "sunionstore", 's')
+	}
 	if err != nil {
 		return 0, err
 	}

@@ -39,7 +39,11 @@ func (f *FileSystem) readList(key dotpip.Key) ([]string, error) {
 
 func (f *FileSystem) writeList(key dotpip.Key, list []string) error {
 	if len(list) == 0 {
-		return f.removeFileByKey(key)
+		err := f.removeFileByKey(key)
+		if err == nil {
+			f.emitKeyspaceEvent(key, "del", 'g')
+		}
+		return err
 	}
 
 	anyList := make([]any, len(list))
@@ -107,6 +111,9 @@ func (f *FileSystem) LInsert(key dotpip.Key, option dotpip.LInsertOption, pivot 
 	list = append(list[:insertIndex], append([]string{element}, list[insertIndex:]...)...)
 
 	err = f.writeList(key, list)
+	if err == nil {
+		f.emitKeyspaceEvent(key, "linsert", 'l')
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -210,6 +217,9 @@ func (f *FileSystem) LPop(key dotpip.Key, count int) ([]string, error) {
 	list = list[count:]
 
 	err = f.writeList(key, list)
+	if err == nil {
+		f.emitKeyspaceEvent(key, "lpop", 'l')
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -300,6 +310,9 @@ func (f *FileSystem) LPush(key dotpip.Key, elements ...string) (int, error) {
 	}
 
 	err = f.writeList(key, list)
+	if err == nil {
+		f.emitKeyspaceEvent(key, "lpush", 'l')
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -491,6 +504,9 @@ func (f *FileSystem) RPop(key dotpip.Key, count int) ([]string, error) {
 	list = list[:len(list)-count]
 
 	err = f.writeList(key, list)
+	if err == nil {
+		f.emitKeyspaceEvent(key, "rpop", 'l')
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -511,6 +527,9 @@ func (f *FileSystem) RPush(key dotpip.Key, elements ...string) (int, error) {
 	list = append(list, elements...)
 
 	err = f.writeList(key, list)
+	if err == nil {
+		f.emitKeyspaceEvent(key, "lpush", 'l')
+	}
 	if err != nil {
 		return 0, err
 	}

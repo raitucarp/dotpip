@@ -44,6 +44,9 @@ func (f *FileSystem) PFAdd(key dotpip.Key, elements ...string) (int, error) {
 	}
 
 	writeErr := f.writeFileByKey(key, encoded.([]byte))
+	if writeErr == nil {
+		f.emitKeyspaceEvent(key, "pfadd", '$')
+	}
 	if writeErr != nil {
 		return 0, writeErr
 	}
@@ -107,5 +110,9 @@ func (f *FileSystem) PFMerge(destKey dotpip.Key, sourceKeys ...dotpip.Key) error
 		return encErr
 	}
 
-	return f.writeFileByKey(destKey, encoded.([]byte))
+	err = f.writeFileByKey(destKey, encoded.([]byte))
+	if err == nil {
+		f.emitKeyspaceEvent(destKey, "pfmerge", '$')
+	}
+	return err
 }
