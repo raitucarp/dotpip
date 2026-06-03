@@ -87,6 +87,26 @@ type DotPip interface {
 	Copy(source Key, destination Key, options ...CopyOption) int
 	Exists(keys ...Key) ([]bool, error)
 	FlushAll() error
+	Rename(key Key, newKey Key) error
+	RenameNX(key Key, newKey Key) (bool, error)
+	Keys(pattern string) ([]Key, error)
+	Type(key Key) (string, error)
+	RandomKey() (Key, error)
+	Touch(keys ...Key) (int, error)
+	Unlink(keys ...Key) int
+	Dump(key Key) ([]byte, error)
+	Restore(key Key, ttl int, serializedValue []byte, options ...RestoreOption) error
+	Sort(key Key) ([]string, error)
+	Scan(cursor uint64, options ...ScanOption) (uint64, []Key, error)
+	Move(key Key, db int) (int, error)
+	Migrate(host string, port int, key Key, destinationDB int, timeout int, options ...MigrateOption) error
+	Wait(numReplicas int, timeout int) (int, error)
+	WaitAOF(numLocal int, numReplicas int, timeout int) (int, int, error)
+	DBSize() (int, error)
+	ObjectEncoding(key Key) (string, error)
+	ObjectFreq(key Key) (int, error)
+	ObjectIdletime(key Key) (int, error)
+	ObjectRefcount(key Key) (int, error)
 
 	Expire(key Key, seconds int, options ...ExpireOption) (bool, error)
 	ExpireAt(key Key, timestamp int, options ...ExpireOption) (bool, error)
