@@ -11,6 +11,12 @@ import (
 )
 
 func (f *FileSystem) Append(key dotpip.Key, value string) (appendedString int) {
+	defer func() {
+		if appendedString > 0 {
+			f.emitKeyspaceEvent(key, "append", '$')
+		}
+	}()
+
 	content, err := f.readFileByKey(key)
 	if err != nil {
 		return 0
@@ -22,7 +28,7 @@ func (f *FileSystem) Append(key dotpip.Key, value string) (appendedString int) {
 	}
 
 	newValue := oldValue + value
-	_, err = f.Set(key, newValue)
+	_, err = f.internalSet(key, newValue)
 	if err != nil {
 		return 0
 	}
@@ -45,7 +51,8 @@ func (f *FileSystem) Get(key dotpip.Key) (result string, err error) {
 	return value, nil
 }
 
-func (f *FileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOption) (result string, err error) {
+func (f *FileSystem) internalSet(key dotpip.Key, value string, options ...dotpip.SetOption) (result string, err error) {
+
 	cmd := &dotpip.SetCommand{}
 	for _, option := range options {
 		option(cmd)
@@ -95,6 +102,7 @@ func (f *FileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOpti
 	}
 
 	err = f.writeFileByKey(key, finalValue.([]byte))
+
 	if err != nil {
 		return "", err
 	}
@@ -162,7 +170,13 @@ func (f *FileSystem) Incr(key dotpip.Key) (int, error) {
 	return f.IncrBy(key, 1)
 }
 
-func (f *FileSystem) IncrBy(key dotpip.Key, increment int) (int, error) {
+func (f *FileSystem) IncrBy(key dotpip.Key, increment int) (ret int, err error) {
+	defer func() {
+		if err == nil {
+			f.emitKeyspaceEvent(key, "incrby", '$')
+		}
+	}()
+
 	val, err := f.Get(key)
 	if err != nil {
 		// If key does not exist or error reading, default to 0
@@ -176,7 +190,7 @@ func (f *FileSystem) IncrBy(key dotpip.Key, increment int) (int, error) {
 
 	num += increment
 	newValStr := strconv.Itoa(num)
-	_, setErr := f.Set(key, newValStr)
+	_, setErr := f.internalSet(key, newValStr)
 	if setErr != nil {
 		return 0, setErr
 	}
@@ -184,7 +198,13 @@ func (f *FileSystem) IncrBy(key dotpip.Key, increment int) (int, error) {
 	return num, nil
 }
 
-func (f *FileSystem) IncrByFloat(key dotpip.Key, increment float64) (float64, error) {
+func (f *FileSystem) IncrByFloat(key dotpip.Key, increment float64) (ret float64, err error) {
+	defer func() {
+		if err == nil {
+			f.emitKeyspaceEvent(key, "incrbyfloat", '$')
+		}
+	}()
+
 	val, err := f.Get(key)
 	if err != nil {
 		val = "0"
@@ -199,7 +219,7 @@ func (f *FileSystem) IncrByFloat(key dotpip.Key, increment float64) (float64, er
 
 	// Format the float consistently, e.g. using %g
 	newValStr := strconv.FormatFloat(num, 'g', -1, 64)
-	_, setErr := f.Set(key, newValStr)
+	_, setErr := f.internalSet(key, newValStr)
 	if setErr != nil {
 		return 0, setErr
 	}
@@ -263,7 +283,13 @@ func (f *FileSystem) GetRange(key dotpip.Key, start int, end int) (string, error
 	return val[start : end+1], nil
 }
 
-func (f *FileSystem) SetRange(key dotpip.Key, offset int, value string) (int, error) {
+func (f *FileSystem) SetRange(key dotpip.Key, offset int, value string) (ret int, err error) {
+	defer func() {
+		if err == nil {
+			f.emitKeyspaceEvent(key, "setrange", '$')
+		}
+	}()
+
 	if offset < 0 {
 		return 0, errors.New("ERR offset is out of range")
 	}
@@ -291,7 +317,7 @@ func (f *FileSystem) SetRange(key dotpip.Key, offset int, value string) (int, er
 	copy(newBytes[offset:], value)
 
 	newVal := string(newBytes)
-	_, setErr := f.Set(key, newVal)
+	_, setErr := f.internalSet(key, newVal)
 	if setErr != nil {
 		return 0, setErr
 	}
@@ -352,4 +378,12 @@ func (f *FileSystem) MSetNX(kvs ...dotpip.KV) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (f *FileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOption) (result string, err error) {
+	res, err := f.internalSet(key, value, options...)
+	if err == nil {
+		f.emitKeyspaceEvent(key, "set", '$')
+	}
+	return res, err
 }

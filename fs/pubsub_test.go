@@ -65,6 +65,7 @@ func TestFileSystem_KeyspaceNotifications(t *testing.T) {
 
 	fsys := NewFileSystem(tmpDir)
 	defer fsys.Close()
+	_ = fsys.ConfigSet("notify-keyspace-events", "KEA")
 
 	sub, err := fsys.PSubscribe("__keyspace@0__:*", "__keyevent@0__:*")
 	assert.NoError(t, err)

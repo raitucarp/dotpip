@@ -28,6 +28,7 @@ type FileSystem struct {
 	watcher       *fsnotify.Watcher
 
 	pubsubOffsets map[string]int64
+	config        map[string]string
 }
 
 func NewFileSystem(pathRoot string) *FileSystem {
@@ -45,6 +46,7 @@ func NewFileSystem(pathRoot string) *FileSystem {
 		subscriptions: make(map[*PubSubSubscription]struct{}),
 		watcher:       watcher,
 		pubsubOffsets: make(map[string]int64),
+		config:        make(map[string]string),
 	}
 
 	f.formatter.StringEncode = f.stringEncode
@@ -182,6 +184,16 @@ func (f *FileSystem) processExpirations() {
 	for dataPath, expireAt := range f.expirations {
 		if now >= expireAt {
 			// Expired!
+			keyStr := dataPath[len(f.pathRoot):]
+			if keyStr != "" && keyStr[0] == filepath.Separator {
+				keyStr = keyStr[1:]
+			}
+			ext := filepath.Ext(keyStr)
+			if ext == ".json" || ext == ".yaml" || ext == ".toml" {
+				keyStr = keyStr[:len(keyStr)-len(ext)]
+			}
+			keyParts := strings.Split(keyStr, string(filepath.Separator))
+			f.emitKeyspaceEvent(keyParts, "expired", 'x')
 			_ = f.removeFileByPath(dataPath)
 			_ = f.removeExByPath(dataPath + ".ex")
 			delete(f.expirations, dataPath)
@@ -230,25 +242,6 @@ func (f *FileSystem) handleFSEvent(event fsnotify.Event) {
 		return
 	}
 
-	// Strip file extension to get the key name
-	key := strings.TrimSuffix(baseName, filepath.Ext(baseName))
-	var action string
-
-	switch {
-	case event.Op&fsnotify.Create == fsnotify.Create:
-		action = "set" // simplified
-	case event.Op&fsnotify.Write == fsnotify.Write:
-		action = "set"
-	case event.Op&fsnotify.Remove == fsnotify.Remove:
-		action = "del"
-	}
-
-	if action != "" {
-		keyspaceChannel := "__keyspace@0__:" + key
-		keyeventChannel := "__keyevent@0__:" + action
-		f.notifySubscribers(keyspaceChannel, action)
-		f.notifySubscribers(keyeventChannel, key)
-	}
 }
 
 func (f *FileSystem) readTail(path string) ([]string, error) {
@@ -283,4 +276,63 @@ func (f *FileSystem) readTail(path string) ([]string, error) {
 	}
 
 	return newLines, scanner.Err()
+}
+
+func (f *FileSystem) ConfigSet(parameter string, value string) error {
+	f.subMutex.Lock()
+	defer f.subMutex.Unlock()
+	f.config[parameter] = value
+	return nil
+}
+
+func (f *FileSystem) ConfigGet(parameter string) (map[string]string, error) {
+	f.subMutex.RLock()
+	defer f.subMutex.RUnlock()
+
+	res := make(map[string]string)
+	if parameter == "*" {
+		for k, v := range f.config {
+			res[k] = v
+		}
+	} else if val, ok := f.config[parameter]; ok {
+		res[parameter] = val
+	}
+
+	return res, nil
+}
+
+func (f *FileSystem) emitKeyspaceEvent(key []string, event string, typeChar rune) {
+	if key == nil {
+		return
+	}
+	f.subMutex.RLock()
+	notifyEvents := f.config["notify-keyspace-events"]
+	f.subMutex.RUnlock()
+
+	if notifyEvents == "" {
+		return
+	}
+
+	keyspaceEnabled := strings.Contains(notifyEvents, "K")
+	keyeventEnabled := strings.Contains(notifyEvents, "E")
+
+	if !keyspaceEnabled && !keyeventEnabled {
+		return
+	}
+
+	matchAll := strings.Contains(notifyEvents, "A")
+	isExcludedFromA := typeChar == 'm' || typeChar == 'n' || typeChar == 'o' || typeChar == 'c'
+
+	if !(matchAll && !isExcludedFromA) && !strings.ContainsRune(notifyEvents, typeChar) {
+		return // Not enabled
+	}
+
+	keyString := strings.Join(key, string(filepath.Separator))
+
+	if keyspaceEnabled {
+		f.notifySubscribers("__keyspace@0__:"+keyString, event)
+	}
+	if keyeventEnabled {
+		f.notifySubscribers("__keyevent@0__:"+event, keyString)
+	}
 }

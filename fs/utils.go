@@ -45,6 +45,7 @@ func (f *FileSystem) isExpired(key dotpip.Key) bool {
 			_ = f.removeFileByPath(dataPath)
 			_ = f.removeExByPath(dataPath + ".ex")
 			f.unsetExpiration(dataPath)
+			f.emitKeyspaceEvent(key, "expired", 'x')
 			return true
 		}
 	}

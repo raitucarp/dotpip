@@ -38,6 +38,9 @@ func (f *FileSystem) Copy(source dotpip.Key, destination dotpip.Key, options ...
 	}
 
 	err = f.writeFileByKey(destination, content)
+	if err == nil {
+		f.emitKeyspaceEvent(destination, "copy_to", 'g')
+	}
 	if err != nil {
 		return 0
 	}
@@ -49,6 +52,9 @@ func (f *FileSystem) Del(keys ...dotpip.Key) int {
 	count := 0
 	for _, key := range keys {
 		err := f.removeFileByKey(key)
+		if err == nil {
+			f.emitKeyspaceEvent(key, "del", 'g')
+		}
 		if err != nil {
 			return count
 		}

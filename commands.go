@@ -217,6 +217,9 @@ type DotPip interface {
 	PubSubShardChannels(pattern string) ([]string, error)
 	PubSubShardNumSub(shardChannels ...string) (map[string]int, error)
 
+	ConfigGet(parameter string) (map[string]string, error)
+	ConfigSet(parameter string, value string) error
+
 	Formatter(fmap DataTypeFormatter)
 }
 

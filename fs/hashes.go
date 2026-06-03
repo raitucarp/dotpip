@@ -21,7 +21,11 @@ func (f *FileSystem) readHash(key dotpip.Key) (map[string]string, error) {
 
 func (f *FileSystem) writeHash(key dotpip.Key, hash map[string]string) error {
 	if len(hash) == 0 {
-		return f.removeFileByKey(key)
+		err := f.removeFileByKey(key)
+		if err == nil {
+			f.emitKeyspaceEvent(key, "del", 'g')
+		}
+		return err
 	}
 
 	encoded, err := f.formatter.HashEncode(hash)
@@ -109,6 +113,9 @@ func (f *FileSystem) HIncrBy(key dotpip.Key, field string, increment int) (int, 
 	hash[field] = strconv.Itoa(current)
 
 	err = f.writeHash(key, hash)
+	if err == nil {
+		f.emitKeyspaceEvent(key, "hincrby", 'h')
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -136,6 +143,9 @@ func (f *FileSystem) HIncrByFloat(key dotpip.Key, field string, increment float6
 	hash[field] = strconv.FormatFloat(current, 'f', -1, 64)
 
 	err = f.writeHash(key, hash)
+	if err == nil {
+		f.emitKeyspaceEvent(key, "hincrbyfloat", 'h')
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -254,6 +264,9 @@ func (f *FileSystem) HSet(key dotpip.Key, values map[string]string) (int, error)
 	}
 
 	err = f.writeHash(key, hash)
+	if err == nil {
+		f.emitKeyspaceEvent(key, "hset", 'h')
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -273,6 +286,9 @@ func (f *FileSystem) HSetNX(key dotpip.Key, field string, value string) (bool, e
 
 	hash[field] = value
 	err = f.writeHash(key, hash)
+	if err == nil {
+		f.emitKeyspaceEvent(key, "hset", 'h')
+	}
 	if err != nil {
 		return false, err
 	}
