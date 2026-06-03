@@ -340,3 +340,50 @@ func (f *FileSystem) streamDecode(value any) (dotpip.Stream, error) {
 		return finalValue, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
 	}
 }
+
+func (f *FileSystem) JSONEncode(value any) (any, error) {
+	switch f.encodeType {
+	case JSON:
+		return json.Marshal(value)
+	case YAML:
+		return yaml.Marshal(value)
+	case TOML:
+		// TOML requires map[string]any at top level, for a general JSON value this might fail if it's a scalar or slice.
+		// A safe fallback would be wrapping it
+		if _, ok := value.(map[string]any); ok {
+			return toml.Marshal(value)
+		}
+		return toml.Marshal(map[string]any{"value": value})
+	case RAW:
+		return json.Marshal(value)
+	default:
+		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+	}
+}
+
+func (f *FileSystem) JSONDecode(value any) (any, error) {
+	var finalValue any
+	switch f.encodeType {
+	case JSON:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case YAML:
+		err := yaml.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	case TOML:
+		err := toml.Unmarshal(value.([]byte), &finalValue)
+		if err == nil {
+			if m, ok := finalValue.(map[string]any); ok {
+				if v, hasValue := m["value"]; hasValue && len(m) == 1 {
+					finalValue = v
+				}
+			}
+		}
+		return finalValue, err
+	case RAW:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		return finalValue, err
+	default:
+		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+	}
+}
