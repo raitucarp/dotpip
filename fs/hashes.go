@@ -46,15 +46,20 @@ func (f *FileSystem) HDel(key dotpip.Key, fields ...string) (int, error) {
 	}
 
 	deleted := 0
+	var deletedFields []string
 	for _, field := range fields {
 		if _, exists := hash[field]; exists {
 			delete(hash, field)
 			deleted++
+			deletedFields = append(deletedFields, field)
 		}
 	}
 
 	if deleted > 0 {
 		err = f.writeHash(key, hash)
+		if err == nil {
+			f.emitSubkeyEvent(key, "hdel", 'h', deletedFields)
+		}
 		if err != nil {
 			return 0, err
 		}
@@ -115,6 +120,7 @@ func (f *FileSystem) HIncrBy(key dotpip.Key, field string, increment int) (int, 
 	err = f.writeHash(key, hash)
 	if err == nil {
 		f.emitKeyspaceEvent(key, "hincrby", 'h')
+		f.emitSubkeyEvent(key, "hincrby", 'h', []string{field})
 	}
 	if err != nil {
 		return 0, err
@@ -145,6 +151,7 @@ func (f *FileSystem) HIncrByFloat(key dotpip.Key, field string, increment float6
 	err = f.writeHash(key, hash)
 	if err == nil {
 		f.emitKeyspaceEvent(key, "hincrbyfloat", 'h')
+		f.emitSubkeyEvent(key, "hincrbyfloat", 'h', []string{field})
 	}
 	if err != nil {
 		return 0, err
@@ -266,6 +273,12 @@ func (f *FileSystem) HSet(key dotpip.Key, values map[string]string) (int, error)
 	err = f.writeHash(key, hash)
 	if err == nil {
 		f.emitKeyspaceEvent(key, "hset", 'h')
+
+		var fields []string
+		for k := range values {
+			fields = append(fields, k)
+		}
+		f.emitSubkeyEvent(key, "hset", 'h', fields)
 	}
 	if err != nil {
 		return 0, err
@@ -288,6 +301,7 @@ func (f *FileSystem) HSetNX(key dotpip.Key, field string, value string) (bool, e
 	err = f.writeHash(key, hash)
 	if err == nil {
 		f.emitKeyspaceEvent(key, "hset", 'h')
+		f.emitSubkeyEvent(key, "hset", 'h', []string{field})
 	}
 	if err != nil {
 		return false, err
