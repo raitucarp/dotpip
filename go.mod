@@ -9,7 +9,7 @@ require (
 	github.com/mmcloughlin/geohash v0.10.0
 	github.com/ohler55/ojg v1.28.1
 	github.com/pelletier/go-toml/v2 v2.3.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.1
 	github.com/zeebo/xxh3 v1.1.0
 )
 
