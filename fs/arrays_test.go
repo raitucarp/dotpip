@@ -128,7 +128,7 @@ func TestARGrep(t *testing.T) {
 	defer fsys.Close()
 
 	key := dotpip.Key{"grep_array"}
-	fsys.ARSet(key, 0, "apple", "banana", "cherry", "apricot", "blueberry")
+	_, _ = fsys.ARSet(key, 0, "apple", "banana", "cherry", "apricot", "blueberry")
 
 	// Test EXACT
 	res, _ := fsys.ARGrep(key, "-", "+", []dotpip.ARGrepPredicate{{Type: "EXACT", Value: "banana"}}, dotpip.ARGrepOptions{})
@@ -227,7 +227,7 @@ func TestARScan(t *testing.T) {
 	defer fsys.Close()
 
 	key := dotpip.Key{"scan_array"}
-	fsys.ARSet(key, 0, "0", "1", "2", "3", "4")
+	_, _ = fsys.ARSet(key, 0, "0", "1", "2", "3", "4")
 
 	res, _ := fsys.ARScan(key, 1, 3, nil)
 	if len(res) != 6 || res[0] != 1 || res[1] != "1" || res[4] != 3 || res[5] != "3" {
@@ -273,7 +273,7 @@ func TestAROp(t *testing.T) {
 	defer fsys.Close()
 
 	key := dotpip.Key{"op_array"}
-	fsys.ARSet(key, 0, "1", "2", "3", "notanumber")
+	_, _ = fsys.ARSet(key, 0, "1", "2", "3", "notanumber")
 
 	res, _ := fsys.AROp(key, 0, 3, "SUM", nil)
 	if res.(string) != "6" {
@@ -291,7 +291,7 @@ func TestAROp(t *testing.T) {
 	}
 
 	key2 := dotpip.Key{"op_array_2"}
-	fsys.ARSet(key2, 0, "2", "6") // 0010, 0110
+	_, _ = fsys.ARSet(key2, 0, "2", "6") // 0010, 0110
 
 	res, _ = fsys.AROp(key2, 0, 1, "AND", nil)
 	if res.(int) != 2 {
@@ -324,7 +324,7 @@ func TestARInfo(t *testing.T) {
 	defer fsys.Close()
 
 	key := dotpip.Key{"info_array"}
-	fsys.ARSet(key, 0, "a", "b", "c")
+	_, _ = fsys.ARSet(key, 0, "a", "b", "c")
 
 	res, _ := fsys.ARInfo(key, false)
 	if res["length"].(int) != 3 {

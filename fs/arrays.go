@@ -184,12 +184,12 @@ func (f *FileSystem) ARGrep(key dotpip.Key, startStr, endStr string, predicates 
 	start := 0
 	if startStr != "-" {
 		// Attempt parsing, fallback to 0. Redis might return error on invalid syntax
-		fmt.Sscanf(startStr, "%d", &start)
+		_, _ = fmt.Sscanf(startStr, "%d", &start)
 	}
 
 	end := len(arr) - 1
 	if endStr != "+" {
-		fmt.Sscanf(endStr, "%d", &end)
+		_, _ = fmt.Sscanf(endStr, "%d", &end)
 	}
 
 	reverse := false
@@ -259,14 +259,15 @@ func (f *FileSystem) ARGrep(key dotpip.Key, startStr, endStr string, predicates 
 				}
 			}
 			return len(compiledPredicates) > 0
-		} else { // OR is default
-			for _, fn := range compiledPredicates {
-				if fn(s) {
-					return true
-				}
-			}
-			return false
 		}
+
+		// OR is default
+		for _, fn := range compiledPredicates {
+			if fn(s) {
+				return true
+			}
+		}
+		return false
 	}
 
 	// Simplified iteration taking reverse into account
@@ -320,7 +321,7 @@ func (f *FileSystem) ARGrep(key dotpip.Key, startStr, endStr string, predicates 
 	return result, nil
 }
 
-func (f *FileSystem) ARInfo(key dotpip.Key, full bool) (map[string]any, error) {
+func (f *FileSystem) ARInfo(key dotpip.Key, _ bool) (map[string]any, error) {
 	// Minimal stub info for array based on the command reference
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -505,24 +506,24 @@ func (f *FileSystem) AROp(key dotpip.Key, start, end int, operation string, matc
 		if len(nums) == 0 {
 			return nil, nil
 		}
-		min := nums[0]
+		minVal := nums[0]
 		for _, n := range nums {
-			if n < min {
-				min = n
+			if n < minVal {
+				minVal = n
 			}
 		}
-		return fmt.Sprintf("%g", min), nil
+		return fmt.Sprintf("%g", minVal), nil
 	case "MAX":
 		if len(nums) == 0 {
 			return nil, nil
 		}
-		max := nums[0]
+		maxVal := nums[0]
 		for _, n := range nums {
-			if n > max {
-				max = n
+			if n > maxVal {
+				maxVal = n
 			}
 		}
-		return fmt.Sprintf("%g", max), nil
+		return fmt.Sprintf("%g", maxVal), nil
 	case "AND":
 		if used == 0 {
 			return nil, nil
@@ -643,7 +644,7 @@ func (f *FileSystem) ARScan(key dotpip.Key, start, end int, limit *int) ([]any, 
 	return result, nil
 }
 
-func (f *FileSystem) ARSeek(key dotpip.Key, index int) (int, error) {
+func (f *FileSystem) ARSeek(_ dotpip.Key, index int) (int, error) {
 	// Cursor management can be just returning the passed index as a simple implementation
 	// unless actual cursor state needs to be persisted.
 	return index, nil
