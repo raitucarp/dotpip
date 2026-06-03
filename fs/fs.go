@@ -336,3 +336,68 @@ func (f *FileSystem) emitKeyspaceEvent(key []string, event string, typeChar rune
 		f.notifySubscribers("__keyevent@0__:"+event, keyString)
 	}
 }
+
+func (f *FileSystem) emitSubkeyEvent(key []string, event string, typeChar rune, subkeys []string) {
+	if key == nil || len(subkeys) == 0 {
+		return
+	}
+
+	f.subMutex.RLock()
+	notifyEvents := f.config["notify-keyspace-events"]
+	f.subMutex.RUnlock()
+
+	if notifyEvents == "" {
+		return
+	}
+
+	subkeyspaceEnabled := strings.Contains(notifyEvents, "S")
+	subkeyeventEnabled := strings.Contains(notifyEvents, "T")
+	subkeyspaceitemEnabled := strings.Contains(notifyEvents, "I")
+	subkeyspaceeventEnabled := strings.Contains(notifyEvents, "V")
+
+	if !subkeyspaceEnabled && !subkeyeventEnabled && !subkeyspaceitemEnabled && !subkeyspaceeventEnabled {
+		return
+	}
+
+	// Check if the typeChar is enabled or if all ('A') are enabled
+	matchAll := strings.Contains(notifyEvents, "A")
+	if !matchAll && !strings.ContainsRune(notifyEvents, typeChar) {
+		return // Not enabled
+	}
+
+	keyString := strings.Join(key, string(filepath.Separator))
+
+	var subkeyParts []string
+	for _, sk := range subkeys {
+		subkeyParts = append(subkeyParts, strconv.Itoa(len(sk))+":"+sk)
+	}
+	subkeysJoined := strings.Join(subkeyParts, ",")
+
+	if subkeyspaceEnabled {
+		if !strings.Contains(event, "|") {
+			payload := event + "|" + subkeysJoined
+			f.notifySubscribers("__subkeyspace@0__:"+keyString, payload)
+		}
+	}
+
+	if subkeyeventEnabled {
+		payload := strconv.Itoa(len(keyString)) + ":" + keyString + "|" + subkeysJoined
+		f.notifySubscribers("__subkeyevent@0__:"+event, payload)
+	}
+
+	if subkeyspaceitemEnabled {
+		if !strings.Contains(keyString, "\n") {
+			for _, sk := range subkeys {
+				channel := "__subkeyspaceitem@0__:" + keyString + "\n" + sk
+				f.notifySubscribers(channel, event)
+			}
+		}
+	}
+
+	if subkeyspaceeventEnabled {
+		if !strings.Contains(event, "|") {
+			channel := "__subkeyspaceevent@0__:" + event + "|" + keyString
+			f.notifySubscribers(channel, subkeysJoined)
+		}
+	}
+}
