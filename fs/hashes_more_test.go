@@ -201,7 +201,6 @@ func TestZSetsMoreCoverage2(t *testing.T) {
 	assert.Len(t, resUnionScores, 4)
 }
 
-
 func TestStreamsMoreCoverage(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_streams_morecov_test_")
 	assert.NoError(t, err)

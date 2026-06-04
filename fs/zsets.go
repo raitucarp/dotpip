@@ -617,3 +617,46 @@ func (f *FileSystem) ZUnionWithScores(keys ...dotpip.Key) ([]dotpip.Z, error) {
 
 	return result, nil
 }
+
+func (f *FileSystem) ZScan(key dotpip.Key, cursor uint64, options ...dotpip.ScanOption) (uint64, []dotpip.Z, error) {
+	cmd := &dotpip.ScanCommand{Count: 10}
+	for _, option := range options {
+		option(cmd)
+	}
+
+	zset, err := f.readSortedSet(key)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	var allMembers []string
+	for member := range zset {
+		if cmd.Match != "" && !matchPattern(cmd.Match, member) {
+			continue
+		}
+		allMembers = append(allMembers, member)
+	}
+
+	sort.Strings(allMembers)
+
+	if cursor >= uint64(len(allMembers)) {
+		return 0, []dotpip.Z{}, nil
+	}
+
+	end := cursor + uint64(cmd.Count)
+	nextCursor := end
+	if end >= uint64(len(allMembers)) {
+		end = uint64(len(allMembers))
+		nextCursor = 0
+	}
+
+	var result []dotpip.Z
+	for _, member := range allMembers[cursor:end] {
+		result = append(result, dotpip.Z{
+			Member: member,
+			Score:  zset[member],
+		})
+	}
+
+	return nextCursor, result, nil
+}

@@ -166,6 +166,7 @@ type DotPip interface {
 	HSetNX(key Key, field string, value string) (bool, error)
 	HStrLen(key Key, field string) (int, error)
 	HVals(key Key) ([]string, error)
+	HScan(key Key, cursor uint64, options ...ScanOption) (uint64, map[string]string, error)
 
 	SAdd(key Key, members ...string) (int, error)
 	SCard(key Key) (int, error)
@@ -183,6 +184,7 @@ type DotPip interface {
 	SRem(key Key, members ...string) (int, error)
 	SUnion(keys ...Key) ([]string, error)
 	SUnionStore(destination Key, keys ...Key) (int, error)
+	SScan(key Key, cursor uint64, options ...ScanOption) (uint64, []string, error)
 
 	ZAdd(key Key, members []Z, options ...ZAddOption) (int, error)
 	ZCard(key Key) (int, error)
@@ -205,6 +207,7 @@ type DotPip interface {
 	ZScore(key Key, member string) (float64, error)
 	ZUnion(keys ...Key) ([]string, error)
 	ZUnionWithScores(keys ...Key) ([]Z, error)
+	ZScan(key Key, cursor uint64, options ...ScanOption) (uint64, []Z, error)
 
 	BitCount(key Key, start int, end int) (int, error)
 	BitField(key Key, args ...any) ([]any, error)

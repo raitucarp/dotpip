@@ -183,7 +183,7 @@ func TestJSONClearAndMSet(t *testing.T) {
 			assert.Equal(t, "OK", resMSet)
 
 			// Clear
-			_, _ = dotfs.JSONSet(k1, "$", []any{1,2,3})
+			_, _ = dotfs.JSONSet(k1, "$", []any{1, 2, 3})
 			resClear, err := dotfs.JSONClear(k1, "$")
 			assert.NoError(t, err)
 			assert.GreaterOrEqual(t, resClear, 0)

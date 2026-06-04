@@ -340,3 +340,136 @@ func TestFileExistenceAndEncoding(t *testing.T) {
 		t.Errorf("File for NewKey(\"x\", \"y\", \"z\") was not created at expected path: %s", expectedPath2)
 	}
 }
+
+func TestHScan(t *testing.T) {
+	key := dotpip.NewKey("myhash")
+	dotfs.HSet(key, map[string]string{
+		"field1": "val1",
+		"field2": "val2",
+		"field3": "val3",
+		"other":  "val4",
+	})
+
+	// Scan all
+	cursor, result, err := dotfs.HScan(key, 0, dotpip.WithScanCount(100))
+	if err != nil {
+		t.Errorf("Should not have returned an error for key %s", key)
+	}
+	if cursor != 0 {
+		t.Errorf("cursor should be 0")
+	}
+	if len(result) != 4 {
+		t.Errorf("result should have 4 fields")
+	}
+
+	// Scan match
+	cursor, result, err = dotfs.HScan(key, 0, dotpip.WithScanMatch("field*"), dotpip.WithScanCount(100))
+	if err != nil {
+		t.Errorf("Should not have returned an error for key %s", key)
+	}
+	if cursor != 0 {
+		t.Errorf("cursor should be 0")
+	}
+	if len(result) != 3 {
+		t.Errorf("result should have 3 fields")
+	}
+
+	// Scan with count
+	cursor, result, err = dotfs.HScan(key, 0, dotpip.WithScanCount(2))
+	if err != nil {
+		t.Errorf("Should not have returned an error for key %s", key)
+	}
+	if cursor != 2 {
+		t.Errorf("cursor should be 2")
+	}
+	if len(result) != 2 {
+		t.Errorf("result should have 2 fields")
+	}
+}
+
+func TestSScan(t *testing.T) {
+	key := dotpip.NewKey("myset")
+	dotfs.SAdd(key, "mem1", "mem2", "mem3", "other")
+
+	// Scan all
+	cursor, result, err := dotfs.SScan(key, 0, dotpip.WithScanCount(100))
+	if err != nil {
+		t.Errorf("Should not have returned an error for key %s", key)
+	}
+	if cursor != 0 {
+		t.Errorf("cursor should be 0")
+	}
+	if len(result) != 4 {
+		t.Errorf("result should have 4 members")
+	}
+
+	// Scan match
+	cursor, result, err = dotfs.SScan(key, 0, dotpip.WithScanMatch("mem*"), dotpip.WithScanCount(100))
+	if err != nil {
+		t.Errorf("Should not have returned an error for key %s", key)
+	}
+	if cursor != 0 {
+		t.Errorf("cursor should be 0")
+	}
+	if len(result) != 3 {
+		t.Errorf("result should have 3 members")
+	}
+
+	// Scan with count
+	cursor, result, err = dotfs.SScan(key, 0, dotpip.WithScanCount(2))
+	if err != nil {
+		t.Errorf("Should not have returned an error for key %s", key)
+	}
+	if cursor != 2 {
+		t.Errorf("cursor should be 2")
+	}
+	if len(result) != 2 {
+		t.Errorf("result should have 2 members")
+	}
+}
+
+func TestZScan(t *testing.T) {
+	key := dotpip.NewKey("myzset")
+	dotfs.ZAdd(key, []dotpip.Z{
+		{Score: 1, Member: "mem1"},
+		{Score: 2, Member: "mem2"},
+		{Score: 3, Member: "mem3"},
+		{Score: 4, Member: "other"},
+	})
+
+	// Scan all
+	cursor, result, err := dotfs.ZScan(key, 0, dotpip.WithScanCount(100))
+	if err != nil {
+		t.Errorf("Should not have returned an error for key %s", key)
+	}
+	if cursor != 0 {
+		t.Errorf("cursor should be 0")
+	}
+	if len(result) != 4 {
+		t.Errorf("result should have 4 members")
+	}
+
+	// Scan match
+	cursor, result, err = dotfs.ZScan(key, 0, dotpip.WithScanMatch("mem*"), dotpip.WithScanCount(100))
+	if err != nil {
+		t.Errorf("Should not have returned an error for key %s", key)
+	}
+	if cursor != 0 {
+		t.Errorf("cursor should be 0")
+	}
+	if len(result) != 3 {
+		t.Errorf("result should have 3 members")
+	}
+
+	// Scan with count
+	cursor, result, err = dotfs.ZScan(key, 0, dotpip.WithScanCount(2))
+	if err != nil {
+		t.Errorf("Should not have returned an error for key %s", key)
+	}
+	if cursor != 2 {
+		t.Errorf("cursor should be 2")
+	}
+	if len(result) != 2 {
+		t.Errorf("result should have 2 members")
+	}
+}

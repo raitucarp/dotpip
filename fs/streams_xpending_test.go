@@ -36,7 +36,7 @@ func TestStreamsXPending(t *testing.T) {
 	assert.Len(t, res, 4) // Count, MinID, MaxID, Consumers
 
 	// Format is [count, min_id, max_id, [[consumer, count]]]
-	assert.Equal(t, 2, res[0]) // Count
+	assert.Equal(t, 2, res[0])   // Count
 	assert.Equal(t, id1, res[1]) // MinID
 	assert.Equal(t, id2, res[2]) // MaxID
 
