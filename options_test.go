@@ -196,14 +196,29 @@ func TestZSetsOptions(t *testing.T) {
 }
 
 func TestCommands(t *testing.T) {
-	k1 := NewKey("a", "b")
-	if len(k1) != 2 || k1[0] != "a" || k1[1] != "b" {
-		t.Error("NewKey failed")
+	k1 := NewKey("a", "b", "c")
+	if len(k1) != 3 || k1[0] != "a" || k1[1] != "b" || k1[2] != "c" {
+		t.Error("NewKey with multiple args failed")
 	}
 
-	k2 := NewKeyWithDelimiter("a:b:c", ":")
+	k2 := NewKey("a:b:c")
 	if len(k2) != 3 || k2[0] != "a" || k2[1] != "b" || k2[2] != "c" {
-		t.Error("NewKeyWithDelimiter failed")
+		t.Error("NewKey with delimiter failed")
+	}
+
+	k3 := NewKeyWithDelimiter("a:b:c", ":")
+	if len(k3) != 3 || k3[0] != "a" || k3[1] != "b" || k3[2] != "c" {
+		t.Error("NewKeyWithDelimiter string, delimiter failed")
+	}
+
+	k4 := NewKeyWithDelimiter("a", "b", "c", ".")
+	if len(k4) != 3 || k4[0] != "a" || k4[1] != "b" || k4[2] != "c" {
+		t.Error("NewKeyWithDelimiter multiple args, delimiter failed")
+	}
+
+	k5 := NewKeyWithDelimiter("a.b", "c", ".")
+	if len(k5) != 3 || k5[0] != "a" || k5[1] != "b" || k5[2] != "c" {
+		t.Error("NewKeyWithDelimiter mixed args, delimiter failed")
 	}
 
 	dp := New(nil)
