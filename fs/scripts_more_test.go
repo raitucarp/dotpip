@@ -10,7 +10,7 @@ func TestLuaScriptsBasic(t *testing.T) {
 	fsys := NewFileSystem(tempDir)
 	defer fsys.Close()
 
-	fsys.Set(dotpip.NewKey("mykey"), "myvalue")
+	_, _ = fsys.Set(dotpip.NewKey("mykey"), "myvalue")
 
 	script := `
 	local val = redis.call("get", KEYS[1])
@@ -117,7 +117,7 @@ func TestLuaScriptsArrayReturnType(t *testing.T) {
 	fsys := NewFileSystem(tempDir)
 	defer fsys.Close()
 
-	fsys.Set(dotpip.NewKey("mykey"), "myvalue")
+	_, _ = fsys.Set(dotpip.NewKey("mykey"), "myvalue")
 
 	script := `
 	return {1, 2, "hello"}
@@ -213,5 +213,75 @@ func TestLuaScriptsStructArg(t *testing.T) {
 	count, ok := res.(float64)
 	if !ok || count != 1 {
 		t.Fatalf("Expected ZAdd to add 1 member, got %v", res)
+	}
+}
+
+func TestLuaScriptsRO(t *testing.T) {
+	tempDir := t.TempDir()
+	fsys := NewFileSystem(tempDir)
+	defer fsys.Close()
+
+	script := `return 1`
+	hash, err := fsys.ScriptLoad(script)
+	if err != nil {
+		t.Fatalf("ScriptLoad error: %v", err)
+	}
+
+	res, err := fsys.EvalRO(script, 0, nil, nil)
+	if err != nil {
+		t.Fatalf("EvalRO error: %v", err)
+	}
+
+	if num, ok := res.(float64); !ok || num != 1 {
+		t.Fatalf("Expected 1, got %v", res)
+	}
+
+	res, err = fsys.EvalShaRO(hash, 0, nil, nil)
+	if err != nil {
+		t.Fatalf("EvalShaRO error: %v", err)
+	}
+
+	if num, ok := res.(float64); !ok || num != 1 {
+		t.Fatalf("Expected 1, got %v", res)
+	}
+}
+
+func TestLuaScriptKill(t *testing.T) {
+	tempDir := t.TempDir()
+	fsys := NewFileSystem(tempDir)
+	defer fsys.Close()
+
+	err := fsys.ScriptKill()
+	if err != nil {
+		t.Fatalf("Expected no error from ScriptKill, got %v", err)
+	}
+}
+
+
+func TestLuaScriptsReturnTypes(t *testing.T) {
+	tempDir := t.TempDir()
+	fsys := NewFileSystem(tempDir)
+	defer fsys.Close()
+
+	fsys.Set(dotpip.NewKey("foo"), "bar")
+
+	// Array of primitives
+	res, err := fsys.Eval(`return {"a", 1, true}`, 0, nil, nil)
+	if err != nil {
+		t.Fatalf("Eval error: %v", err)
+	}
+
+	arr, ok := res.([]any)
+	if !ok || len(arr) != 3 {
+		t.Fatalf("Expected slice of length 3, got %T %v", res, res)
+	}
+
+	// Nil
+	res, err = fsys.Eval(`return nil`, 0, nil, nil)
+	if err != nil {
+		t.Fatalf("Eval error: %v", err)
+	}
+	if res != nil {
+		t.Fatalf("Expected nil, got %v", res)
 	}
 }

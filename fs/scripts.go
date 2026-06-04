@@ -70,22 +70,22 @@ func (f *FileSystem) initLuaState() *lua.LState {
 	return L
 }
 
-func (f *FileSystem) luaRedisCall(L *lua.LState) int {
-	return f.invokeRedisCommand(L, false)
+func (f *FileSystem) luaRedisCall(l *lua.LState) int {
+	return f.invokeRedisCommand(l, false)
 }
 
-func (f *FileSystem) luaRedisPCall(L *lua.LState) int {
-	return f.invokeRedisCommand(L, true)
+func (f *FileSystem) luaRedisPCall(l *lua.LState) int {
+	return f.invokeRedisCommand(l, true)
 }
 
-func (f *FileSystem) invokeRedisCommand(L *lua.LState, pcall bool) int {
-	cmdName := L.ToString(1)
+func (f *FileSystem) invokeRedisCommand(l *lua.LState, pcall bool) int {
+	cmdName := l.ToString(1)
 	if cmdName == "" {
 		if pcall {
-			L.Push(lua.LString("Please specify at least one argument for redis.call()"))
+			l.Push(lua.LString("Please specify at least one argument for redis.call()"))
 			return 1
 		}
-		L.RaiseError("Please specify at least one argument for redis.call()")
+		l.RaiseError("Please specify at least one argument for redis.call()")
 		return 0
 	}
 
@@ -96,7 +96,7 @@ func (f *FileSystem) invokeRedisCommand(L *lua.LState, pcall bool) int {
 	// Fast rudimentary mapping for common ones (can add more as needed):
 	methodName, mapped := redisCommandMapping[cmdName]
 	if !mapped {
-		methodName = L.ToString(1) // Try exact case if not found
+		methodName = l.ToString(1) // Try exact case if not found
 	}
 
 	var dp dotpip.DotPip
@@ -109,46 +109,46 @@ func (f *FileSystem) invokeRedisCommand(L *lua.LState, pcall bool) int {
 			// Let's just return a string error. Actually, it's conventional in our simple implementation
 			// to return an error string. Or if it raises an error, pcall in Lua catches it.
 			// If we push a string, it gets returned as a string. But a real redis.pcall returns a lua table {err="message"}.
-			errTbl := L.NewTable()
-			L.SetField(errTbl, "err", lua.LString(fmt.Sprintf("Unknown Redis command called from Lua: %s", cmdName)))
-			L.Push(errTbl)
+			errTbl := l.NewTable()
+			l.SetField(errTbl, "err", lua.LString(fmt.Sprintf("Unknown Redis command called from Lua: %s", cmdName)))
+			l.Push(errTbl)
 			return 1
 		}
-		L.RaiseError("%s", fmt.Sprintf("Unknown Redis command called from Lua: %s", cmdName))
+		l.RaiseError("%s", fmt.Sprintf("Unknown Redis command called from Lua: %s", cmdName))
 		return 0
 	}
 
 	fVal := reflect.ValueOf(f)
 
 	// Remove the first argument (cmdName) before processing args for the Go method
-	numArgs := L.GetTop() - 1
+	numArgs := l.GetTop() - 1
 	args := make([]lua.LValue, numArgs)
 	for i := 0; i < numArgs; i++ {
-		args[i] = L.Get(i + 2)
+		args[i] = l.Get(i + 2)
 	}
 
-	return f.invokeGoMethodArgs(L, fVal, method.Name, method.Type, args, pcall)
+	return f.invokeGoMethodArgs(l, fVal, method.Name, method.Type, args, pcall)
 }
 
-func (f *FileSystem) invokeGoMethod(L *lua.LState, fVal reflect.Value, methodName string, methodType reflect.Type) int {
-	numArgs := L.GetTop()
+func (f *FileSystem) invokeGoMethod(l *lua.LState, fVal reflect.Value, methodName string, methodType reflect.Type) int {
+	numArgs := l.GetTop()
 	args := make([]lua.LValue, numArgs)
 	for i := 0; i < numArgs; i++ {
-		args[i] = L.Get(i + 1)
+		args[i] = l.Get(i + 1)
 	}
-	return f.invokeGoMethodArgs(L, fVal, methodName, methodType, args, false)
+	return f.invokeGoMethodArgs(l, fVal, methodName, methodType, args, false)
 }
 
-func (f *FileSystem) invokeGoMethodArgs(L *lua.LState, fVal reflect.Value, methodName string, methodType reflect.Type, args []lua.LValue, pcall bool) int {
+func (f *FileSystem) invokeGoMethodArgs(l *lua.LState, fVal reflect.Value, methodName string, methodType reflect.Type, args []lua.LValue, pcall bool) int {
 	methodVal := fVal.MethodByName(methodName)
 	if !methodVal.IsValid() {
 		if pcall {
-			errTbl := L.NewTable()
-			L.SetField(errTbl, "err", lua.LString(fmt.Sprintf("Method %s not implemented", methodName)))
-			L.Push(errTbl)
+			errTbl := l.NewTable()
+			l.SetField(errTbl, "err", lua.LString(fmt.Sprintf("Method %s not implemented", methodName)))
+			l.Push(errTbl)
 			return 1
 		}
-		L.RaiseError("%s", fmt.Sprintf("Method %s not implemented", methodName))
+		l.RaiseError("%s", fmt.Sprintf("Method %s not implemented", methodName))
 		return 0
 	}
 
@@ -160,23 +160,28 @@ func (f *FileSystem) invokeGoMethodArgs(L *lua.LState, fVal reflect.Value, metho
 	// We need to match arguments.
 	for i := 0; i < len(args); i++ {
 		var argType reflect.Type
-		if isVariadic && i >= numIn-1 {
+		switch {
+		case isVariadic && i >= numIn-1:
 			argType = methodType.In(numIn - 1).Elem()
-		} else if i < numIn {
+		case i < numIn:
 			argType = methodType.In(i)
-		} else {
+		default:
 			break // Too many arguments passed
+		}
+
+		if argType == nil {
+			break
 		}
 
 		val, err := f.convertLuaArgToGo(args[i], argType)
 		if err != nil {
 			if pcall {
-				errTbl := L.NewTable()
-				L.SetField(errTbl, "err", lua.LString(err.Error()))
-				L.Push(errTbl)
+				errTbl := l.NewTable()
+				l.SetField(errTbl, "err", lua.LString(err.Error()))
+				l.Push(errTbl)
 				return 1
 			}
-			L.RaiseError("%s", err.Error())
+			l.RaiseError("%s", err.Error())
 			return 0
 		}
 		in = append(in, val)
@@ -202,12 +207,12 @@ func (f *FileSystem) invokeGoMethodArgs(L *lua.LState, fVal reflect.Value, metho
 		if lastOut.Type().Implements(reflect.TypeOf((*error)(nil)).Elem()) && !lastOut.IsNil() {
 			errStr := lastOut.Interface().(error).Error()
 			if pcall {
-				errTbl := L.NewTable()
-				L.SetField(errTbl, "err", lua.LString(errStr))
-				L.Push(errTbl)
+				errTbl := l.NewTable()
+				l.SetField(errTbl, "err", lua.LString(errStr))
+				l.Push(errTbl)
 				return 1
 			}
-			L.RaiseError("%s", errStr)
+			l.RaiseError("%s", errStr)
 			return 0
 		}
 	}
@@ -219,7 +224,7 @@ func (f *FileSystem) invokeGoMethodArgs(L *lua.LState, fVal reflect.Value, metho
 	}
 
 	for i := 0; i < numOut; i++ {
-		L.Push(f.convertGoToLua(L, out[i].Interface()))
+		l.Push(f.convertGoToLua(l, out[i].Interface()))
 	}
 
 	return numOut
@@ -311,7 +316,7 @@ func (f *FileSystem) convertLuaArgToGo(arg lua.LValue, argType reflect.Type) (re
 	return reflect.Zero(argType), fmt.Errorf("unsupported type conversion: %v", argType)
 }
 
-func (f *FileSystem) convertGoToLua(L *lua.LState, val any) lua.LValue {
+func (f *FileSystem) convertGoToLua(l *lua.LState, val any) lua.LValue {
 	if val == nil {
 		return lua.LNil
 	}
@@ -331,17 +336,17 @@ func (f *FileSystem) convertGoToLua(L *lua.LState, val any) lua.LValue {
 		if v.Type().Elem().Kind() == reflect.Uint8 {
 			return lua.LString(v.Bytes())
 		}
-		tbl := L.NewTable()
+		tbl := l.NewTable()
 		for i := 0; i < v.Len(); i++ {
-			L.RawSetInt(tbl, i+1, f.convertGoToLua(L, v.Index(i).Interface()))
+			l.RawSetInt(tbl, i+1, f.convertGoToLua(l, v.Index(i).Interface()))
 		}
 		return tbl
 	case reflect.Map:
-		tbl := L.NewTable()
+		tbl := l.NewTable()
 		for _, key := range v.MapKeys() {
-			k := f.convertGoToLua(L, key.Interface())
-			val := f.convertGoToLua(L, v.MapIndex(key).Interface())
-			L.SetTable(tbl, k, val)
+			k := f.convertGoToLua(l, key.Interface())
+			val := f.convertGoToLua(l, v.MapIndex(key).Interface())
+			l.SetTable(tbl, k, val)
 		}
 		return tbl
 	default:
@@ -376,7 +381,7 @@ func (f *FileSystem) convertLuaToGo(val lua.LValue) any {
 	return nil
 }
 
-func (f *FileSystem) Eval(script string, numkeys int, keys []string, args []string) (any, error) {
+func (f *FileSystem) Eval(script string, _ int, keys []string, args []string) (any, error) {
 	L := f.initLuaState()
 	defer L.Close()
 
@@ -435,7 +440,7 @@ func (f *FileSystem) ScriptExists(scripts ...string) ([]bool, error) {
 	return res, nil
 }
 
-func (f *FileSystem) ScriptFlush(options ...dotpip.ScriptFlushOption) error {
+func (f *FileSystem) ScriptFlush(_ ...dotpip.ScriptFlushOption) error {
 	dir := getScriptsDir(f.pathRoot)
 	return os.RemoveAll(dir)
 }
