@@ -42,7 +42,7 @@ func TestJSONMore(t *testing.T) {
 
 			resDebug2, err := dotfs.JSONDebug("HELP", key, "$")
 			assert.NoError(t, err)
-			assert.Equal(t, "OK", resDebug2)
+			assert.Equal(t, string(dotpip.StatusOK), resDebug2)
 		})
 	}
 }
@@ -180,7 +180,7 @@ func TestJSONClearAndMSet(t *testing.T) {
 				dotpip.JSONMSetArg{Key: k2, Path: "$", Value: 2},
 			)
 			assert.NoError(t, err)
-			assert.Equal(t, "OK", resMSet)
+			assert.Equal(t, string(dotpip.StatusOK), resMSet)
 
 			// Clear
 			_, _ = dotfs.JSONSet(k1, "$", []any{1, 2, 3})

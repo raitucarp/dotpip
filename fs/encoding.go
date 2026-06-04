@@ -41,7 +41,7 @@ func (f *FileSystem) stringEncode(value string) (finalValue any, err error) {
 	case RAW:
 		finalValue = []byte(value)
 	default:
-		return "", fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return "", fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 
 	return finalValue, err
@@ -58,7 +58,7 @@ func (f *FileSystem) arrayEncode(value []string) (any, error) {
 	case RAW:
 		return json.Marshal(value)
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -82,7 +82,7 @@ func (f *FileSystem) arrayDecode(value any) ([]string, error) {
 		err := json.Unmarshal(value.([]byte), &finalValue)
 		return finalValue, err
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -100,7 +100,7 @@ func (f *FileSystem) listEncode(value []any) (any, error) {
 		// For simplicity, falling back to JSON.
 		return json.Marshal(value)
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -115,7 +115,7 @@ func (f *FileSystem) bitmapEncode(value []uint) (any, error) {
 	case RAW:
 		return json.Marshal(value)
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -139,7 +139,7 @@ func (f *FileSystem) bitmapDecode(value any) ([]uint, error) {
 		err := json.Unmarshal(value.([]byte), &finalValue)
 		return finalValue, err
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -163,7 +163,7 @@ func (f *FileSystem) listDecode(value any) ([]any, error) {
 		err := json.Unmarshal(value.([]byte), &finalValue)
 		return finalValue, err
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -180,7 +180,7 @@ func (f *FileSystem) hashEncode(value map[string]string) (any, error) {
 		// For RAW, we might just store a JSON byte slice or fallback.
 		return json.Marshal(value)
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -200,7 +200,7 @@ func (f *FileSystem) hashDecode(value any) (map[string]string, error) {
 		err := json.Unmarshal(value.([]byte), &finalValue)
 		return finalValue, err
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -224,10 +224,10 @@ func (f *FileSystem) stringDecode(value any) (v string, err error) {
 		} else if s, ok := value.(string); ok {
 			finalValue = s
 		} else {
-			return "", fmt.Errorf("RAW stringDecode expected []byte or string, got %T", value)
+			return "", fmt.Errorf(string(dotpip.ErrMsgRAWStringDecodeExpected), value)
 		}
 	default:
-		return "", fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return "", fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 
 	return finalValue, err
@@ -246,7 +246,7 @@ func (f *FileSystem) setEncode(value map[string]any) (any, error) {
 		// For RAW, we might just store a JSON byte slice or fallback.
 		return json.Marshal(value)
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -266,7 +266,7 @@ func (f *FileSystem) setDecode(value any) (map[string]any, error) {
 		err := json.Unmarshal(value.([]byte), &finalValue)
 		return finalValue, err
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -281,7 +281,7 @@ func (f *FileSystem) sortedSetEncode(value map[string]float64) (any, error) {
 	case RAW:
 		return json.Marshal(value)
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -301,7 +301,7 @@ func (f *FileSystem) sortedSetDecode(value any) (map[string]float64, error) {
 		err := json.Unmarshal(value.([]byte), &finalValue)
 		return finalValue, err
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -316,7 +316,7 @@ func (f *FileSystem) hyperLogLogEncode(value []byte) (any, error) {
 	case RAW:
 		return json.Marshal(value)
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -340,7 +340,7 @@ func (f *FileSystem) hyperLogLogDecode(value any) ([]byte, error) {
 		err := json.Unmarshal(value.([]byte), &finalValue)
 		return finalValue, err
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -356,7 +356,7 @@ func (f *FileSystem) streamEncode(value dotpip.Stream) (any, error) {
 	case RAW:
 		return json.Marshal(value)
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -376,7 +376,7 @@ func (f *FileSystem) streamDecode(value any) (dotpip.Stream, error) {
 		err := json.Unmarshal(value.([]byte), &finalValue)
 		return finalValue, err
 	default:
-		return finalValue, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return finalValue, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -396,7 +396,7 @@ func (f *FileSystem) JSONEncode(value any) (any, error) {
 	case RAW:
 		return json.Marshal(value)
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -423,6 +423,6 @@ func (f *FileSystem) JSONDecode(value any) (any, error) {
 		err := json.Unmarshal(value.([]byte), &finalValue)
 		return finalValue, err
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }

@@ -1,8 +1,9 @@
 package fs
 
+import "errors"
+
 import (
 	"dotpip"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -269,15 +270,15 @@ const (
 
 func parseBitfieldType(t string) (bool, int, error) {
 	if len(t) < 2 {
-		return false, 0, fmt.Errorf("invalid type")
+		return false, 0, errors.New(string(dotpip.ErrMsgInvalidType))
 	}
 	signed := t[0] == 'i'
 	if !signed && t[0] != 'u' {
-		return false, 0, fmt.Errorf("invalid type format")
+		return false, 0, errors.New(string(dotpip.ErrMsgInvalidTypeFormat))
 	}
 	bits, err := strconv.Atoi(t[1:])
 	if err != nil || bits <= 0 || (signed && bits > 64) || (!signed && bits > 63) {
-		return false, 0, fmt.Errorf("invalid bits")
+		return false, 0, errors.New(string(dotpip.ErrMsgInvalidBits))
 	}
 	return signed, bits, nil
 }
@@ -354,17 +355,17 @@ func (f *FileSystem) BitField(key dotpip.Key, args ...any) ([]any, error) {
 	for i := 0; i < len(args); i++ {
 		argStr, ok := args[i].(string)
 		if !ok {
-			return nil, fmt.Errorf("invalid argument type")
+			return nil, errors.New(string(dotpip.ErrMsgInvalidArgumentType))
 		}
 		argUpper := strings.ToUpper(argStr)
 
 		if argUpper == "OVERFLOW" {
 			if i+1 >= len(args) {
-				return nil, fmt.Errorf("syntax error")
+				return nil, errors.New(string(dotpip.ErrMsgSyntaxError))
 			}
 			ovStr, ok := args[i+1].(string)
 			if !ok {
-				return nil, fmt.Errorf("invalid overflow argument")
+				return nil, errors.New(string(dotpip.ErrMsgInvalidOverflowArg))
 			}
 			ovUpper := strings.ToUpper(ovStr)
 			switch ovUpper {
@@ -375,7 +376,7 @@ func (f *FileSystem) BitField(key dotpip.Key, args ...any) ([]any, error) {
 			case "FAIL":
 				overflow = overflowFail
 			default:
-				return nil, fmt.Errorf("invalid overflow type")
+				return nil, errors.New(string(dotpip.ErrMsgInvalidOverflowType))
 			}
 			i++
 			continue
@@ -383,7 +384,7 @@ func (f *FileSystem) BitField(key dotpip.Key, args ...any) ([]any, error) {
 
 		if argUpper == "GET" {
 			if i+2 >= len(args) {
-				return nil, fmt.Errorf("syntax error")
+				return nil, errors.New(string(dotpip.ErrMsgSyntaxError))
 			}
 			typStr := args[i+1].(string)
 			signed, bits, err := parseBitfieldType(typStr)
@@ -424,7 +425,7 @@ func (f *FileSystem) BitField(key dotpip.Key, args ...any) ([]any, error) {
 
 		if argUpper == "SET" {
 			if i+3 >= len(args) {
-				return nil, fmt.Errorf("syntax error")
+				return nil, errors.New(string(dotpip.ErrMsgSyntaxError))
 			}
 			typStr := args[i+1].(string)
 			signed, bits, err := parseBitfieldType(typStr)
@@ -492,7 +493,7 @@ func (f *FileSystem) BitField(key dotpip.Key, args ...any) ([]any, error) {
 
 		if argUpper == "INCRBY" {
 			if i+3 >= len(args) {
-				return nil, fmt.Errorf("syntax error")
+				return nil, errors.New(string(dotpip.ErrMsgSyntaxError))
 			}
 			typStr := args[i+1].(string)
 			signed, bits, err := parseBitfieldType(typStr)
@@ -572,7 +573,7 @@ func (f *FileSystem) BitField(key dotpip.Key, args ...any) ([]any, error) {
 			continue
 		}
 
-		return nil, fmt.Errorf("unknown subcommand")
+		return nil, errors.New(string(dotpip.ErrMsgUnknownSubcommand))
 	}
 
 	if err := f.setBitmapBytes(key, b); err != nil {

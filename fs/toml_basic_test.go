@@ -56,7 +56,7 @@ func TestTOMLOtherCommands(t *testing.T) {
 
 	resMerge, err := dotfs.TOMLMerge(key, "$.c", map[string]any{"x": 1})
 	assert.NoError(t, err)
-	assert.Equal(t, "OK", resMerge)
+	assert.Equal(t, string(dotpip.StatusOK), resMerge)
 
 	resDel, err := dotfs.TOMLDel(key, "$.a")
 	assert.NoError(t, err)
@@ -69,7 +69,7 @@ func TestTOMLOtherCommands(t *testing.T) {
 	k2 := dotpip.NewKey("toml3")
 	resMSet, err := dotfs.TOMLMSet(dotpip.JSONMSetArg{Key: k2, Path: "$", Value: map[string]any{"m": 1}})
 	assert.NoError(t, err)
-	assert.Equal(t, "OK", resMSet)
+	assert.Equal(t, string(dotpip.StatusOK), resMSet)
 
 	resIncr, err := dotfs.TOMLNumIncrBy(key, "$.e", 2)
 	assert.NoError(t, err)

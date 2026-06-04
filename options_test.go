@@ -33,8 +33,8 @@ func TestGenericOptions(t *testing.T) {
 	var scan ScanCommand
 	WithScanMatch("*")(&scan)
 	WithScanCount(10)(&scan)
-	WithScanType("string")(&scan)
-	if scan.Match != "*" || scan.Count != 10 || scan.Type != "string" {
+	WithScanType(string(ObjectTypeString))(&scan)
+	if scan.Match != "*" || scan.Count != 10 || scan.Type != string(ObjectTypeString) {
 		t.Error("ScanCommand options failed")
 	}
 

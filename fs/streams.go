@@ -1,5 +1,7 @@
 package fs
 
+import "errors"
+
 import (
 	"fmt"
 	"os"
@@ -16,12 +18,12 @@ func (f *FileSystem) parseStreamID(id string) (int64, int64, error) {
 	}
 	parts := strings.Split(id, "-")
 	if len(parts) > 2 {
-		return 0, 0, fmt.Errorf("ERR Invalid stream ID specified as string")
+		return 0, 0, errors.New(string(dotpip.ErrMsgInvalidStreamID))
 	}
 
 	ms, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
-		return 0, 0, fmt.Errorf("ERR Invalid stream ID specified as string")
+		return 0, 0, errors.New(string(dotpip.ErrMsgInvalidStreamID))
 	}
 
 	var seq int64
@@ -32,7 +34,7 @@ func (f *FileSystem) parseStreamID(id string) (int64, int64, error) {
 		} else {
 			seq, err = strconv.ParseInt(parts[1], 10, 64)
 			if err != nil {
-				return 0, 0, fmt.Errorf("ERR Invalid stream ID specified as string")
+				return 0, 0, errors.New(string(dotpip.ErrMsgInvalidStreamID))
 			}
 		}
 	} else {
@@ -175,16 +177,16 @@ func (f *FileSystem) XAdd(key dotpip.Key, id string, values map[string]string, o
 		case ms == lastMs:
 			seq = lastSeq + 1
 		case ms < lastMs:
-			return "", fmt.Errorf("ERR The ID specified in XADD is equal or smaller than the target stream top item")
+			return "", errors.New(string(dotpip.ErrMsgXAddIDEqualSmaller))
 		default:
 			seq = 0
 		}
 	default:
 		if compareIDs(ms, seq, lastMs, lastSeq) <= 0 {
 			if ms == 0 && seq == 0 {
-				return "", fmt.Errorf("ERR The ID specified in XADD must be greater than 0-0")
+				return "", errors.New(string(dotpip.ErrMsgXAddIDGreaterZero))
 			}
-			return "", fmt.Errorf("ERR The ID specified in XADD is equal or smaller than the target stream top item")
+			return "", errors.New(string(dotpip.ErrMsgXAddIDEqualSmaller))
 		}
 	}
 
@@ -246,7 +248,7 @@ func (f *FileSystem) XGroupCreate(key dotpip.Key, group string, id string, mkStr
 	}
 
 	if len(stream.Entries) == 0 && !mkStream {
-		return "", fmt.Errorf("ERR The XGROUP subcommand requires the key to exist")
+		return "", errors.New(string(dotpip.ErrMsgXGroupKeyExists))
 	}
 
 	if stream.Groups == nil {
@@ -254,7 +256,7 @@ func (f *FileSystem) XGroupCreate(key dotpip.Key, group string, id string, mkStr
 	}
 
 	if _, exists := stream.Groups[group]; exists {
-		return "", fmt.Errorf("BUSYGROUP Consumer Group name already exists")
+		return "", errors.New(string(dotpip.ErrMsgBusyGroup))
 	}
 
 	var lastDeliveredID string
@@ -291,7 +293,7 @@ func (f *FileSystem) XGroupCreate(key dotpip.Key, group string, id string, mkStr
 		return "", err
 	}
 
-	return "OK", nil
+	return string(dotpip.StatusOK), nil
 }
 
 func (f *FileSystem) XGroupCreateConsumer(key dotpip.Key, group string, consumer string) (int, error) {
@@ -302,7 +304,7 @@ func (f *FileSystem) XGroupCreateConsumer(key dotpip.Key, group string, consumer
 
 	g, ok := stream.Groups[group]
 	if !ok {
-		return 0, fmt.Errorf("ERR NOGROUP No such key '%s' or consumer group '%s'", strings.Join(key, "."), group)
+		return 0, fmt.Errorf(string(dotpip.ErrMsgNoGroup), strings.Join(key, "."), group)
 	}
 
 	if g.Consumers == nil {
@@ -330,7 +332,7 @@ func (f *FileSystem) XGroupDelConsumer(key dotpip.Key, group string, consumer st
 
 	g, ok := stream.Groups[group]
 	if !ok {
-		return 0, fmt.Errorf("ERR NOGROUP No such key '%s' or consumer group '%s'", strings.Join(key, "."), group)
+		return 0, fmt.Errorf(string(dotpip.ErrMsgNoGroup), strings.Join(key, "."), group)
 	}
 
 	cons, ok := g.Consumers[consumer]
@@ -375,7 +377,7 @@ func (f *FileSystem) XGroupSetID(key dotpip.Key, group string, id string) (strin
 
 	g, ok := stream.Groups[group]
 	if !ok {
-		return "", fmt.Errorf("ERR NOGROUP No such key '%s' or consumer group '%s'", strings.Join(key, "."), group)
+		return "", fmt.Errorf(string(dotpip.ErrMsgNoGroup), strings.Join(key, "."), group)
 	}
 
 	var lastDeliveredID string
@@ -407,7 +409,7 @@ func (f *FileSystem) XGroupSetID(key dotpip.Key, group string, id string) (strin
 		return "", err
 	}
 
-	return "OK", nil
+	return string(dotpip.StatusOK), nil
 }
 
 func (f *FileSystem) XLen(key dotpip.Key) (int, error) {
@@ -527,7 +529,7 @@ func (f *FileSystem) XRead(keys []dotpip.Key, ids []string, options ...dotpip.XR
 	}
 
 	if len(keys) != len(ids) {
-		return nil, fmt.Errorf("ERR Unbalanced XREAD list of streams and IDs")
+		return nil, errors.New(string(dotpip.ErrMsgUnbalancedXRead))
 	}
 
 	// For simplicity, blocking is not fully implemented with actual wait loops here.
@@ -586,7 +588,7 @@ func (f *FileSystem) XReadGroup(group string, consumer string, keys []dotpip.Key
 	}
 
 	if len(keys) != len(ids) {
-		return nil, fmt.Errorf("ERR Unbalanced XREAD list of streams and IDs")
+		return nil, errors.New(string(dotpip.ErrMsgUnbalancedXRead))
 	}
 
 	results := make(map[string][]dotpip.StreamEntry)
@@ -601,7 +603,7 @@ func (f *FileSystem) XReadGroup(group string, consumer string, keys []dotpip.Key
 
 		g, ok := stream.Groups[group]
 		if !ok {
-			return nil, fmt.Errorf("ERR NOGROUP No such key '%s' or consumer group '%s'", strings.Join(key, "."), group)
+			return nil, fmt.Errorf(string(dotpip.ErrMsgNoGroup), strings.Join(key, "."), group)
 		}
 
 		// Ensure consumer exists
@@ -766,7 +768,7 @@ func (f *FileSystem) XPending(key dotpip.Key, group string, options ...dotpip.XP
 
 	g, ok := stream.Groups[group]
 	if !ok {
-		return nil, fmt.Errorf("ERR NOGROUP No such key '%s' or consumer group '%s'", strings.Join(key, "."), group)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgNoGroup), strings.Join(key, "."), group)
 	}
 
 	if cmd.Start == "" && cmd.End == "" && cmd.Count == 0 {
@@ -870,7 +872,7 @@ func (f *FileSystem) XClaim(key dotpip.Key, group string, consumer string, minId
 
 	g, ok := stream.Groups[group]
 	if !ok {
-		return nil, fmt.Errorf("ERR NOGROUP No such key '%s' or consumer group '%s'", strings.Join(key, "."), group)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgNoGroup), strings.Join(key, "."), group)
 	}
 
 	if g.Consumers == nil {
@@ -960,7 +962,7 @@ func (f *FileSystem) XAutoClaim(key dotpip.Key, group string, consumer string, m
 
 	g, ok := stream.Groups[group]
 	if !ok {
-		return "", nil, fmt.Errorf("ERR NOGROUP No such key '%s' or consumer group '%s'", strings.Join(key, "."), group)
+		return "", nil, fmt.Errorf(string(dotpip.ErrMsgNoGroup), strings.Join(key, "."), group)
 	}
 
 	if g.Consumers == nil {
@@ -1092,7 +1094,7 @@ func (f *FileSystem) XInfoConsumers(key dotpip.Key, group string) ([]map[string]
 
 	g, ok := stream.Groups[group]
 	if !ok {
-		return nil, fmt.Errorf("ERR NOGROUP No such key '%s' or consumer group '%s'", strings.Join(key, "."), group)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgNoGroup), strings.Join(key, "."), group)
 	}
 
 	var consumers []map[string]any

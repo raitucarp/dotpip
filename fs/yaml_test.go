@@ -26,7 +26,7 @@ func TestYAML(t *testing.T) {
 
 			res, err := dotfs.YAMLSet(key, "$", map[string]any{"a": 1, "b": []any{1, 2, 3}})
 			assert.NoError(t, err)
-			assert.Equal(t, "OK", res)
+			assert.Equal(t, string(dotpip.StatusOK), res)
 
 			val, err := dotfs.YAMLGet(key, "$.b")
 			assert.NoError(t, err)

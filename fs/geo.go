@@ -1,5 +1,7 @@
 package fs
 
+import "errors"
+
 import (
 	"dotpip"
 	"encoding/json"
@@ -23,7 +25,7 @@ func (f *FileSystem) geospatialEncode(value map[string]dotpip.GeoLocation) (any,
 	case RAW:
 		return json.Marshal(value)
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -43,7 +45,7 @@ func (f *FileSystem) geospatialDecode(value any) (map[string]dotpip.GeoLocation,
 		err := json.Unmarshal(value.([]byte), &finalValue)
 		return finalValue, err
 	default:
-		return nil, fmt.Errorf("unsupported encoding type: %s", f.encodeType)
+		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
 }
 
@@ -55,7 +57,7 @@ func (f *FileSystem) readGeo(key dotpip.Key) (map[string]dotpip.GeoLocation, err
 	if f.formatter.GeospatialDecode != nil {
 		return f.formatter.GeospatialDecode(content)
 	}
-	return nil, fmt.Errorf("geospatial decoder not configured")
+	return nil, errors.New(string(dotpip.ErrMsgGeospatialDecoderNot))
 }
 
 func (f *FileSystem) writeGeo(key dotpip.Key, geo map[string]dotpip.GeoLocation) error {
@@ -66,7 +68,7 @@ func (f *FileSystem) writeGeo(key dotpip.Key, geo map[string]dotpip.GeoLocation)
 		}
 		return f.writeFileByKey(key, content.([]byte))
 	}
-	return fmt.Errorf("geospatial encoder not configured")
+	return errors.New(string(dotpip.ErrMsgGeospatialEncoderNot))
 }
 
 func (f *FileSystem) GeoAdd(key dotpip.Key, members []dotpip.GeoLocation, options ...dotpip.GeoAddOption) (int, error) {
@@ -85,7 +87,7 @@ func (f *FileSystem) GeoAdd(key dotpip.Key, members []dotpip.GeoLocation, option
 
 	for _, member := range members {
 		if member.Longitude < -180 || member.Longitude > 180 || member.Latitude < -85.05112878 || member.Latitude > 85.05112878 {
-			return 0, fmt.Errorf("ERR invalid longitude,latitude pair %f,%f", member.Longitude, member.Latitude)
+			return 0, fmt.Errorf(string(dotpip.ErrMsgInvalidLonLat), member.Longitude, member.Latitude)
 		}
 
 		existing, ok := geoMap[member.Name]
@@ -130,7 +132,7 @@ func (f *FileSystem) GeoDist(key dotpip.Key, member1 string, member2 string, uni
 	loc2, ok2 := geoMap[member2]
 
 	if !ok1 || !ok2 {
-		return 0, fmt.Errorf("ERR one or both members do not exist") // Redis returns nil, we return an error for simplicity
+		return 0, errors.New(string(dotpip.ErrMsgMembersNotExist)) // Redis returns nil, we return an error for simplicity
 	}
 
 	distKm := haversineDistance(loc1.Latitude, loc1.Longitude, loc2.Latitude, loc2.Longitude)
@@ -145,7 +147,7 @@ func (f *FileSystem) GeoDist(key dotpip.Key, member1 string, member2 string, uni
 	case dotpip.GeoUnitFT:
 		return distKm * 3280.84, nil
 	default:
-		return 0, fmt.Errorf("ERR unsupported unit provided")
+		return 0, errors.New(string(dotpip.ErrMsgUnsupportedUnit))
 	}
 }
 
@@ -237,12 +239,12 @@ func (f *FileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption
 	case cmd.FromMember != "":
 		loc, ok := geoMap[cmd.FromMember]
 		if !ok {
-			return nil, fmt.Errorf("ERR could not decode requested zset member")
+			return nil, errors.New(string(dotpip.ErrMsgCouldNotDecodeZSet))
 		}
 		centerLat = loc.Latitude
 		centerLon = loc.Longitude
 	default:
-		return nil, fmt.Errorf("ERR either FROMMEMBER or FROMLONLAT must be provided")
+		return nil, errors.New(string(dotpip.ErrMsgGeoSearchFrom))
 	}
 
 	var results []dotpip.GeoSearchResult
@@ -286,7 +288,7 @@ func (f *FileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption
 				distToReturn = convertFromKmToUnit(distKm, cmd.BoxUnit)
 			}
 		default:
-			return nil, fmt.Errorf("ERR either BYRADIUS or BYBOX must be provided")
+			return nil, errors.New(string(dotpip.ErrMsgGeoSearchBy))
 		}
 
 		if match {

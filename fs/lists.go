@@ -243,7 +243,7 @@ func (f *FileSystem) LPos(key dotpip.Key, element string, options ...dotpip.LPos
 	}
 
 	if cmd.Rank == 0 {
-		return nil, errors.New("ERR RANK can't be zero")
+		return nil, errors.New(string(dotpip.ErrMsgRankZero))
 	}
 
 	startIndex := 0
@@ -426,7 +426,7 @@ func (f *FileSystem) LSet(key dotpip.Key, index int, element string) error {
 	}
 
 	if len(list) == 0 {
-		return errors.New("ERR no such key")
+		return errors.New(string(dotpip.ErrMsgNoSuchKey))
 	}
 
 	length := len(list)
@@ -435,7 +435,7 @@ func (f *FileSystem) LSet(key dotpip.Key, index int, element string) error {
 	}
 
 	if index < 0 || index >= length {
-		return errors.New("ERR index out of range")
+		return errors.New(string(dotpip.ErrMsgIndexOutOfRange))
 	}
 
 	list[index] = element

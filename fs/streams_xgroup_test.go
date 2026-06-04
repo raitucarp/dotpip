@@ -26,12 +26,12 @@ func TestStreamsXGroupDestroyAndSetID(t *testing.T) {
 	// Create Group
 	res, err := dotfs.XGroupCreate(key, "mygroup", "$", false)
 	assert.NoError(t, err)
-	assert.Equal(t, "OK", res)
+	assert.Equal(t, string(dotpip.StatusOK), res)
 
 	// Set ID
 	_, err = dotfs.XGroupSetID(key, "mygroup", "0-0")
 	assert.NoError(t, err)
-	assert.Equal(t, "OK", res)
+	assert.Equal(t, string(dotpip.StatusOK), res)
 
 	// Set ID with invalid group
 	_, err = dotfs.XGroupSetID(key, "mygroup_invalid", "0-0")

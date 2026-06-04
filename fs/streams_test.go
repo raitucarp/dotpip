@@ -80,7 +80,7 @@ func TestStreams(t *testing.T) {
 			if err != nil {
 				t.Fatalf("XGroupCreate failed: %v", err)
 			}
-			if groupStatus != "OK" {
+			if groupStatus != string(dotpip.StatusOK) {
 				t.Errorf("Expected OK, got %s", groupStatus)
 			}
 
