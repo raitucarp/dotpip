@@ -307,9 +307,25 @@ func TestDBSizeWaitMove(t *testing.T) {
 		t.Errorf("WaitAOF should be 0")
 	}
 
-	moved, _ := dotfs.Move(k1, 1)
+	tmpDir, err := os.MkdirTemp("", "dotpip_generic_test_move_db2_")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	db2 := NewFileSystem(tmpDir)
+	defer db2.Close()
+
+	moved, _ := dotfs.Move(k1, db2)
+	if moved != 1 {
+		t.Errorf("Move should return 1")
+	}
+
+	// target already exist, should return 0
+	_, _ = dotfs.Set(k1, "v2")
+	moved, _ = dotfs.Move(k1, db2)
 	if moved != 0 {
-		t.Errorf("Move should return 0")
+		t.Errorf("Move should return 0 when target exists")
 	}
 }
 

@@ -116,8 +116,8 @@ type DotPip interface {
 	Restore(key Key, ttl int, serializedValue []byte, options ...RestoreOption) error
 	Sort(key Key) ([]string, error)
 	Scan(cursor uint64, options ...ScanOption) (uint64, []Key, error)
-	Move(key Key, db int) (int, error)
-	Migrate(host string, port int, key Key, destinationDB int, timeout int, options ...MigrateOption) error
+	Move(key Key, db DotPip) (int, error)
+	Migrate(host string, port int, key Key, destinationDB DotPip, timeout int, options ...MigrateOption) error
 	Wait(numReplicas int, timeout int) (int, error)
 	WaitAOF(numLocal int, numReplicas int, timeout int) (int, int, error)
 	DBSize() (int, error)
