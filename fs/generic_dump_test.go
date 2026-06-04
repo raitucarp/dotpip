@@ -60,3 +60,33 @@ func TestGenericMigrateSort(t *testing.T) {
 	assert.Error(t, err) // It says not implemented usually
 	_ = resSort
 }
+
+func TestGenericRestoreMore(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "dotpip_generic_restore_test_")
+	assert.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	dotfs := fs.NewFileSystem(tmpDir)
+	defer dotfs.Close()
+
+	key := dotpip.NewKey("mykey_restore")
+	keyTarget := dotpip.NewKey("mykey_target")
+	_, _ = dotfs.Set(key, "val")
+
+	dumpBytes, _ := dotfs.Dump(key)
+
+	// Restore over existing key without replace
+	_, _ = dotfs.Set(keyTarget, "val")
+	err = dotfs.Restore(keyTarget, 0, dumpBytes)
+	assert.Error(t, err)
+
+	// Restore with TTL relative
+	keyTTL := dotpip.NewKey("mykey_ttl")
+	err = dotfs.Restore(keyTTL, 1000000, dumpBytes)
+	assert.NoError(t, err)
+
+	// Restore with TTL absolute
+	keyAbs := dotpip.NewKey("mykey_abs")
+	err = dotfs.Restore(keyAbs, 1999999999999, dumpBytes, dotpip.WithRestoreAbsTTL())
+	assert.NoError(t, err)
+}

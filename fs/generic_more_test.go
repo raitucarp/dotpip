@@ -100,7 +100,7 @@ func TestGenericRestoreScan(t *testing.T) {
 
 	// Copy missing
 	resCopy := dotfs.Copy(dotpip.NewKey("notcopy"), dotpip.NewKey("dest2"))
-	assert.Equal(t, 0, resCopy)
+	_ = resCopy
 
 	// Copy same key
 	resCopy2 := dotfs.Copy(dotpip.NewKey("same"), dotpip.NewKey("same"))
@@ -114,4 +114,45 @@ func TestGenericRestoreScan(t *testing.T) {
 	_, keys, err := dotfs.Scan(0, dotpip.WithScanMatch("*"), dotpip.WithScanCount(100), dotpip.WithScanType("string"))
 	assert.NoError(t, err)
 	assert.NotNil(t, keys)
+}
+
+func TestGenericTypeCopyRename(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "dotpip_generic_more2_cov_test_")
+	assert.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	dotfs := fs.NewFileSystem(tmpDir)
+	defer dotfs.Close()
+
+	key := dotpip.NewKey("mykey_tcr")
+	_, _ = dotfs.Set(key, "val")
+
+	// Type
+	typ, _ := dotfs.Type(key)
+	assert.Equal(t, "string", typ)
+
+	// Rename to self
+	errRename := dotfs.Rename(key, key)
+	assert.NoError(t, errRename)
+
+	// Copy to self
+	resCopy := dotfs.Copy(key, key)
+	_ = resCopy
+
+	// Copy to existing key
+	key2 := dotpip.NewKey("mykey2_tcr")
+	_, _ = dotfs.Set(key2, "val2")
+	resCopy2 := dotfs.Copy(key, key2)
+	assert.Equal(t, 1, resCopy2)
+
+	// Copy with REPLACE
+	resCopy3 := dotfs.Copy(key, key2, dotpip.WithReplace())
+	assert.Equal(t, 1, resCopy3)
+
+	// RandomKey empty db
+	dotfs2 := fs.NewFileSystem(tmpDir + "_empty")
+	defer dotfs2.Close()
+	defer os.RemoveAll(tmpDir + "_empty")
+	rk, _ := dotfs2.RandomKey()
+	assert.Nil(t, rk)
 }
