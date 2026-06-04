@@ -3,6 +3,7 @@ package fs
 import (
 	"dotpip"
 	"math/rand"
+	"sort"
 )
 
 func (f *FileSystem) readSet(key dotpip.Key) (map[string]any, error) {
@@ -422,4 +423,39 @@ func (f *FileSystem) SUnionStore(destination dotpip.Key, keys ...dotpip.Key) (in
 	}
 
 	return len(union), nil
+}
+
+func (f *FileSystem) SScan(key dotpip.Key, cursor uint64, options ...dotpip.ScanOption) (uint64, []string, error) {
+	cmd := &dotpip.ScanCommand{Count: 10}
+	for _, option := range options {
+		option(cmd)
+	}
+
+	set, err := f.readSet(key)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	var allMembers []string
+	for member := range set {
+		if cmd.Match != "" && !matchPattern(cmd.Match, member) {
+			continue
+		}
+		allMembers = append(allMembers, member)
+	}
+
+	sort.Strings(allMembers)
+
+	if cursor >= uint64(len(allMembers)) {
+		return 0, []string{}, nil
+	}
+
+	end := cursor + uint64(cmd.Count)
+	nextCursor := end
+	if end >= uint64(len(allMembers)) {
+		end = uint64(len(allMembers))
+		nextCursor = 0
+	}
+
+	return nextCursor, allMembers[cursor:end], nil
 }

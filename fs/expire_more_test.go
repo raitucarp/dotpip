@@ -179,7 +179,7 @@ func TestPExpireAtPast(t *testing.T) {
 	_, _ = dotfs.Set(key, "val")
 
 	// NX when has TTL
-	_, _ = dotfs.PExpire(key, 1000000) // set far future ttl
+	_, _ = dotfs.PExpire(key, 1000000)                            // set far future ttl
 	res, err := dotfs.PExpireAt(key, 1000, dotpip.WithExpireNX()) // past TTL
 	assert.NoError(t, err)
 	assert.Equal(t, false, res) // Failed to update because NX
@@ -194,7 +194,7 @@ func TestPExpireAtPast(t *testing.T) {
 	// GT when new TTL <= current TTL
 	_, _ = dotfs.Set(key, "val")
 	_, _ = dotfs.PExpireAt(key, int(time.Now().Add(10*time.Second).UnixMilli())) // future TTL
-	res, err = dotfs.PExpireAt(key, 1000, dotpip.WithExpireGT()) // past TTL
+	res, err = dotfs.PExpireAt(key, 1000, dotpip.WithExpireGT())                 // past TTL
 	assert.NoError(t, err)
 	assert.Equal(t, false, res)
 

@@ -4,6 +4,7 @@ import (
 	"dotpip"
 	"math/rand"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -336,4 +337,44 @@ func (f *FileSystem) HVals(key dotpip.Key) ([]string, error) {
 	}
 
 	return vals, nil
+}
+
+func (f *FileSystem) HScan(key dotpip.Key, cursor uint64, options ...dotpip.ScanOption) (uint64, map[string]string, error) {
+	cmd := &dotpip.ScanCommand{Count: 10}
+	for _, option := range options {
+		option(cmd)
+	}
+
+	hash, err := f.readHash(key)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	var allKeys []string
+	for k := range hash {
+		if cmd.Match != "" && !matchPattern(cmd.Match, k) {
+			continue
+		}
+		allKeys = append(allKeys, k)
+	}
+
+	sort.Strings(allKeys)
+
+	if cursor >= uint64(len(allKeys)) {
+		return 0, map[string]string{}, nil
+	}
+
+	end := cursor + uint64(cmd.Count)
+	nextCursor := end
+	if end >= uint64(len(allKeys)) {
+		end = uint64(len(allKeys))
+		nextCursor = 0
+	}
+
+	result := make(map[string]string)
+	for _, k := range allKeys[cursor:end] {
+		result[k] = hash[k]
+	}
+
+	return nextCursor, result, nil
 }
