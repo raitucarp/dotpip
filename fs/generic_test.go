@@ -2,6 +2,8 @@ package fs
 
 import (
 	"dotpip"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -308,5 +310,33 @@ func TestDBSizeWaitMove(t *testing.T) {
 	moved, _ := dotfs.Move(k1, 1)
 	if moved != 0 {
 		t.Errorf("Move should return 0")
+	}
+}
+
+func TestFileExistenceAndEncoding(t *testing.T) {
+	_ = dotfs.FlushAll()
+
+	// 1. NewKey("a:b:c") should create a/b/c.json
+	k1 := dotpip.NewKey("a:b:c")
+	_, err := dotfs.Set(k1, "value1")
+	if err != nil {
+		t.Fatalf("Failed to Set k1: %v", err)
+	}
+
+	expectedPath1 := filepath.Join(fssa.pathRoot, "a", "b", "c.json")
+	if _, err := os.Stat(expectedPath1); os.IsNotExist(err) {
+		t.Errorf("File for NewKey(\"a:b:c\") was not created at expected path: %s", expectedPath1)
+	}
+
+	// 2. NewKey("x", "y", "z") should create x/y/z.json
+	k2 := dotpip.NewKey("x", "y", "z")
+	_, err = dotfs.Set(k2, "value2")
+	if err != nil {
+		t.Fatalf("Failed to Set k2: %v", err)
+	}
+
+	expectedPath2 := filepath.Join(fssa.pathRoot, "x", "y", "z.json")
+	if _, err := os.Stat(expectedPath2); os.IsNotExist(err) {
+		t.Errorf("File for NewKey(\"x\", \"y\", \"z\") was not created at expected path: %s", expectedPath2)
 	}
 }

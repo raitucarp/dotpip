@@ -14,11 +14,26 @@ const (
 )
 
 func NewKey(s ...string) Key {
-	return Key(s)
+	var k Key
+	for _, part := range s {
+		k = append(k, strings.Split(part, ":")...)
+	}
+	return k
 }
 
-func NewKeyWithDelimiter(keyString string, delimiter string) Key {
-	return Key(strings.Split(keyString, delimiter))
+func NewKeyWithDelimiter(args ...string) Key {
+	if len(args) == 0 {
+		return Key{}
+	}
+	if len(args) == 1 {
+		return Key{}
+	}
+	delimiter := args[len(args)-1]
+	var k Key
+	for i := 0; i < len(args)-1; i++ {
+		k = append(k, strings.Split(args[i], delimiter)...)
+	}
+	return k
 }
 
 type DataTypeFormatter struct {
