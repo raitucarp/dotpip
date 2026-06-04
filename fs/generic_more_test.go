@@ -36,17 +36,17 @@ func TestGenericMore(t *testing.T) {
 	// ObjectEncoding
 	resEnc, err := dotfs.ObjectEncoding(key)
 	assert.NoError(t, err)
-	assert.Equal(t, "json", resEnc)
+	assert.Equal(t, dotpip.ObjectEncodingJSON, resEnc)
 
 	// ObjectEncoding nonexistent
 	resEnc, err = dotfs.ObjectEncoding(dotpip.NewKey("no"))
 	assert.NoError(t, err)
-	assert.Equal(t, "", resEnc)
+	assert.Equal(t, dotpip.ObjectEncoding(""), resEnc)
 
 	// Type nonexistent
 	resType, err := dotfs.Type(dotpip.NewKey("no"))
 	assert.NoError(t, err)
-	assert.Equal(t, "none", resType)
+	assert.Equal(t, dotpip.ObjectTypeNone, resType)
 }
 
 func TestZSetsMore(t *testing.T) {
@@ -111,7 +111,7 @@ func TestGenericRestoreScan(t *testing.T) {
 		_, _ = dotfs.Set(dotpip.NewKey("scan_key"), "val")
 	}
 
-	_, keys, err := dotfs.Scan(0, dotpip.WithScanMatch("*"), dotpip.WithScanCount(100), dotpip.WithScanType("string"))
+	_, keys, err := dotfs.Scan(0, dotpip.WithScanMatch("*"), dotpip.WithScanCount(100), dotpip.WithScanType(string(dotpip.ObjectTypeString)))
 	assert.NoError(t, err)
 	assert.NotNil(t, keys)
 }
@@ -129,7 +129,7 @@ func TestGenericTypeCopyRename(t *testing.T) {
 
 	// Type
 	typ, _ := dotfs.Type(key)
-	assert.Equal(t, "string", typ)
+	assert.Equal(t, dotpip.ObjectTypeString, typ)
 
 	// Rename to self
 	errRename := dotfs.Rename(key, key)

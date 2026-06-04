@@ -24,7 +24,7 @@ func runJSONTests(t *testing.T, encoding fs.FileEncodeType) {
 	// Set
 	res, err := dotfs.JSONSet(key, "$", map[string]any{"a": 1, "b": []any{1, 2, 3}})
 	assert.NoError(t, err)
-	assert.Equal(t, "OK", res)
+	assert.Equal(t, string(dotpip.StatusOK), res)
 
 	// Get
 	val, err := dotfs.JSONGet(key, "$.b")
@@ -64,7 +64,7 @@ func TestJSONGet(t *testing.T) {
 			// Set
 			res, err := dotfs.JSONSet(key, "$", map[string]any{"a": 1, "b": []any{1, 2, 3}})
 			assert.NoError(t, err)
-			assert.Equal(t, "OK", res)
+			assert.Equal(t, string(dotpip.StatusOK), res)
 
 			// Get Multiple Paths
 			val, err := dotfs.JSONGet(key, "$.a", "$.b")
@@ -179,7 +179,7 @@ func TestJSONMerge(t *testing.T) {
 			// Update 'c' to 4, add 'e': 5, remove 'd' by setting it to nil
 			res, err := dotfs.JSONMerge(key, "$.b", map[string]any{"c": 4, "e": 5, "d": nil})
 			assert.NoError(t, err)
-			assert.Equal(t, "OK", res)
+			assert.Equal(t, string(dotpip.StatusOK), res)
 
 			val, _ := dotfs.JSONGet(key, "$.b")
 			b, _ := json.Marshal(val)

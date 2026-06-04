@@ -108,7 +108,7 @@ type DotPip interface {
 	Rename(key Key, newKey Key) error
 	RenameNX(key Key, newKey Key) (bool, error)
 	Keys(pattern string) ([]Key, error)
-	Type(key Key) (string, error)
+	Type(key Key) (ObjectType, error)
 	RandomKey() (Key, error)
 	Touch(keys ...Key) (int, error)
 	Unlink(keys ...Key) int
@@ -121,7 +121,7 @@ type DotPip interface {
 	Wait(numReplicas int, timeout int) (int, error)
 	WaitAOF(numLocal int, numReplicas int, timeout int) (int, int, error)
 	DBSize() (int, error)
-	ObjectEncoding(key Key) (string, error)
+	ObjectEncoding(key Key) (ObjectEncoding, error)
 	ObjectFreq(key Key) (int, error)
 	ObjectIdletime(key Key) (int, error)
 	ObjectRefcount(key Key) (int, error)

@@ -174,43 +174,43 @@ func (f *FileSystem) Keys(pattern string) ([]dotpip.Key, error) {
 	return keys, err
 }
 
-func (f *FileSystem) Type(key dotpip.Key) (string, error) {
+func (f *FileSystem) Type(key dotpip.Key) (dotpip.ObjectType, error) {
 	// Determine type by trying to decode it
 	// First, check if it exists
 	exist, err := f.checkExistByKey(key)
 	if err != nil {
-		return "none", err
+		return dotpip.ObjectTypeNone, err
 	}
 	if !exist {
-		return "none", nil
+		return dotpip.ObjectTypeNone, nil
 	}
 
 	content, err := f.readFileByKey(key)
 	if err != nil {
-		return "none", err
+		return dotpip.ObjectTypeNone, err
 	}
 
 	// Try decoding in order of complexity/specificity
 	if _, err := f.formatter.StringDecode(content); err == nil {
-		return "string", nil
+		return dotpip.ObjectTypeString, nil
 	}
 	if _, err := f.formatter.HashDecode(content); err == nil {
-		return "hash", nil
+		return dotpip.ObjectTypeHash, nil
 	}
 	if _, err := f.formatter.ListDecode(content); err == nil {
-		return "list", nil
+		return dotpip.ObjectTypeList, nil
 	}
 	if _, err := f.formatter.SetDecode(content); err == nil {
-		return "set", nil
+		return dotpip.ObjectTypeSet, nil
 	}
 	if _, err := f.formatter.SortedSetDecode(content); err == nil {
-		return "zset", nil
+		return dotpip.ObjectTypeZSet, nil
 	}
 	if _, err := f.formatter.StreamDecode(content); err == nil {
-		return "stream", nil
+		return dotpip.ObjectTypeStream, nil
 	}
 
-	return "unknown", nil
+	return dotpip.ObjectTypeUnknown, nil
 }
 
 func (f *FileSystem) RandomKey() (dotpip.Key, error) {
@@ -295,7 +295,7 @@ func (f *FileSystem) Restore(key dotpip.Key, ttl int, serializedValue []byte, op
 	}
 
 	if exist && !cmd.Replace {
-		return errors.New("BUSYKEY Target key name already exists")
+		return errors.New(string(dotpip.ErrMsgBusyKey))
 	}
 
 	if err := f.writeFileByKey(key, serializedValue); err != nil {
@@ -325,16 +325,16 @@ func (f *FileSystem) Sort(key dotpip.Key) ([]string, error) {
 
 	var items []string
 	switch typ {
-	case "none":
+	case dotpip.ObjectTypeNone:
 		return []string{}, nil
-	case "list":
+	case dotpip.ObjectTypeList:
 		items, err = f.LRange(key, 0, -1)
-	case "set":
+	case dotpip.ObjectTypeSet:
 		items, err = f.SMembers(key)
-	case "zset":
+	case dotpip.ObjectTypeZSet:
 		items, err = f.ZRange(key, "-inf", "+inf")
 	default:
-		return nil, errors.New("WRONGTYPE Operation against a key holding the wrong kind of value")
+		return nil, errors.New(string(dotpip.ErrMsgWrongType))
 	}
 
 	if err != nil {
@@ -383,7 +383,7 @@ func (f *FileSystem) Scan(cursor uint64, options ...dotpip.ScanOption) (uint64, 
 
 			if cmd.Type != "" {
 				typ, err := f.Type(key)
-				if err != nil || typ != cmd.Type {
+				if err != nil || string(typ) != cmd.Type {
 					return nil
 				}
 			}
@@ -471,7 +471,7 @@ func (f *FileSystem) DBSize() (int, error) {
 	return count, err
 }
 
-func (f *FileSystem) ObjectEncoding(key dotpip.Key) (string, error) {
+func (f *FileSystem) ObjectEncoding(key dotpip.Key) (dotpip.ObjectEncoding, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {
 		return "", err
@@ -479,13 +479,13 @@ func (f *FileSystem) ObjectEncoding(key dotpip.Key) (string, error) {
 	// Simplified representation since everything is serialized as defined by f.encodeType
 	switch f.encodeType {
 	case JSON:
-		return "json", nil
+		return dotpip.ObjectEncodingJSON, nil
 	case YAML:
-		return "yaml", nil
+		return dotpip.ObjectEncodingYAML, nil
 	case TOML:
-		return "toml", nil
+		return dotpip.ObjectEncodingTOML, nil
 	default:
-		return "raw", nil
+		return dotpip.ObjectEncodingRAW, nil
 	}
 }
 
@@ -494,7 +494,7 @@ func (f *FileSystem) ObjectFreq(key dotpip.Key) (int, error) {
 	if err != nil || !exist {
 		return 0, err
 	}
-	return 0, errors.New("ERR LFU eviction not supported")
+	return 0, errors.New(string(dotpip.ErrMsgLFUEviction))
 }
 
 func (f *FileSystem) ObjectIdletime(key dotpip.Key) (int, error) {
@@ -523,5 +523,5 @@ func (f *FileSystem) ObjectRefcount(key dotpip.Key) (int, error) {
 }
 
 func (f *FileSystem) Migrate(_ string, _ int, _ dotpip.Key, _ dotpip.DotPip, _ int, _ ...dotpip.MigrateOption) error {
-	return errors.New("MIGRATE is not supported in fs mode over network")
+	return errors.New(string(dotpip.ErrMsgMigrateNotSupported))
 }

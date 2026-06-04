@@ -133,12 +133,12 @@ func TestType(t *testing.T) {
 	_, _ = dotfs.LPush(listKey, "val1")
 
 	typ, _ := dotfs.Type(strKey)
-	if typ != "string" {
+	if typ != dotpip.ObjectTypeString {
 		t.Errorf("Expected type string, got %s", typ)
 	}
 
 	typ, _ = dotfs.Type(listKey)
-	if typ != "list" {
+	if typ != dotpip.ObjectTypeList {
 		t.Errorf("Expected type list, got %s", typ)
 	}
 }
@@ -260,7 +260,7 @@ func TestObjectCommands(t *testing.T) {
 	if err != nil {
 		t.Errorf("ObjectEncoding error: %v", err)
 	}
-	if enc != "json" && enc != "yaml" && enc != "toml" && enc != "raw" {
+	if enc != dotpip.ObjectEncodingJSON && enc != dotpip.ObjectEncodingYAML && enc != dotpip.ObjectEncodingTOML && enc != dotpip.ObjectEncodingRAW {
 		t.Errorf("Unexpected encoding: %s", enc)
 	}
 

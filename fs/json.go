@@ -65,7 +65,7 @@ func (f *FileSystem) JSONSet(key dotpip.Key, path string, value any) (string, er
 		if path == "$" || path == "." {
 			doc = value
 		} else {
-			return "", errors.New("ERR new objects must be created at the root")
+			return "", errors.New(string(dotpip.ErrMsgNewObjectsRoot))
 		}
 	} else {
 		err = expr.Set(doc, value)
@@ -79,7 +79,7 @@ func (f *FileSystem) JSONSet(key dotpip.Key, path string, value any) (string, er
 		return "", err
 	}
 
-	return "OK", nil
+	return string(dotpip.StatusOK), nil
 }
 
 func (f *FileSystem) JSONGet(key dotpip.Key, paths ...string) (any, error) {
@@ -545,7 +545,7 @@ func (f *FileSystem) JSONMerge(key dotpip.Key, path string, value any) (string, 
 	if changedAny {
 		err = f.writeJSON(key, doc)
 	}
-	return "OK", err
+	return string(dotpip.StatusOK), err
 }
 
 func (f *FileSystem) JSONMGet(path string, keys ...dotpip.Key) ([]any, error) {
@@ -582,7 +582,7 @@ func (f *FileSystem) JSONMSet(args ...dotpip.JSONMSetArg) (string, error) {
 			return "", err
 		}
 	}
-	return "OK", nil
+	return string(dotpip.StatusOK), nil
 }
 
 func (f *FileSystem) JSONNumIncrBy(key dotpip.Key, path string, value float64) ([]any, error) {
@@ -893,5 +893,5 @@ func (f *FileSystem) JSONDebug(subcommand string, key dotpip.Key, path string) (
 	}
 
 	// Other subcommands can just return basic OK for now
-	return "OK", nil
+	return string(dotpip.StatusOK), nil
 }

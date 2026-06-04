@@ -26,7 +26,7 @@ func TestTOML(t *testing.T) {
 
 			res, err := dotfs.TOMLSet(key, "$", map[string]any{"a": 1, "b": []any{1, 2, 3}})
 			assert.NoError(t, err)
-			assert.Equal(t, "OK", res)
+			assert.Equal(t, string(dotpip.StatusOK), res)
 
 			val, err := dotfs.TOMLGet(key, "$.b")
 			assert.NoError(t, err)

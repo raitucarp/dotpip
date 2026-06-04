@@ -185,7 +185,7 @@ func (f *FileSystem) IncrBy(key dotpip.Key, increment int) (ret int, err error) 
 
 	num, err := strconv.Atoi(val)
 	if err != nil {
-		return 0, errors.New("ERR value is not an integer or out of range")
+		return 0, errors.New(string(dotpip.ErrMsgValueNotInt))
 	}
 
 	num += increment
@@ -212,7 +212,7 @@ func (f *FileSystem) IncrByFloat(key dotpip.Key, increment float64) (ret float64
 
 	num, err := strconv.ParseFloat(val, 64)
 	if err != nil {
-		return 0, errors.New("ERR value is not a valid float")
+		return 0, errors.New(string(dotpip.ErrMsgValueNotFloat))
 	}
 
 	num += increment
@@ -291,7 +291,7 @@ func (f *FileSystem) SetRange(key dotpip.Key, offset int, value string) (ret int
 	}()
 
 	if offset < 0 {
-		return 0, errors.New("ERR offset is out of range")
+		return 0, errors.New(string(dotpip.ErrMsgOffsetOutOfRange))
 	}
 
 	val, err := f.Get(key)
