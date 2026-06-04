@@ -343,7 +343,7 @@ func TestFileExistenceAndEncoding(t *testing.T) {
 
 func TestHScan(t *testing.T) {
 	key := dotpip.NewKey("myhash")
-	dotfs.HSet(key, map[string]string{
+	_, _ = dotfs.HSet(key, map[string]string{
 		"field1": "val1",
 		"field2": "val2",
 		"field3": "val3",
@@ -389,7 +389,7 @@ func TestHScan(t *testing.T) {
 
 func TestSScan(t *testing.T) {
 	key := dotpip.NewKey("myset")
-	dotfs.SAdd(key, "mem1", "mem2", "mem3", "other")
+	_, _ = dotfs.SAdd(key, "mem1", "mem2", "mem3", "other")
 
 	// Scan all
 	cursor, result, err := dotfs.SScan(key, 0, dotpip.WithScanCount(100))
@@ -430,7 +430,7 @@ func TestSScan(t *testing.T) {
 
 func TestZScan(t *testing.T) {
 	key := dotpip.NewKey("myzset")
-	dotfs.ZAdd(key, []dotpip.Z{
+	_, _ = dotfs.ZAdd(key, []dotpip.Z{
 		{Score: 1, Member: "mem1"},
 		{Score: 2, Member: "mem2"},
 		{Score: 3, Member: "mem3"},
