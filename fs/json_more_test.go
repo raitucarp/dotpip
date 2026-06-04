@@ -196,3 +196,50 @@ func TestJSONClearAndMSet(t *testing.T) {
 		})
 	}
 }
+
+func TestJSONClearTrimErrors(t *testing.T) {
+	encodings := []fs.FileEncodeType{fs.JSON, fs.YAML, fs.TOML, fs.RAW}
+	for _, enc := range encodings {
+		t.Run(string(enc), func(t *testing.T) {
+			tmpDir, err := os.MkdirTemp("", "dotpip_json_more_cov_test_")
+			assert.NoError(t, err)
+			defer os.RemoveAll(tmpDir)
+
+			dotfs := fs.NewFileSystem(tmpDir)
+			defer dotfs.Close()
+			dotfs.EncodeType(enc)
+
+			key := dotpip.NewKey("myjson_errs")
+			_, _ = dotfs.JSONSet(key, "$", map[string]any{"a": 1, "b": "str"})
+
+			// Trim error (not array)
+			resTrim, err := dotfs.JSONArrTrim(key, "$.a", 0, 1)
+			assert.NoError(t, err)
+			assert.NotNil(t, resTrim)
+
+			// Index error (not array)
+			resIdx, err := dotfs.JSONArrIndex(key, "$.a", 1)
+			assert.NoError(t, err)
+			assert.NotNil(t, resIdx)
+
+			// Type error handling in JSONArrInsert (not array)
+			resIns, err := dotfs.JSONArrInsert(key, "$.a", 0, 1)
+			assert.NoError(t, err)
+			assert.NotNil(t, resIns)
+
+			// JSONArrAppend error
+			resApp, err := dotfs.JSONArrAppend(key, "$.a", 1)
+			assert.NoError(t, err)
+			assert.NotNil(t, resApp)
+
+			// JSONGet bad path
+			resGetBad, err := dotfs.JSONGet(key, "$.a.invalid")
+			assert.NoError(t, err)
+			assert.Nil(t, resGetBad)
+
+			// JSONDel error (root)
+			resDelRoot, _ := dotfs.JSONDel(key, "$")
+			assert.Equal(t, 1, resDelRoot)
+		})
+	}
+}

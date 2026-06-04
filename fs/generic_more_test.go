@@ -80,3 +80,38 @@ func TestZSetsMore(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, resUnion, 3) // a, b, c
 }
+
+func TestGenericRestoreScan(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "dotpip_generic_more_cov_test_")
+	assert.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	dotfs := fs.NewFileSystem(tmpDir)
+	defer dotfs.Close()
+
+	// Rename missing source
+	errRen := dotfs.Rename(dotpip.NewKey("notsource"), dotpip.NewKey("dest"))
+	assert.Error(t, errRen)
+
+	// Rename to same key
+	_, _ = dotfs.Set(dotpip.NewKey("same"), "val")
+	errRen2 := dotfs.Rename(dotpip.NewKey("same"), dotpip.NewKey("same"))
+	assert.NoError(t, errRen2)
+
+	// Copy missing
+	resCopy := dotfs.Copy(dotpip.NewKey("notcopy"), dotpip.NewKey("dest2"))
+	assert.Equal(t, 0, resCopy)
+
+	// Copy same key
+	resCopy2 := dotfs.Copy(dotpip.NewKey("same"), dotpip.NewKey("same"))
+	assert.Equal(t, 1, resCopy2)
+
+	// Scan
+	for i := 0; i < 5; i++ {
+		_, _ = dotfs.Set(dotpip.NewKey("scan_key"), "val")
+	}
+
+	_, keys, err := dotfs.Scan(0, dotpip.WithScanMatch("*"), dotpip.WithScanCount(100), dotpip.WithScanType("string"))
+	assert.NoError(t, err)
+	assert.NotNil(t, keys)
+}
