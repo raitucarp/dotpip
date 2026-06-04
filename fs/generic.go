@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -316,9 +317,40 @@ func (f *FileSystem) Restore(key dotpip.Key, ttl int, serializedValue []byte, op
 	return nil
 }
 
-func (f *FileSystem) Sort(_ dotpip.Key) ([]string, error) {
-	// Only simple sort without by/get parameters for now, which isn't part of standard dotpip sorting if we don't have Sort() in DotPip yet.
-	return nil, errors.New("not implemented")
+func (f *FileSystem) Sort(key dotpip.Key) ([]string, error) {
+	typ, err := f.Type(key)
+	if err != nil {
+		return nil, err
+	}
+
+	var items []string
+	switch typ {
+	case "none":
+		return []string{}, nil
+	case "list":
+		items, err = f.LRange(key, 0, -1)
+	case "set":
+		items, err = f.SMembers(key)
+	case "zset":
+		items, err = f.ZRange(key, "-inf", "+inf")
+	default:
+		return nil, errors.New("WRONGTYPE Operation against a key holding the wrong kind of value")
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	sort.SliceStable(items, func(i, j int) bool {
+		f1, err1 := strconv.ParseFloat(items[i], 64)
+		f2, err2 := strconv.ParseFloat(items[j], 64)
+		if err1 == nil && err2 == nil {
+			return f1 < f2
+		}
+		return items[i] < items[j]
+	})
+
+	return items, nil
 }
 
 func (f *FileSystem) Scan(cursor uint64, options ...dotpip.ScanOption) (uint64, []dotpip.Key, error) {
@@ -379,9 +411,40 @@ func (f *FileSystem) Scan(cursor uint64, options ...dotpip.ScanOption) (uint64, 
 	return nextCursor, allKeys[cursor:end], nil
 }
 
-func (f *FileSystem) Move(_ dotpip.Key, _ int) (int, error) {
-	// Not supported in this implementation since there's no DB distinction
-	return 0, nil
+func (f *FileSystem) Move(key dotpip.Key, db dotpip.DotPip) (int, error) {
+	exist, err := f.checkExistByKey(key)
+	if err != nil {
+		return 0, err
+	}
+	if !exist {
+		return 0, nil
+	}
+
+	dbExist, err := db.Exists(key)
+	if err != nil {
+		return 0, err
+	}
+	if len(dbExist) > 0 && dbExist[0] {
+		return 0, nil // Target exists
+	}
+
+	dump, err := f.Dump(key)
+	if err != nil {
+		return 0, err
+	}
+
+	ttl, _ := f.TTL(key)
+	if ttl < 0 {
+		ttl = 0
+	}
+
+	err = db.Restore(key, int(ttl), dump)
+	if err != nil {
+		return 0, err
+	}
+
+	f.Del(key)
+	return 1, nil
 }
 
 func (f *FileSystem) Wait(_ int, _ int) (int, error) {
@@ -459,6 +522,6 @@ func (f *FileSystem) ObjectRefcount(key dotpip.Key) (int, error) {
 	return 1, nil // Refcount is typically 1 since we don't share objects
 }
 
-func (f *FileSystem) Migrate(_ string, _ int, _ dotpip.Key, _ int, _ int, _ ...dotpip.MigrateOption) error {
-	return errors.New("not implemented")
+func (f *FileSystem) Migrate(_ string, _ int, _ dotpip.Key, _ dotpip.DotPip, _ int, _ ...dotpip.MigrateOption) error {
+	return errors.New("MIGRATE is not supported in fs mode over network")
 }

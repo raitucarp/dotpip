@@ -52,13 +52,25 @@ func TestGenericMigrateSort(t *testing.T) {
 	_, _ = dotfs.Set(key, "val")
 
 	// Migrate
-	err = dotfs.Migrate("host", 6379, key, 0, 0)
+	tmpDirDB2, _ := os.MkdirTemp("", "dotpip_generic_migrate_test_db2_")
+	defer os.RemoveAll(tmpDirDB2)
+	db2 := fs.NewFileSystem(tmpDirDB2)
+	defer db2.Close()
+
+	err = dotfs.Migrate("host", 6379, key, db2, 0)
 	assert.Error(t, err)
 
 	// Sort
 	resSort, err := dotfs.Sort(key)
-	assert.Error(t, err) // It says not implemented usually
-	_ = resSort
+	assert.Error(t, err)
+	assert.Nil(t, resSort)
+
+	// Sort success
+	lk := dotpip.NewKey("mykey_list")
+	_, _ = dotfs.LPush(lk, "3", "1.5", "2", "10")
+	resSort, err = dotfs.Sort(lk)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"1.5", "2", "3", "10"}, resSort)
 }
 
 func TestGenericRestoreMore(t *testing.T) {
