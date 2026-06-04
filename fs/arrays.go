@@ -1,5 +1,7 @@
 package fs
 
+import "errors"
+
 import (
 	"dotpip"
 	"fmt"
@@ -31,7 +33,7 @@ func (f *FileSystem) setArray(key dotpip.Key, array []string) error {
 	if bytes, ok := v.([]byte); ok {
 		return f.writeFileByKey(key, bytes)
 	}
-	return fmt.Errorf(string(dotpip.ErrMsgFailedToEncodeArray))
+	return errors.New(string(dotpip.ErrMsgFailedToEncodeArray))
 }
 
 func (f *FileSystem) ARCount(key dotpip.Key) (int, error) {
@@ -652,7 +654,7 @@ func (f *FileSystem) ARSeek(_ dotpip.Key, index int) (int, error) {
 
 func (f *FileSystem) ARSet(key dotpip.Key, index int, values ...string) (int, error) {
 	if index < 0 {
-		return 0, fmt.Errorf(string(dotpip.ErrMsgIndexOutOfBounds))
+		return 0, errors.New(string(dotpip.ErrMsgIndexOutOfBounds))
 	}
 
 	arr, err := f.getArray(key)

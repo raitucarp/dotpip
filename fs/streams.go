@@ -1,5 +1,7 @@
 package fs
 
+import "errors"
+
 import (
 	"fmt"
 	"os"
@@ -16,12 +18,12 @@ func (f *FileSystem) parseStreamID(id string) (int64, int64, error) {
 	}
 	parts := strings.Split(id, "-")
 	if len(parts) > 2 {
-		return 0, 0, fmt.Errorf(string(dotpip.ErrMsgInvalidStreamID))
+		return 0, 0, errors.New(string(dotpip.ErrMsgInvalidStreamID))
 	}
 
 	ms, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
-		return 0, 0, fmt.Errorf(string(dotpip.ErrMsgInvalidStreamID))
+		return 0, 0, errors.New(string(dotpip.ErrMsgInvalidStreamID))
 	}
 
 	var seq int64
@@ -32,7 +34,7 @@ func (f *FileSystem) parseStreamID(id string) (int64, int64, error) {
 		} else {
 			seq, err = strconv.ParseInt(parts[1], 10, 64)
 			if err != nil {
-				return 0, 0, fmt.Errorf(string(dotpip.ErrMsgInvalidStreamID))
+				return 0, 0, errors.New(string(dotpip.ErrMsgInvalidStreamID))
 			}
 		}
 	} else {
@@ -175,16 +177,16 @@ func (f *FileSystem) XAdd(key dotpip.Key, id string, values map[string]string, o
 		case ms == lastMs:
 			seq = lastSeq + 1
 		case ms < lastMs:
-			return "", fmt.Errorf(string(dotpip.ErrMsgXAddIDEqualSmaller))
+			return "", errors.New(string(dotpip.ErrMsgXAddIDEqualSmaller))
 		default:
 			seq = 0
 		}
 	default:
 		if compareIDs(ms, seq, lastMs, lastSeq) <= 0 {
 			if ms == 0 && seq == 0 {
-				return "", fmt.Errorf(string(dotpip.ErrMsgXAddIDGreaterZero))
+				return "", errors.New(string(dotpip.ErrMsgXAddIDGreaterZero))
 			}
-			return "", fmt.Errorf(string(dotpip.ErrMsgXAddIDEqualSmaller))
+			return "", errors.New(string(dotpip.ErrMsgXAddIDEqualSmaller))
 		}
 	}
 
@@ -246,7 +248,7 @@ func (f *FileSystem) XGroupCreate(key dotpip.Key, group string, id string, mkStr
 	}
 
 	if len(stream.Entries) == 0 && !mkStream {
-		return "", fmt.Errorf(string(dotpip.ErrMsgXGroupKeyExists))
+		return "", errors.New(string(dotpip.ErrMsgXGroupKeyExists))
 	}
 
 	if stream.Groups == nil {
@@ -254,7 +256,7 @@ func (f *FileSystem) XGroupCreate(key dotpip.Key, group string, id string, mkStr
 	}
 
 	if _, exists := stream.Groups[group]; exists {
-		return "", fmt.Errorf(string(dotpip.ErrMsgBusyGroup))
+		return "", errors.New(string(dotpip.ErrMsgBusyGroup))
 	}
 
 	var lastDeliveredID string
@@ -527,7 +529,7 @@ func (f *FileSystem) XRead(keys []dotpip.Key, ids []string, options ...dotpip.XR
 	}
 
 	if len(keys) != len(ids) {
-		return nil, fmt.Errorf(string(dotpip.ErrMsgUnbalancedXRead))
+		return nil, errors.New(string(dotpip.ErrMsgUnbalancedXRead))
 	}
 
 	// For simplicity, blocking is not fully implemented with actual wait loops here.
@@ -586,7 +588,7 @@ func (f *FileSystem) XReadGroup(group string, consumer string, keys []dotpip.Key
 	}
 
 	if len(keys) != len(ids) {
-		return nil, fmt.Errorf(string(dotpip.ErrMsgUnbalancedXRead))
+		return nil, errors.New(string(dotpip.ErrMsgUnbalancedXRead))
 	}
 
 	results := make(map[string][]dotpip.StreamEntry)
