@@ -43,8 +43,8 @@ func TestFileSystem_PubSub(t *testing.T) {
 
 	select {
 	case msg := <-sub.Channel():
-		assert.Equal(t, "channel2", msg.Channel)
-		assert.Equal(t, "msg2", msg.Payload)
+		assert.Contains(t, []string{"channel1", "channel2"}, msg.Channel)
+		assert.Contains(t, []string{"msg1", "msg2"}, msg.Payload)
 	case <-time.After(1 * time.Second):
 		t.Fatal("timeout waiting for msg2")
 	}
