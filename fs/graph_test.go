@@ -1,15 +1,15 @@
 package fs_test
 
 import (
+	"testing"
 	"dotpip"
 	"dotpip/fs"
 	"path/filepath"
-	"testing"
 )
 
 func TestGraphCommands(t *testing.T) {
 	dotfs := fs.NewFileSystem(filepath.Join(t.TempDir(), "db"))
-	defer dotfs.FlushAll()
+	defer func() { _ = dotfs.FlushAll() }()
 
 	key := dotpip.NewKey("mygraph")
 
@@ -22,6 +22,7 @@ func TestGraphCommands(t *testing.T) {
 		t.Fatal("Expected response")
 	}
 
+	// Make sure it really persists
 	resRO, err := dotfs.GraphROQuery(key, "MATCH (n) RETURN n")
 	if err != nil {
 		t.Fatal(err)
@@ -31,24 +32,48 @@ func TestGraphCommands(t *testing.T) {
 		t.Fatal("Expected response")
 	}
 
-	_, err = dotfs.GraphExplain(key, "MATCH (n) RETURN n")
+	// Test the actual value logic returned from MATCH based on Gonum calculations
+	nodesCalculated := resRO[0]["NodesCalculated"].(int)
+	edgesCalculated := resRO[0]["EdgesCalculated"].(int)
+
+	if nodesCalculated != 2 {
+		t.Fatalf("Expected 2 nodes calculated, got %d", nodesCalculated)
+	}
+
+	if edgesCalculated != 1 {
+		t.Fatalf("Expected 1 edge calculated, got %d", edgesCalculated)
+	}
+
+	resExp, err := dotfs.GraphExplain(key, "MATCH (n) RETURN n")
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(resExp) == 0 || resExp[0] != "MATCH" {
+		t.Fatalf("Expected MATCH explanation, got %v", resExp)
+	}
 
-	_, err = dotfs.GraphExplain(key, "CREATE (n)")
+	resExp, err = dotfs.GraphExplain(key, "CREATE (n)")
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(resExp) == 0 || resExp[0] != "CREATE" {
+		t.Fatalf("Expected CREATE explanation, got %v", resExp)
+	}
 
-	_, err = dotfs.GraphExplain(key, "MATCH (n) DELETE n")
+	resExp, err = dotfs.GraphExplain(key, "MATCH (n) DELETE n")
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(resExp) < 2 || resExp[1] != "DELETE" {
+		t.Fatalf("Expected DELETE explanation, got %v", resExp)
+	}
 
-	_, err = dotfs.GraphExplain(key, "MATCH (n) SET n.name='Bob'")
+	resExp, err = dotfs.GraphExplain(key, "MATCH (n) SET n.name='Bob'")
 	if err != nil {
 		t.Fatal(err)
+	}
+	if len(resExp) < 2 || resExp[1] != "SET" {
+		t.Fatalf("Expected SET explanation, got %v", resExp)
 	}
 
 	_, err = dotfs.GraphList()
@@ -56,24 +81,36 @@ func TestGraphCommands(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = dotfs.GraphProfile(key, "MATCH (n) RETURN n")
+	resProf, err := dotfs.GraphProfile(key, "MATCH (n) RETURN n")
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(resProf) == 0 || resProf[0] != "MATCH" {
+		t.Fatalf("Expected MATCH profile, got %v", resProf)
+	}
 
-	_, err = dotfs.GraphProfile(key, "CREATE (n)")
+	resProf, err = dotfs.GraphProfile(key, "CREATE (n)")
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(resProf) == 0 || resProf[0] != "CREATE" {
+		t.Fatalf("Expected CREATE profile, got %v", resProf)
+	}
 
-	_, err = dotfs.GraphProfile(key, "MATCH (n) DELETE n")
+	resProf, err = dotfs.GraphProfile(key, "MATCH (n) DELETE n")
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(resProf) < 2 || resProf[1] != "DELETE" {
+		t.Fatalf("Expected DELETE profile, got %v", resProf)
+	}
 
-	_, err = dotfs.GraphProfile(key, "MATCH (n) SET n.name='Bob'")
+	resProf, err = dotfs.GraphProfile(key, "MATCH (n) SET n.name='Bob'")
 	if err != nil {
 		t.Fatal(err)
+	}
+	if len(resProf) < 2 || resProf[1] != "SET" {
+		t.Fatalf("Expected SET profile, got %v", resProf)
 	}
 
 	_, err = dotfs.GraphSlowlog(key)
@@ -85,16 +122,16 @@ func TestGraphCommands(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(resDelete) == 0 {
-		t.Fatal("Expected response")
+	if len(resDelete) < 2 || resDelete[1]["NodesDeleted"] == nil {
+		t.Fatal("Expected nodes deleted response")
 	}
 
 	resSet, err := dotfs.GraphQuery(key, "MATCH (n) SET n.name = 'Bob'")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(resSet) == 0 {
-		t.Fatal("Expected response")
+	if len(resSet) < 2 || resSet[1]["PropertiesSet"] == nil {
+		t.Fatal("Expected properties set response")
 	}
 
 	_, err = dotfs.GraphDelete(key)
@@ -105,7 +142,7 @@ func TestGraphCommands(t *testing.T) {
 
 func TestGraphROQueryError(t *testing.T) {
 	dotfs := fs.NewFileSystem(filepath.Join(t.TempDir(), "db"))
-	defer dotfs.FlushAll()
+	defer func() { _ = dotfs.FlushAll() }()
 
 	key := dotpip.NewKey("mygraph")
 
@@ -117,7 +154,7 @@ func TestGraphROQueryError(t *testing.T) {
 
 func TestGraphQueryParseError(t *testing.T) {
 	dotfs := fs.NewFileSystem(filepath.Join(t.TempDir(), "db"))
-	defer dotfs.FlushAll()
+	defer func() { _ = dotfs.FlushAll() }()
 
 	key := dotpip.NewKey("mygraph")
 

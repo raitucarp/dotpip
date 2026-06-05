@@ -41,7 +41,7 @@ func (f *FileSystem) GraphDelete(key dotpip.Key) (int, error) {
 	return f.Del(key), nil
 }
 
-func (f *FileSystem) GraphExplain(key dotpip.Key, query string) ([]string, error) {
+func (f *FileSystem) GraphExplain(_ dotpip.Key, query string) ([]string, error) {
 	q, err := dotpip.CypherParser.ParseString("", query)
 	if err != nil {
 		return nil, err
@@ -49,15 +49,16 @@ func (f *FileSystem) GraphExplain(key dotpip.Key, query string) ([]string, error
 
 	result := []string{}
 	for _, clause := range q.Clauses {
-		if clause.Create != nil {
+		switch {
+		case clause.Create != nil:
 			result = append(result, "CREATE")
-		} else if clause.Match != nil {
+		case clause.Match != nil:
 			result = append(result, "MATCH")
-		} else if clause.Return != nil {
+		case clause.Return != nil:
 			result = append(result, "RETURN")
-		} else if clause.Delete != nil {
+		case clause.Delete != nil:
 			result = append(result, "DELETE")
-		} else if clause.Set != nil {
+		case clause.Set != nil:
 			result = append(result, "SET")
 		}
 	}
@@ -68,7 +69,7 @@ func (f *FileSystem) GraphList() ([]string, error) {
 	return []string{}, nil
 }
 
-func (f *FileSystem) GraphProfile(key dotpip.Key, query string) ([]string, error) {
+func (f *FileSystem) GraphProfile(_ dotpip.Key, query string) ([]string, error) {
 	q, err := dotpip.CypherParser.ParseString("", query)
 	if err != nil {
 		return nil, err
@@ -76,15 +77,16 @@ func (f *FileSystem) GraphProfile(key dotpip.Key, query string) ([]string, error
 
 	result := []string{}
 	for _, clause := range q.Clauses {
-		if clause.Create != nil {
+		switch {
+		case clause.Create != nil:
 			result = append(result, "CREATE")
-		} else if clause.Match != nil {
+		case clause.Match != nil:
 			result = append(result, "MATCH")
-		} else if clause.Return != nil {
+		case clause.Return != nil:
 			result = append(result, "RETURN")
-		} else if clause.Delete != nil {
+		case clause.Delete != nil:
 			result = append(result, "DELETE")
-		} else if clause.Set != nil {
+		case clause.Set != nil:
 			result = append(result, "SET")
 		}
 	}
@@ -107,7 +109,8 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 	result := []map[string]any{}
 
 	for _, clause := range q.Clauses {
-		if clause.Create != nil {
+		switch {
+		case clause.Create != nil:
 			m := make(map[string]any)
 
 			if clause.Create.Pattern != nil && clause.Create.Pattern.Node != nil {
@@ -161,7 +164,7 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 			}
 
 			result = append(result, m)
-		} else if clause.Match != nil {
+		case clause.Match != nil:
 			m := make(map[string]any)
 			m["NodesFound"] = len(graph.Nodes)
 
@@ -170,15 +173,15 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 			m["EdgesCalculated"] = dg.Edges().Len()
 
 			result = append(result, m)
-		} else if clause.Return != nil {
-
-		} else if clause.Delete != nil {
+		case clause.Return != nil:
+			// Not implemented yet
+		case clause.Delete != nil:
 			m := make(map[string]any)
 			m["NodesDeleted"] = len(graph.Nodes)
 			graph.Nodes = []*GraphNode{}
 			graph.Edges = []*GraphEdge{}
 			result = append(result, m)
-		} else if clause.Set != nil {
+		case clause.Set != nil:
 			m := make(map[string]any)
 			m["PropertiesSet"] = len(clause.Set.Items)
 			result = append(result, m)
@@ -186,7 +189,7 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 	}
 
 	b, _ := json.Marshal(graph)
-	f.Set(key, string(b))
+	_, _ = f.Set(key, string(b))
 
 	if len(result) == 0 {
 		return []map[string]any{{"Query Execution Time": "0ms"}}, nil
@@ -211,7 +214,8 @@ func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]an
 	result := []map[string]any{}
 
 	for _, clause := range q.Clauses {
-		if clause.Match != nil {
+		switch {
+		case clause.Match != nil:
 			m := make(map[string]any)
 			m["NodesFound"] = len(graph.Nodes)
 
@@ -220,9 +224,9 @@ func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]an
 			m["EdgesCalculated"] = dg.Edges().Len()
 
 			result = append(result, m)
-		} else if clause.Return != nil {
-
-		} else if clause.Create != nil || clause.Delete != nil || clause.Set != nil {
+		case clause.Return != nil:
+			// Not implemented yet
+		case clause.Create != nil || clause.Delete != nil || clause.Set != nil:
 			return nil, fmt.Errorf("read-only query contains write operations")
 		}
 	}
@@ -234,6 +238,6 @@ func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]an
 	return result, nil
 }
 
-func (f *FileSystem) GraphSlowlog(key dotpip.Key) ([]any, error) {
+func (f *FileSystem) GraphSlowlog(_ dotpip.Key) ([]any, error) {
 	return []any{}, nil
 }
