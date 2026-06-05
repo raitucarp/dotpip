@@ -1,9 +1,10 @@
 package fs
 
 import (
-	"dotpip"
 	"encoding/json"
 	"fmt"
+	"dotpip"
+	"gonum.org/v1/gonum/graph/simple"
 )
 
 type Graph struct {
@@ -23,6 +24,17 @@ type GraphEdge struct {
 	SourceNode int            `json:"source"`
 	TargetNode int            `json:"target"`
 	Properties map[string]any `json:"properties"`
+}
+
+func (g *Graph) buildGonumGraph() *simple.DirectedGraph {
+	dg := simple.NewDirectedGraph()
+	for _, n := range g.Nodes {
+		dg.AddNode(simple.Node(n.ID))
+	}
+	for _, e := range g.Edges {
+		dg.SetEdge(simple.Edge{F: simple.Node(e.SourceNode), T: simple.Node(e.TargetNode)})
+	}
+	return dg
 }
 
 func (f *FileSystem) GraphDelete(key dotpip.Key) (int, error) {
@@ -102,8 +114,8 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 				labels := clause.Create.Pattern.Node.Labels
 
 				node := &GraphNode{
-					ID:         len(graph.Nodes) + 1,
-					Labels:     labels,
+					ID: len(graph.Nodes) + 1,
+					Labels: labels,
 					Properties: make(map[string]any),
 				}
 				graph.Nodes = append(graph.Nodes, node)
@@ -121,6 +133,30 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 				if len(clause.Create.Pattern.Chain) > 0 {
 					m["RelationshipsCreated"] = len(clause.Create.Pattern.Chain)
 					m["NodesCreated"] = m["NodesCreated"].(int) + len(clause.Create.Pattern.Chain)
+
+					for _, chain := range clause.Create.Pattern.Chain {
+						targetNode := &GraphNode{
+							ID: len(graph.Nodes) + 1,
+							Labels: chain.Node.Labels,
+							Properties: make(map[string]any),
+						}
+						graph.Nodes = append(graph.Nodes, targetNode)
+
+						edgeType := ""
+						if chain.Relationship.Details != nil && len(chain.Relationship.Details.Types) > 0 {
+							edgeType = chain.Relationship.Details.Types[0]
+						}
+
+						edge := &GraphEdge{
+							ID: len(graph.Edges) + 1,
+							Type: edgeType,
+							SourceNode: node.ID,
+							TargetNode: targetNode.ID,
+							Properties: make(map[string]any),
+						}
+						graph.Edges = append(graph.Edges, edge)
+						node = targetNode
+					}
 				}
 			}
 
@@ -128,6 +164,11 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 		} else if clause.Match != nil {
 			m := make(map[string]any)
 			m["NodesFound"] = len(graph.Nodes)
+
+			dg := graph.buildGonumGraph()
+			m["NodesCalculated"] = dg.Nodes().Len()
+			m["EdgesCalculated"] = dg.Edges().Len()
+
 			result = append(result, m)
 		} else if clause.Return != nil {
 
@@ -135,6 +176,7 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 			m := make(map[string]any)
 			m["NodesDeleted"] = len(graph.Nodes)
 			graph.Nodes = []*GraphNode{}
+			graph.Edges = []*GraphEdge{}
 			result = append(result, m)
 		} else if clause.Set != nil {
 			m := make(map[string]any)
@@ -172,6 +214,11 @@ func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]an
 		if clause.Match != nil {
 			m := make(map[string]any)
 			m["NodesFound"] = len(graph.Nodes)
+
+			dg := graph.buildGonumGraph()
+			m["NodesCalculated"] = dg.Nodes().Len()
+			m["EdgesCalculated"] = dg.Edges().Len()
+
 			result = append(result, m)
 		} else if clause.Return != nil {
 
