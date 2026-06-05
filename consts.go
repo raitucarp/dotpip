@@ -92,3 +92,7 @@ const (
 
 	ErrMsgReadOnlyQuery ErrorMessage = "read-only query contains write operations"
 )
+const (
+	ErrWrongTypeVectorSet ErrorMessage = "WRONGTYPE Operation against a key holding the wrong kind of value"
+	ObjectVectorSet ObjectType = "vector_set"
+)

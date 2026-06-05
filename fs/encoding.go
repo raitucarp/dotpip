@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"errors"
 	"encoding/json"
 	"fmt"
 
@@ -425,4 +426,48 @@ func (f *FileSystem) JSONDecode(value any) (any, error) {
 	default:
 		return nil, fmt.Errorf(string(dotpip.ErrMsgUnsupportedEncodingType), f.encodeType)
 	}
+}
+
+func (f *FileSystem) vectorSetEncode(value map[string]dotpip.VectorSetElement) (any, error) {
+	switch f.encodeType {
+	case JSON:
+		return json.Marshal(value)
+	case YAML:
+		return yaml.Marshal(value)
+	case TOML:
+		return toml.Marshal(value)
+	case RAW:
+		return json.Marshal(value)
+	default:
+		return nil, errors.New("ERR unsupported encoding type")
+	}
+}
+
+func (f *FileSystem) vectorSetDecode(value any) (map[string]dotpip.VectorSetElement, error) {
+	finalValue := make(map[string]dotpip.VectorSetElement)
+	switch f.encodeType {
+	case JSON:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		if err != nil {
+			return nil, errors.New(string(dotpip.ErrWrongTypeVectorSet))
+		}
+	case YAML:
+		err := yaml.Unmarshal(value.([]byte), &finalValue)
+		if err != nil {
+			return nil, errors.New(string(dotpip.ErrWrongTypeVectorSet))
+		}
+	case TOML:
+		err := toml.Unmarshal(value.([]byte), &finalValue)
+		if err != nil {
+			return nil, errors.New(string(dotpip.ErrWrongTypeVectorSet))
+		}
+	case RAW:
+		err := json.Unmarshal(value.([]byte), &finalValue)
+		if err != nil {
+			return nil, errors.New(string(dotpip.ErrWrongTypeVectorSet))
+		}
+	default:
+		return nil, errors.New("ERR unsupported encoding type")
+	}
+	return finalValue, nil
 }

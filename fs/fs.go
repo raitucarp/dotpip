@@ -69,6 +69,8 @@ func NewFileSystem(pathRoot string) *FileSystem {
 	f.formatter.StreamDecode = f.streamDecode
 	f.formatter.ArrayEncode = f.arrayEncode
 	f.formatter.ArrayDecode = f.arrayDecode
+	f.formatter.VectorSetEncode = f.vectorSetEncode
+	f.formatter.VectorSetDecode = f.vectorSetDecode
 
 	f.loadExpirations()
 	go f.scanExpirations()
