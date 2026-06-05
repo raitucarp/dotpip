@@ -399,3 +399,56 @@ func TestLuaScriptsGoMethodArgs(t *testing.T) {
 	// passing boolean (just to test boolean argument logic, we might need a dummy command)
 	_, _ = fsys.Eval(`return ARInfo("numkey", true)`, 0, nil, nil)
 }
+
+func TestLuaScriptsExcessArgs(t *testing.T) {
+	tempDir := t.TempDir()
+	fsys := NewFileSystem(tempDir)
+	defer fsys.Close()
+
+	// Call non-variadic with too many arguments
+	_, _ = fsys.Set(dotpip.NewKey("a"), "1")
+	script := `return Get("a", "b", "c")`
+	res, err := fsys.Eval(script, 0, nil, nil)
+	if err != nil {
+		t.Fatalf("Expected Get to ignore excess args or handle it, got error: %v", err)
+	}
+	if v, ok := res.(string); !ok || v != "1" {
+		t.Fatalf("Expected 1, got %v", res)
+	}
+}
+
+func TestLuaScriptsErrorScenarios4(t *testing.T) {
+	tempDir := t.TempDir()
+	fsys := NewFileSystem(tempDir)
+	defer fsys.Close()
+
+
+	// Passing table to string
+	script := `return Get({a=1})`
+	_, err := fsys.Eval(script, 0, nil, nil)
+	if err == nil {
+		t.Fatalf("Expected error for passing table to string arg")
+	}
+
+	// Passing string to struct slice variadic
+	script = `return ZAdd("key", "not_a_slice")`
+	_, err = fsys.Eval(script, 0, nil, nil)
+	if err == nil {
+		t.Fatalf("Expected error for passing string to ZAdd elements")
+	}
+
+	// Invalid array structure (containing mixed unsupported types) for Slice
+	script = `return MGet(1)`
+	_, err = fsys.Eval(script, 0, nil, nil)
+	if err != nil {
+		t.Fatalf("Expected MGet(1) to be valid (it wraps string automatically), got %v", err)
+	}
+
+	// Unimplemented method natively
+	script = `return UNKNOWN_CMD()`
+	_, err = fsys.Eval(script, 0, nil, nil)
+	if err == nil {
+		t.Fatalf("Expected error for UNKNOWN_CMD")
+	}
+
+}
