@@ -367,64 +367,6 @@ type DotPip interface {
 	Formatter(fmap DataTypeFormatter)
 }
 
-type ARIndexValue struct {
-	Index int
-	Value string
-}
-
-type ARGrepPredicate struct {
-	Type  string
-	Value string
-}
-
-type ARGrepOptions struct {
-	And        bool
-	Or         bool
-	Limit      *int
-	WithValues bool
-	NoCase     bool
-}
-
-type JSONMSetArg struct {
-	Key   Key
-	Path  string
-	Value any
-}
-
-type ScriptFlushOption func(*ScriptFlushCommand)
-
-type ScriptFlushCommand struct {
-	Sync  bool
-	Async bool
-}
-
-func WithScriptFlushSync() ScriptFlushOption {
-	return func(c *ScriptFlushCommand) {
-		c.Sync = true
-	}
-}
-
-func WithScriptFlushAsync() ScriptFlushOption {
-	return func(c *ScriptFlushCommand) {
-		c.Async = true
-	}
-}
-
-type PubSubMessage struct {
-	Type    string
-	Pattern string
-	Channel string
-	Payload string
-}
-
-type PubSubSubscription interface {
-	Channel() <-chan PubSubMessage
-	Unsubscribe(channels ...string) error
-	PUnsubscribe(patterns ...string) error
-	SUnsubscribe(shardChannels ...string) error
-	Close() error
-}
-
 func New(dotface DotPip) DotPip {
 	return dotface
 }

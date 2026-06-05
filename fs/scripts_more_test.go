@@ -422,7 +422,6 @@ func TestLuaScriptsErrorScenarios4(t *testing.T) {
 	fsys := NewFileSystem(tempDir)
 	defer fsys.Close()
 
-
 	// Passing table to string
 	script := `return Get({a=1})`
 	_, err := fsys.Eval(script, 0, nil, nil)
