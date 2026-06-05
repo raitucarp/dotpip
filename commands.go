@@ -355,6 +355,15 @@ type DotPip interface {
 	ARSeek(key Key, index int) (int, error)
 	ARSet(key Key, index int, values ...string) (int, error)
 
+	Eval(script string, numkeys int, keys []string, args []string) (any, error)
+	EvalSha(sha1 string, numkeys int, keys []string, args []string) (any, error)
+	EvalRO(script string, numkeys int, keys []string, args []string) (any, error)
+	EvalShaRO(sha1 string, numkeys int, keys []string, args []string) (any, error)
+	ScriptExists(scripts ...string) ([]bool, error)
+	ScriptFlush(options ...ScriptFlushOption) error
+	ScriptLoad(script string) (string, error)
+	ScriptKill() error
+
 	Formatter(fmap DataTypeFormatter)
 }
 
@@ -380,6 +389,25 @@ type JSONMSetArg struct {
 	Key   Key
 	Path  string
 	Value any
+}
+
+type ScriptFlushOption func(*ScriptFlushCommand)
+
+type ScriptFlushCommand struct {
+	Sync  bool
+	Async bool
+}
+
+func WithScriptFlushSync() ScriptFlushOption {
+	return func(c *ScriptFlushCommand) {
+		c.Sync = true
+	}
+}
+
+func WithScriptFlushAsync() ScriptFlushOption {
+	return func(c *ScriptFlushCommand) {
+		c.Async = true
+	}
 }
 
 type PubSubMessage struct {

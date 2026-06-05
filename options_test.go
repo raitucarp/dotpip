@@ -236,3 +236,13 @@ func TestCommands(t *testing.T) {
 		t.Error("JSONSetEncode failed")
 	}
 }
+
+func TestScriptFlushOptions(t *testing.T) {
+	var cmd ScriptFlushCommand
+	WithScriptFlushSync()(&cmd)
+	WithScriptFlushAsync()(&cmd)
+
+	if !cmd.Sync || !cmd.Async {
+		t.Errorf("Expected Sync and Async to be true")
+	}
+}
