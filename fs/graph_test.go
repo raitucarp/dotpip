@@ -1,10 +1,10 @@
 package fs_test
 
 import (
+	"testing"
 	"dotpip"
 	"dotpip/fs"
 	"path/filepath"
-	"testing"
 )
 
 func TestGraphCommands(t *testing.T) {
@@ -13,7 +13,6 @@ func TestGraphCommands(t *testing.T) {
 
 	key := dotpip.NewKey("mygraph")
 
-	// Extremely complex chains representing a social network with layers
 	createQueries := []string{
 		"CREATE (:Person {name: 'Alice'})-[:KNOWS]->(:Person {name: 'Bob'})-[:WORKS_AT]->(:Company {name: 'Tech'})",
 		"CREATE (:Person {name: 'Charlie'})-[:KNOWS]->(:Person {name: 'Alice'})",
@@ -30,7 +29,6 @@ func TestGraphCommands(t *testing.T) {
 		}
 	}
 
-	// Make sure it really persists and calculations match deep chains
 	resRO, err := dotfs.GraphROQuery(key, "MATCH (n)-[:KNOWS]->(m)-[:WORKS_AT]->(c)")
 	if err != nil {
 		t.Fatal(err)
@@ -40,28 +38,39 @@ func TestGraphCommands(t *testing.T) {
 		t.Fatal("Expected response")
 	}
 
-	// Test the actual value logic returned from MATCH based on Gonum calculations
-	nodesCalculated := resRO[0]["NodesFound"].(int)
-	pathsMatched := resRO[0]["PathsMatched"].(int)
+	nodesCalculated := resRO[0][string(dotpip.GraphKeywordNodesFound)].(int)
+	pathsMatched := resRO[0][string(dotpip.GraphKeywordPathsMatched)].(int)
 
 	if nodesCalculated != 8 {
 		t.Fatalf("Expected 8 nodes found across executions, got %d", nodesCalculated)
 	}
 
-	// With the updated dummy calculations finding depth paths=2 across interconnected edges:
-	// A->B->C (2 edges = 1 paths from A)
-	// C->A (1 edges = 0 paths length 2 from C)
-	// D->C, D->Startup (2 edges total = 1 path len 2 from D assuming traversing)
-	// 1 + 1 = 2 paths
 	if pathsMatched != 2 {
 		t.Fatalf("Expected 2 deep path matched corresponding to length 2 across graph edges, got %d", pathsMatched)
+	}
+
+	var dpip dotpip.DotPip = dotfs
+	dpRes, dpErr := dpip.GraphQuery(key, "MATCH (n) RETURN n")
+	if dpErr != nil {
+		t.Fatal(dpErr)
+	}
+	if len(dpRes) == 0 {
+		t.Fatal("Expected response")
+	}
+
+	dpResRO, dpErrRO := dpip.GraphROQuery(key, "MATCH (n) RETURN n")
+	if dpErrRO != nil {
+		t.Fatal(dpErrRO)
+	}
+	if len(dpResRO) == 0 {
+		t.Fatal("Expected response")
 	}
 
 	resProf, err := dotfs.GraphProfile(key, "MATCH (n)-[:KNOWS]->(m)-[:WORKS_AT]->(c)")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(resProf) == 0 || resProf[0] != "MATCH" {
+	if len(resProf) == 0 || resProf[0] != string(dotpip.GraphKeywordMatch) {
 		t.Fatalf("Expected MATCH profile, got %v", resProf)
 	}
 
@@ -69,7 +78,7 @@ func TestGraphCommands(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(resSet) < 2 || resSet[1]["PropertiesSet"] == nil {
+	if len(resSet) < 2 || resSet[1][string(dotpip.GraphKeywordPropertiesSet)] == nil {
 		t.Fatal("Expected properties set response")
 	}
 
@@ -77,7 +86,7 @@ func TestGraphCommands(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(resDelete) < 2 || resDelete[1]["NodesDeleted"] == nil {
+	if len(resDelete) < 2 || resDelete[1][string(dotpip.GraphKeywordNodesDeleted)] == nil {
 		t.Fatal("Expected nodes deleted response")
 	}
 

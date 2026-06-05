@@ -1,9 +1,9 @@
 package fs
 
 import (
-	"dotpip"
 	"encoding/json"
-	"fmt"
+	"errors"
+	"dotpip"
 	"gonum.org/v1/gonum/graph/simple"
 )
 
@@ -48,8 +48,6 @@ func evaluateMatches(g *Graph, chainLength int) int {
 
 	for _, n := range g.Nodes {
 		// Just a simple simulation of traversing a specific depth
-		// A full subgraph isomorphism is out of scope for a basic file system dummy implementation
-		// This simulates paths finding correctly up to depth = chainLength
 		pathsCount += countPaths(dg, int64(n.ID), chainLength)
 	}
 
@@ -82,15 +80,15 @@ func (f *FileSystem) GraphExplain(_ dotpip.Key, query string) ([]string, error) 
 	for _, clause := range q.Clauses {
 		switch {
 		case clause.Create != nil:
-			result = append(result, "CREATE")
+			result = append(result, string(dotpip.GraphKeywordCreate))
 		case clause.Match != nil:
-			result = append(result, "MATCH")
+			result = append(result, string(dotpip.GraphKeywordMatch))
 		case clause.Return != nil:
-			result = append(result, "RETURN")
+			result = append(result, string(dotpip.GraphKeywordReturn))
 		case clause.Delete != nil:
-			result = append(result, "DELETE")
+			result = append(result, string(dotpip.GraphKeywordDelete))
 		case clause.Set != nil:
-			result = append(result, "SET")
+			result = append(result, string(dotpip.GraphKeywordSet))
 		}
 	}
 	return result, nil
@@ -110,15 +108,15 @@ func (f *FileSystem) GraphProfile(_ dotpip.Key, query string) ([]string, error) 
 	for _, clause := range q.Clauses {
 		switch {
 		case clause.Create != nil:
-			result = append(result, "CREATE")
+			result = append(result, string(dotpip.GraphKeywordCreate))
 		case clause.Match != nil:
-			result = append(result, "MATCH")
+			result = append(result, string(dotpip.GraphKeywordMatch))
 		case clause.Return != nil:
-			result = append(result, "RETURN")
+			result = append(result, string(dotpip.GraphKeywordReturn))
 		case clause.Delete != nil:
-			result = append(result, "DELETE")
+			result = append(result, string(dotpip.GraphKeywordDelete))
 		case clause.Set != nil:
-			result = append(result, "SET")
+			result = append(result, string(dotpip.GraphKeywordSet))
 		}
 	}
 	return result, nil
@@ -130,7 +128,6 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 		return nil, err
 	}
 
-	// Try reading graph
 	var graph Graph
 	val, err := f.Get(key)
 	if err == nil && val != "" {
@@ -148,30 +145,30 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 				labels := clause.Create.Pattern.Node.Labels
 
 				node := &GraphNode{
-					ID:         len(graph.Nodes) + 1,
-					Labels:     labels,
+					ID: len(graph.Nodes) + 1,
+					Labels: labels,
 					Properties: make(map[string]any),
 				}
 				graph.Nodes = append(graph.Nodes, node)
 
 				if len(labels) > 0 {
-					m["LabelsAdded"] = len(labels)
+					m[string(dotpip.GraphKeywordLabelsAdded)] = len(labels)
 				}
-				m["NodesCreated"] = 1
-				m["PropertiesSet"] = 0
+				m[string(dotpip.GraphKeywordNodesCreated)] = 1
+				m[string(dotpip.GraphKeywordPropertiesSet)] = 0
 
 				if clause.Create.Pattern.Node.Properties != nil {
-					m["PropertiesSet"] = len(clause.Create.Pattern.Node.Properties.Props)
+					m[string(dotpip.GraphKeywordPropertiesSet)] = len(clause.Create.Pattern.Node.Properties.Props)
 				}
 
 				if len(clause.Create.Pattern.Chain) > 0 {
-					m["RelationshipsCreated"] = len(clause.Create.Pattern.Chain)
-					m["NodesCreated"] = m["NodesCreated"].(int) + len(clause.Create.Pattern.Chain)
+					m[string(dotpip.GraphKeywordRelationshipsCreated)] = len(clause.Create.Pattern.Chain)
+					m[string(dotpip.GraphKeywordNodesCreated)] = m[string(dotpip.GraphKeywordNodesCreated)].(int) + len(clause.Create.Pattern.Chain)
 
 					for _, chain := range clause.Create.Pattern.Chain {
 						targetNode := &GraphNode{
-							ID:         len(graph.Nodes) + 1,
-							Labels:     chain.Node.Labels,
+							ID: len(graph.Nodes) + 1,
+							Labels: chain.Node.Labels,
 							Properties: make(map[string]any),
 						}
 						graph.Nodes = append(graph.Nodes, targetNode)
@@ -182,8 +179,8 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 						}
 
 						edge := &GraphEdge{
-							ID:         len(graph.Edges) + 1,
-							Type:       edgeType,
+							ID: len(graph.Edges) + 1,
+							Type: edgeType,
 							SourceNode: node.ID,
 							TargetNode: targetNode.ID,
 							Properties: make(map[string]any),
@@ -204,21 +201,21 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 			}
 
 			paths := evaluateMatches(&graph, chainLen)
-			m["NodesFound"] = len(graph.Nodes)
-			m["PathsMatched"] = paths
+			m[string(dotpip.GraphKeywordNodesFound)] = len(graph.Nodes)
+			m[string(dotpip.GraphKeywordPathsMatched)] = paths
 
 			result = append(result, m)
 		case clause.Return != nil:
 			// Not implemented yet
 		case clause.Delete != nil:
 			m := make(map[string]any)
-			m["NodesDeleted"] = len(graph.Nodes)
+			m[string(dotpip.GraphKeywordNodesDeleted)] = len(graph.Nodes)
 			graph.Nodes = []*GraphNode{}
 			graph.Edges = []*GraphEdge{}
 			result = append(result, m)
 		case clause.Set != nil:
 			m := make(map[string]any)
-			m["PropertiesSet"] = len(clause.Set.Items)
+			m[string(dotpip.GraphKeywordPropertiesSet)] = len(clause.Set.Items)
 			result = append(result, m)
 		}
 	}
@@ -239,7 +236,6 @@ func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]an
 		return nil, err
 	}
 
-	// Try reading graph
 	var graph Graph
 	val, err := f.Get(key)
 	if err == nil && val != "" {
@@ -259,14 +255,14 @@ func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]an
 			}
 
 			paths := evaluateMatches(&graph, chainLen)
-			m["NodesFound"] = len(graph.Nodes)
-			m["PathsMatched"] = paths
+			m[string(dotpip.GraphKeywordNodesFound)] = len(graph.Nodes)
+			m[string(dotpip.GraphKeywordPathsMatched)] = paths
 
 			result = append(result, m)
 		case clause.Return != nil:
 			// Not implemented yet
 		case clause.Create != nil || clause.Delete != nil || clause.Set != nil:
-			return nil, fmt.Errorf("read-only query contains write operations")
+			return nil, errors.New(string(dotpip.ErrMsgReadOnlyQuery))
 		}
 	}
 
