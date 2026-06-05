@@ -13,7 +13,7 @@ func TestLuaScriptsBasic(t *testing.T) {
 	_, _ = fsys.Set(dotpip.NewKey("mykey"), "myvalue")
 
 	script := `
-	local val = redis.call("get", KEYS[1])
+	local val = Get(KEYS[1])
 	return val
 	`
 	res, err := fsys.Eval(script, 1, []string{"mykey"}, nil)
@@ -84,7 +84,7 @@ func TestLuaScriptsErrorHandling(t *testing.T) {
 	defer fsys.Close()
 
 	script := `
-	local err = redis.call("UNKNOWN_CMD")
+	local err = UNKNOWN_CMD()
 	return err
 	`
 	_, err := fsys.Eval(script, 0, nil, nil)
@@ -93,11 +93,11 @@ func TestLuaScriptsErrorHandling(t *testing.T) {
 	}
 
 	// Since pcall catches the error, it might return a string or table.
-	// Actually redis.pcall is designed to return the error to Lua.
+	// Actually pcall is designed to return the error to Lua.
 	// Let's test a simple pcall:
 	scriptPCallRedis := `
-	local err = redis.pcall("UNKNOWN_CMD")
-	if type(err) == "table" and err.err then
+	local status, err = pcall(UNKNOWN_CMD)
+	if not status then
 		return "caught error"
 	end
 	return "no error"
@@ -306,7 +306,7 @@ func TestLuaScriptsErrorScenarios2(t *testing.T) {
 	defer fsys.Close()
 
 	// EXISTS takes at least one parameter
-	script := `return redis.call("EXISTS")`
+	script := `return Exists()`
 	_, err := fsys.Eval(script, 0, nil, nil)
 	// It actually doesn't error out because Exists is variadic! `Exists(keys ...Key)` can take 0 keys and returns an empty slice!
 	// It is converted to an empty Lua table, which becomes a map[] in convertLuaToGo if empty
@@ -315,7 +315,7 @@ func TestLuaScriptsErrorScenarios2(t *testing.T) {
 	}
 
 	// Missing args for non-variadic command: GET takes 1 arg
-	script = `return redis.call("GET")`
+	script = `return Get()`
 	_, err = fsys.Eval(script, 0, nil, nil)
 	if err == nil {
 		t.Fatalf("Expected error for missing args on GET")
@@ -328,7 +328,7 @@ func TestLuaScriptsErrorScenarios3(t *testing.T) {
 	defer fsys.Close()
 
 	// Missing args for non-variadic command in pcall
-	script := `return redis.pcall("GET")`
+	script := `local status, err = pcall(Get); if not status then return {err=err} else return err end`
 	res, err := fsys.Eval(script, 0, nil, nil)
 	if err != nil {
 		t.Fatalf("Eval error: %v", err)
@@ -345,14 +345,14 @@ func TestLuaScriptsGoMethodCallError(t *testing.T) {
 	defer fsys.Close()
 
 	// Should trigger method error (Get on missing key)
-	script := `return redis.call("GET", "missing")`
+	script := `return Get("missing")`
 	_, err := fsys.Eval(script, 0, nil, nil)
 	if err == nil {
 		t.Fatalf("Expected error for missing key in GET")
 	}
 
 	// Should trigger method error in pcall (Get on missing key)
-	script = `return redis.pcall("GET", "missing")`
+	script = `local status, err = pcall(Get, "missing"); if not status then return {err=err} else return err end`
 	res, err := fsys.Eval(script, 0, nil, nil)
 	if err != nil {
 		t.Fatalf("Eval error: %v", err)

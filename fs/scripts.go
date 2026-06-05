@@ -44,10 +44,8 @@ func (f *FileSystem) initLuaState() *lua.LState {
 		}
 	}
 
-	redisTable := L.NewTable()
-	L.SetField(redisTable, "call", L.NewFunction(f.luaRedisCall))
-	L.SetField(redisTable, "pcall", L.NewFunction(f.luaRedisPCall))
-	L.SetGlobal("redis", redisTable)
+	// We no longer register dotpip.call / dotpip.pcall per user request.
+	// Only direct method injection below.
 
 	// Inject global functions for all exported methods on DotPip interface
 	var dp dotpip.DotPip
@@ -68,66 +66,6 @@ func (f *FileSystem) initLuaState() *lua.LState {
 	}
 
 	return L
-}
-
-func (f *FileSystem) luaRedisCall(l *lua.LState) int {
-	return f.invokeRedisCommand(l, false)
-}
-
-func (f *FileSystem) luaRedisPCall(l *lua.LState) int {
-	return f.invokeRedisCommand(l, true)
-}
-
-func (f *FileSystem) invokeRedisCommand(l *lua.LState, pcall bool) int {
-	cmdName := l.ToString(1)
-	if cmdName == "" {
-		if pcall {
-			l.Push(lua.LString("Please specify at least one argument for redis.call()"))
-			return 1
-		}
-		l.RaiseError("Please specify at least one argument for redis.call()")
-		return 0
-	}
-
-	// For standard redis commands, map uppercase redis command to Go method name.
-	// We'll look up method by name on the interface.
-	cmdName = strings.ToUpper(cmdName)
-
-	// Fast rudimentary mapping for common ones (can add more as needed):
-	methodName, mapped := redisCommandMapping[cmdName]
-	if !mapped {
-		methodName = l.ToString(1) // Try exact case if not found
-	}
-
-	var dp dotpip.DotPip
-	v := reflect.TypeOf(&dp).Elem()
-	method, ok := v.MethodByName(methodName)
-
-	if !ok {
-		if pcall {
-			// standard redis.pcall returns a table with an err field, or just a string.
-			// Let's just return a string error. Actually, it's conventional in our simple implementation
-			// to return an error string. Or if it raises an error, pcall in Lua catches it.
-			// If we push a string, it gets returned as a string. But a real redis.pcall returns a lua table {err="message"}.
-			errTbl := l.NewTable()
-			l.SetField(errTbl, "err", lua.LString(fmt.Sprintf("Unknown Redis command called from Lua: %s", cmdName)))
-			l.Push(errTbl)
-			return 1
-		}
-		l.RaiseError("%s", fmt.Sprintf("Unknown Redis command called from Lua: %s", cmdName))
-		return 0
-	}
-
-	fVal := reflect.ValueOf(f)
-
-	// Remove the first argument (cmdName) before processing args for the Go method
-	numArgs := l.GetTop() - 1
-	args := make([]lua.LValue, numArgs)
-	for i := 0; i < numArgs; i++ {
-		args[i] = l.Get(i + 2)
-	}
-
-	return f.invokeGoMethodArgs(l, fVal, method.Name, method.Type, args, pcall)
 }
 
 func (f *FileSystem) invokeGoMethod(l *lua.LState, fVal reflect.Value, methodName string, methodType reflect.Type) int {
