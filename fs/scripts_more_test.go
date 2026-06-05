@@ -257,13 +257,12 @@ func TestLuaScriptKill(t *testing.T) {
 	}
 }
 
-
 func TestLuaScriptsReturnTypes(t *testing.T) {
 	tempDir := t.TempDir()
 	fsys := NewFileSystem(tempDir)
 	defer fsys.Close()
 
-	fsys.Set(dotpip.NewKey("foo"), "bar")
+	_, _ = fsys.Set(dotpip.NewKey("foo"), "bar")
 
 	// Array of primitives
 	res, err := fsys.Eval(`return {"a", 1, true}`, 0, nil, nil)
@@ -284,4 +283,119 @@ func TestLuaScriptsReturnTypes(t *testing.T) {
 	if res != nil {
 		t.Fatalf("Expected nil, got %v", res)
 	}
+}
+
+func TestLuaScriptsEmptyArgs(t *testing.T) {
+	tempDir := t.TempDir()
+	fsys := NewFileSystem(tempDir)
+	defer fsys.Close()
+
+	// should be able to append empty string
+	res, err := fsys.Eval(`return Append("testkey", "")`, 0, nil, nil)
+	if err != nil {
+		t.Fatalf("Eval error: %v", err)
+	}
+	if num, ok := res.(float64); !ok || num != 0 {
+		t.Fatalf("Expected 0, got %v", res)
+	}
+}
+
+func TestLuaScriptsErrorScenarios2(t *testing.T) {
+	tempDir := t.TempDir()
+	fsys := NewFileSystem(tempDir)
+	defer fsys.Close()
+
+	// EXISTS takes at least one parameter
+	script := `return redis.call("EXISTS")`
+	_, err := fsys.Eval(script, 0, nil, nil)
+	// It actually doesn't error out because Exists is variadic! `Exists(keys ...Key)` can take 0 keys and returns an empty slice!
+	// It is converted to an empty Lua table, which becomes a map[] in convertLuaToGo if empty
+	if err != nil {
+		t.Fatalf("Exists without args should not error, got %v", err)
+	}
+
+	// Missing args for non-variadic command: GET takes 1 arg
+	script = `return redis.call("GET")`
+	_, err = fsys.Eval(script, 0, nil, nil)
+	if err == nil {
+		t.Fatalf("Expected error for missing args on GET")
+	}
+}
+
+func TestLuaScriptsErrorScenarios3(t *testing.T) {
+	tempDir := t.TempDir()
+	fsys := NewFileSystem(tempDir)
+	defer fsys.Close()
+
+	// Missing args for non-variadic command in pcall
+	script := `return redis.pcall("GET")`
+	res, err := fsys.Eval(script, 0, nil, nil)
+	if err != nil {
+		t.Fatalf("Eval error: %v", err)
+	}
+	resMap, ok := res.(map[string]any)
+	if !ok || resMap["err"] == nil {
+		t.Fatalf("Expected error table from pcall")
+	}
+}
+
+func TestLuaScriptsGoMethodCallError(t *testing.T) {
+	tempDir := t.TempDir()
+	fsys := NewFileSystem(tempDir)
+	defer fsys.Close()
+
+	// Should trigger method error (Get on missing key)
+	script := `return redis.call("GET", "missing")`
+	_, err := fsys.Eval(script, 0, nil, nil)
+	if err == nil {
+		t.Fatalf("Expected error for missing key in GET")
+	}
+
+	// Should trigger method error in pcall (Get on missing key)
+	script = `return redis.pcall("GET", "missing")`
+	res, err := fsys.Eval(script, 0, nil, nil)
+	if err != nil {
+		t.Fatalf("Eval error: %v", err)
+	}
+	resMap, ok := res.(map[string]any)
+	if !ok || resMap["err"] == nil {
+		t.Fatalf("Expected error table from pcall")
+	}
+}
+
+func TestLuaScriptsVariousReturnTypes(t *testing.T) {
+	tempDir := t.TempDir()
+	fsys := NewFileSystem(tempDir)
+	defer fsys.Close()
+
+	// bool
+	res, _ := fsys.Eval(`return true`, 0, nil, nil)
+	if v, ok := res.(bool); !ok || !v {
+		t.Fatalf("Expected true")
+	}
+
+	// number
+	res, _ = fsys.Eval(`return 123.45`, 0, nil, nil)
+	if v, ok := res.(float64); !ok || v != 123.45 {
+		t.Fatalf("Expected 123.45")
+	}
+}
+
+func TestLuaScriptsGoMethodArgs(t *testing.T) {
+	tempDir := t.TempDir()
+	fsys := NewFileSystem(tempDir)
+	defer fsys.Close()
+
+	// passing number
+	res, _ := fsys.Eval(`return IncrBy("numkey", 5)`, 0, nil, nil)
+	if v, ok := res.(float64); !ok || v != 5 {
+		t.Fatalf("Expected 5")
+	}
+	res, _ = fsys.Eval(`return IncrByFloat("numkey", 1.5)`, 0, nil, nil)
+	if v, ok := res.(float64); !ok || v != 6.5 {
+		t.Fatalf("Expected 6.5")
+	}
+
+	// passing boolean (just to test boolean argument logic, we might need a dummy command)
+	_, _ = fsys.Eval(`return ARInfo("numkey", true)`, 0, nil, nil)
 }
