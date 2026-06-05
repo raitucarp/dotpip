@@ -1,9 +1,9 @@
 package fs
 
 import (
+	"dotpip"
 	"encoding/json"
 	"fmt"
-	"dotpip"
 	"gonum.org/v1/gonum/graph/simple"
 )
 
@@ -35,6 +35,37 @@ func (g *Graph) buildGonumGraph() *simple.DirectedGraph {
 		dg.SetEdge(simple.Edge{F: simple.Node(e.SourceNode), T: simple.Node(e.TargetNode)})
 	}
 	return dg
+}
+
+// Very basic traversal helper to match chains length
+func evaluateMatches(g *Graph, chainLength int) int {
+	if chainLength == 0 {
+		return len(g.Nodes)
+	}
+
+	dg := g.buildGonumGraph()
+	pathsCount := 0
+
+	for _, n := range g.Nodes {
+		// Just a simple simulation of traversing a specific depth
+		// A full subgraph isomorphism is out of scope for a basic file system dummy implementation
+		// This simulates paths finding correctly up to depth = chainLength
+		pathsCount += countPaths(dg, int64(n.ID), chainLength)
+	}
+
+	return pathsCount
+}
+
+func countPaths(dg *simple.DirectedGraph, nodeID int64, depth int) int {
+	if depth == 0 {
+		return 1
+	}
+	count := 0
+	nodes := dg.From(nodeID)
+	for nodes.Next() {
+		count += countPaths(dg, nodes.Node().ID(), depth-1)
+	}
+	return count
 }
 
 func (f *FileSystem) GraphDelete(key dotpip.Key) (int, error) {
@@ -117,8 +148,8 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 				labels := clause.Create.Pattern.Node.Labels
 
 				node := &GraphNode{
-					ID: len(graph.Nodes) + 1,
-					Labels: labels,
+					ID:         len(graph.Nodes) + 1,
+					Labels:     labels,
 					Properties: make(map[string]any),
 				}
 				graph.Nodes = append(graph.Nodes, node)
@@ -139,8 +170,8 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 
 					for _, chain := range clause.Create.Pattern.Chain {
 						targetNode := &GraphNode{
-							ID: len(graph.Nodes) + 1,
-							Labels: chain.Node.Labels,
+							ID:         len(graph.Nodes) + 1,
+							Labels:     chain.Node.Labels,
 							Properties: make(map[string]any),
 						}
 						graph.Nodes = append(graph.Nodes, targetNode)
@@ -151,14 +182,14 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 						}
 
 						edge := &GraphEdge{
-							ID: len(graph.Edges) + 1,
-							Type: edgeType,
+							ID:         len(graph.Edges) + 1,
+							Type:       edgeType,
 							SourceNode: node.ID,
 							TargetNode: targetNode.ID,
 							Properties: make(map[string]any),
 						}
 						graph.Edges = append(graph.Edges, edge)
-						node = targetNode
+						node = targetNode // chain moves forward
 					}
 				}
 			}
@@ -166,11 +197,15 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 			result = append(result, m)
 		case clause.Match != nil:
 			m := make(map[string]any)
-			m["NodesFound"] = len(graph.Nodes)
 
-			dg := graph.buildGonumGraph()
-			m["NodesCalculated"] = dg.Nodes().Len()
-			m["EdgesCalculated"] = dg.Edges().Len()
+			chainLen := 0
+			if clause.Match.Pattern != nil {
+				chainLen = len(clause.Match.Pattern.Chain)
+			}
+
+			paths := evaluateMatches(&graph, chainLen)
+			m["NodesFound"] = len(graph.Nodes)
+			m["PathsMatched"] = paths
 
 			result = append(result, m)
 		case clause.Return != nil:
@@ -217,11 +252,15 @@ func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]an
 		switch {
 		case clause.Match != nil:
 			m := make(map[string]any)
-			m["NodesFound"] = len(graph.Nodes)
 
-			dg := graph.buildGonumGraph()
-			m["NodesCalculated"] = dg.Nodes().Len()
-			m["EdgesCalculated"] = dg.Edges().Len()
+			chainLen := 0
+			if clause.Match.Pattern != nil {
+				chainLen = len(clause.Match.Pattern.Chain)
+			}
+
+			paths := evaluateMatches(&graph, chainLen)
+			m["NodesFound"] = len(graph.Nodes)
+			m["PathsMatched"] = paths
 
 			result = append(result, m)
 		case clause.Return != nil:
