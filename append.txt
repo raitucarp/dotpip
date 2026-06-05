@@ -1,6 +1,0 @@
-	Eval(script string, numkeys int, keys []string, args []string) (any, error)
-	EvalRO(script string, numkeys int, keys []string, args []string) (any, error)
-	ScriptExists(scripts ...string) ([]bool, error)
-	ScriptFlush(options ...ScriptFlushOption) error
-	ScriptLoad(script string) (string, error)
-	ScriptKill() error
