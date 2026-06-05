@@ -3,7 +3,9 @@ package fs
 import (
 	"encoding/json"
 	"errors"
+
 	"dotpip"
+
 	"gonum.org/v1/gonum/graph/simple"
 )
 
@@ -100,7 +102,6 @@ func (f *FileSystem) GraphList() ([]string, error) {
 		return nil, err
 	}
 
-	// Filter keys that are actually graphs
 	var graphKeys []string
 	for _, key := range keys {
 		val, err := f.Get(key)
@@ -161,8 +162,8 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 				labels := clause.Create.Pattern.Node.Labels
 
 				node := &GraphNode{
-					ID: len(graph.Nodes) + 1,
-					Labels: labels,
+					ID:         len(graph.Nodes) + 1,
+					Labels:     labels,
 					Properties: make(map[string]any),
 				}
 				graph.Nodes = append(graph.Nodes, node)
@@ -183,8 +184,8 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 
 					for _, chain := range clause.Create.Pattern.Chain {
 						targetNode := &GraphNode{
-							ID: len(graph.Nodes) + 1,
-							Labels: chain.Node.Labels,
+							ID:         len(graph.Nodes) + 1,
+							Labels:     chain.Node.Labels,
 							Properties: make(map[string]any),
 						}
 						graph.Nodes = append(graph.Nodes, targetNode)
@@ -195,8 +196,8 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 						}
 
 						edge := &GraphEdge{
-							ID: len(graph.Edges) + 1,
-							Type: edgeType,
+							ID:         len(graph.Edges) + 1,
+							Type:       edgeType,
 							SourceNode: node.ID,
 							TargetNode: targetNode.ID,
 							Properties: make(map[string]any),
@@ -291,13 +292,13 @@ func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]an
 
 // GraphSlowlog simulates returning a slowlog.
 // For a filesystem dummy implementation, this just returns an empty list or a mock entry.
-func (f *FileSystem) GraphSlowlog(key dotpip.Key) ([]any, error) {
+func (f *FileSystem) GraphSlowlog(_ dotpip.Key) ([]any, error) {
 	// A real implementation would maintain an internal log array for execution times.
 	// For now, we mock the return to comply with the required interface execution properly.
 	mockLog := []any{
-		"1600000000",        // timestamp
+		"1600000000",         // timestamp
 		"MATCH (n) RETURN n", // query
-		"10",                // execution time
+		"10",                 // execution time
 	}
 	return []any{mockLog}, nil
 }

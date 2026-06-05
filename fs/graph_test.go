@@ -74,6 +74,40 @@ func TestGraphCommands(t *testing.T) {
 		t.Fatalf("Expected MATCH profile, got %v", resProf)
 	}
 
+	// TEST EXPLAIN
+	resExp, err := dotfs.GraphExplain(key, "MATCH (n) RETURN n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(resExp) == 0 || resExp[0] != string(dotpip.GraphKeywordMatch) {
+		t.Fatalf("Expected MATCH profile, got %v", resExp)
+	}
+
+	resExp, err = dotfs.GraphExplain(key, "CREATE (n)")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(resExp) == 0 || resExp[0] != string(dotpip.GraphKeywordCreate) {
+		t.Fatalf("Expected CREATE explanation, got %v", resExp)
+	}
+
+	resExp, err = dotfs.GraphExplain(key, "MATCH (n) DELETE n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(resExp) < 2 || resExp[1] != string(dotpip.GraphKeywordDelete) {
+		t.Fatalf("Expected DELETE explanation, got %v", resExp)
+	}
+
+	resExp, err = dotfs.GraphExplain(key, "MATCH (n) SET n.name='Bob'")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(resExp) < 2 || resExp[1] != string(dotpip.GraphKeywordSet) {
+		t.Fatalf("Expected SET explanation, got %v", resExp)
+	}
+
+
 	resSet, err := dotfs.GraphQuery(key, "MATCH (n) SET n.name = 'Bob'")
 	if err != nil {
 		t.Fatal(err)
@@ -98,7 +132,6 @@ func TestGraphCommands(t *testing.T) {
 	if len(slowlogRes) == 0 {
 		t.Fatalf("Expected mocked slowlog, got none")
 	}
-
 
 	resDelete, err := dotfs.GraphQuery(key, "MATCH (n) DELETE n")
 	if err != nil {
