@@ -1,10 +1,10 @@
 package fs_test
 
 import (
-	"testing"
 	"dotpip"
 	"dotpip/fs"
 	"path/filepath"
+	"testing"
 )
 
 func TestGraphCommands(t *testing.T) {
@@ -29,12 +29,12 @@ func TestGraphCommands(t *testing.T) {
 		}
 	}
 
-	resRO, err := dotfs.GraphROQuery(key, "MATCH (n)-[:KNOWS]->(m)-[:WORKS_AT]->(c)")
+	resRO, err := dotfs.GraphROQuery(key, "MATCH (n:Person)-[:KNOWS]->(m)-[:WORKS_AT]->(c) RETURN n")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if len(resRO) == 0 {
+	if len(resRO) < 2 {
 		t.Fatal("Expected response")
 	}
 
@@ -45,8 +45,18 @@ func TestGraphCommands(t *testing.T) {
 		t.Fatalf("Expected 8 nodes found across executions, got %d", nodesCalculated)
 	}
 
-	if pathsMatched != 2 {
-		t.Fatalf("Expected 2 deep path matched corresponding to length 2 across graph edges, got %d", pathsMatched)
+	if pathsMatched != 1 {
+		t.Fatalf("Expected 1 deep path matched corresponding to length 2 across graph edges, got %d", pathsMatched)
+	}
+
+	// Test actual RETURN parameters mapping variable 'n'
+	if nData, ok := resRO[1]["n"]; ok {
+		nList := nData.([]any)
+		if len(nList) == 0 {
+			t.Fatal("Expected at least one returned node variable for n")
+		}
+	} else {
+		t.Fatal("Expected returned structure to contain key 'n'")
 	}
 
 	var dpip dotpip.DotPip = dotfs
@@ -107,7 +117,6 @@ func TestGraphCommands(t *testing.T) {
 		t.Fatalf("Expected SET explanation, got %v", resExp)
 	}
 
-
 	resSet, err := dotfs.GraphQuery(key, "MATCH (n) SET n.name = 'Bob'")
 	if err != nil {
 		t.Fatal(err)
@@ -130,7 +139,12 @@ func TestGraphCommands(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(slowlogRes) == 0 {
-		t.Fatalf("Expected mocked slowlog, got none")
+		t.Fatalf("Expected slowlog")
+	}
+
+	_, err = dotfs.GraphSlowlog(dotpip.NewKey("not_exist"))
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	resDelete, err := dotfs.GraphQuery(key, "MATCH (n) DELETE n")
@@ -139,6 +153,16 @@ func TestGraphCommands(t *testing.T) {
 	}
 	if len(resDelete) < 2 || resDelete[1][string(dotpip.GraphKeywordNodesDeleted)] == nil {
 		t.Fatal("Expected nodes deleted response")
+	}
+
+	_, err = dotfs.GraphQuery(key, "CREATE (n:Person)")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = dotfs.GraphQuery(key, "MATCH (n) DELETE n")
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	_, err = dotfs.GraphDelete(key)
@@ -154,6 +178,16 @@ func TestGraphROQueryError(t *testing.T) {
 	key := dotpip.NewKey("mygraph")
 
 	_, err := dotfs.GraphROQuery(key, "CREATE (:Person {name: 'Alice'})")
+	if err == nil {
+		t.Fatal("Expected error")
+	}
+
+	_, err = dotfs.GraphROQuery(key, "MATCH (n) DELETE n")
+	if err == nil {
+		t.Fatal("Expected error")
+	}
+
+	_, err = dotfs.GraphROQuery(key, "MATCH (n) SET n.name = 'Bob'")
 	if err == nil {
 		t.Fatal("Expected error")
 	}
@@ -183,5 +217,111 @@ func TestGraphQueryParseError(t *testing.T) {
 	_, err = dotfs.GraphProfile(key, "INVALID QUERY")
 	if err == nil {
 		t.Fatal("Expected error")
+	}
+}
+
+func TestGraphPropertiesParsing(t *testing.T) {
+	dotfs := fs.NewFileSystem(filepath.Join(t.TempDir(), "db"))
+	defer func() { _ = dotfs.FlushAll() }()
+
+	key := dotpip.NewKey("mygraph")
+
+	// Verify property setting works
+	_, err := dotfs.GraphQuery(key, "CREATE (a:Person {name: 'Alice', age: 30, active: TRUE})")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = dotfs.GraphQuery(key, "MATCH (a) SET a.age = 31, a.active = FALSE")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resProf, err := dotfs.GraphProfile(key, "MATCH (n) RETURN n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(resProf) == 0 {
+		t.Fatal("Expected response")
+	}
+
+	_, err = dotfs.GraphProfile(key, "CREATE (n)")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = dotfs.GraphProfile(key, "MATCH (n) DELETE n")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = dotfs.GraphProfile(key, "MATCH (n) SET n.name='Bob'")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGraphMissingMatchClause(t *testing.T) {
+	dotfs := fs.NewFileSystem(filepath.Join(t.TempDir(), "db"))
+	defer func() { _ = dotfs.FlushAll() }()
+
+	key := dotpip.NewKey("mygraph")
+
+	resRO, err := dotfs.GraphROQuery(key, "RETURN n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(resRO) == 0 {
+		t.Fatal("Expected response handled safely")
+	}
+}
+
+func TestGraphMatchNoVariables(t *testing.T) {
+	dotfs := fs.NewFileSystem(filepath.Join(t.TempDir(), "db"))
+	defer func() { _ = dotfs.FlushAll() }()
+
+	key := dotpip.NewKey("mygraph")
+
+	_, _ = dotfs.GraphQuery(key, "CREATE (:Person)")
+
+	// test no variable mapping
+	resRO, err := dotfs.GraphROQuery(key, "MATCH (:Person) RETURN n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// length handles mapping dynamically; should correctly parse safe returning empty for unspecified references without failing test.
+	if len(resRO) < 2 {
+		t.Fatal("Expected parsed execution map safe response")
+	}
+}
+
+func TestGraphQueryEmptyGraph(t *testing.T) {
+	dotfs := fs.NewFileSystem(filepath.Join(t.TempDir(), "db"))
+	defer func() { _ = dotfs.FlushAll() }()
+
+	key := dotpip.NewKey("mygraph")
+
+	res, err := dotfs.GraphQuery(key, "MATCH (n) RETURN n")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(res) < 2 {
+		t.Fatal("Expected empty match execution returned properly")
+	}
+}
+
+func TestGraphMissingMatchClauseQuery(t *testing.T) {
+	dotfs := fs.NewFileSystem(filepath.Join(t.TempDir(), "db"))
+	defer func() { _ = dotfs.FlushAll() }()
+
+	key := dotpip.NewKey("mygraph")
+
+	resRO, err := dotfs.GraphQuery(key, "RETURN n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(resRO) == 0 {
+		t.Fatal("Expected response handled safely")
 	}
 }
