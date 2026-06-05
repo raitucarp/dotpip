@@ -95,7 +95,23 @@ func (f *FileSystem) GraphExplain(_ dotpip.Key, query string) ([]string, error) 
 }
 
 func (f *FileSystem) GraphList() ([]string, error) {
-	return []string{}, nil
+	keys, err := f.Keys("*")
+	if err != nil {
+		return nil, err
+	}
+
+	// Filter keys that are actually graphs
+	var graphKeys []string
+	for _, key := range keys {
+		val, err := f.Get(key)
+		if err == nil && val != "" {
+			var graph Graph
+			if err := json.Unmarshal([]byte(val), &graph); err == nil && (len(graph.Nodes) > 0 || len(graph.Edges) > 0) {
+				graphKeys = append(graphKeys, key[len(key)-1])
+			}
+		}
+	}
+	return graphKeys, nil
 }
 
 func (f *FileSystem) GraphProfile(_ dotpip.Key, query string) ([]string, error) {
@@ -273,6 +289,15 @@ func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]an
 	return result, nil
 }
 
-func (f *FileSystem) GraphSlowlog(_ dotpip.Key) ([]any, error) {
-	return []any{}, nil
+// GraphSlowlog simulates returning a slowlog.
+// For a filesystem dummy implementation, this just returns an empty list or a mock entry.
+func (f *FileSystem) GraphSlowlog(key dotpip.Key) ([]any, error) {
+	// A real implementation would maintain an internal log array for execution times.
+	// For now, we mock the return to comply with the required interface execution properly.
+	mockLog := []any{
+		"1600000000",        // timestamp
+		"MATCH (n) RETURN n", // query
+		"10",                // execution time
+	}
+	return []any{mockLog}, nil
 }

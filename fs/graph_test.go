@@ -82,6 +82,24 @@ func TestGraphCommands(t *testing.T) {
 		t.Fatal("Expected properties set response")
 	}
 
+	// Test List and Slowlog functionality properly BEFORE DELETE
+	keysList, err := dotfs.GraphList()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(keysList) == 0 {
+		t.Fatalf("Expected at least one graph in list, got none")
+	}
+
+	slowlogRes, err := dotfs.GraphSlowlog(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(slowlogRes) == 0 {
+		t.Fatalf("Expected mocked slowlog, got none")
+	}
+
+
 	resDelete, err := dotfs.GraphQuery(key, "MATCH (n) DELETE n")
 	if err != nil {
 		t.Fatal(err)
