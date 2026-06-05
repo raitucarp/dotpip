@@ -40,7 +40,7 @@ func (f *FileSystem) writeVectorSet(key dotpip.Key, vectorSet map[string]dotpip.
 	return f.writeFileByKey(key, encoded.([]byte))
 }
 
-func (f *FileSystem) VAdd(key dotpip.Key, element string, vector []float32, options ...dotpip.VAddOption) (int, error) {
+func (f *FileSystem) VAdd(key dotpip.Key, element string, vector []float32, _ ...dotpip.VAddOption) (int, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
 		return 0, err
@@ -157,11 +157,11 @@ func (f *FileSystem) VIsMember(key dotpip.Key, elements ...string) ([]bool, erro
 	return res, nil
 }
 
-func (f *FileSystem) VLinks(key dotpip.Key, element string) (map[int][]string, error) {
+func (f *FileSystem) VLinks(_ dotpip.Key, _ string) (map[int][]string, error) {
 	return make(map[int][]string), nil
 }
 
-func (f *FileSystem) VRandMember(key dotpip.Key, count int, options ...dotpip.VRandMemberOption) ([]string, error) {
+func (f *FileSystem) VRandMember(key dotpip.Key, count int, _ ...dotpip.VRandMemberOption) ([]string, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
 		return nil, err
@@ -176,7 +176,7 @@ func (f *FileSystem) VRandMember(key dotpip.Key, count int, options ...dotpip.VR
 	return res[:count], nil
 }
 
-func (f *FileSystem) VRange(key dotpip.Key, start string, end string, options ...dotpip.VRangeOption) ([]string, error) {
+func (f *FileSystem) VRange(key dotpip.Key, start string, end string, _ ...dotpip.VRangeOption) ([]string, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
 		return nil, err
@@ -237,7 +237,7 @@ func (f *FileSystem) VSetAttr(key dotpip.Key, element string, attributes string)
 	return 1, nil
 }
 
-func (f *FileSystem) VSim(key dotpip.Key, reference any, options ...dotpip.VSimOption) ([]dotpip.VSimResult, error) {
+func (f *FileSystem) VSim(key dotpip.Key, reference any, _ ...dotpip.VSimOption) ([]dotpip.VSimResult, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
 		return nil, err
