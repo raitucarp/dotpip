@@ -3,6 +3,7 @@ module dotpip
 go 1.24.0
 
 require (
+	github.com/alecthomas/participle/v2 v2.1.4
 	github.com/axiomhq/hyperloglog v0.2.6
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/goccy/go-yaml v1.19.2

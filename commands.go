@@ -355,6 +355,14 @@ type DotPip interface {
 	ARSeek(key Key, index int) (int, error)
 	ARSet(key Key, index int, values ...string) (int, error)
 
+	GraphDelete(key Key) (int, error)
+	GraphExplain(key Key, query string) ([]string, error)
+	GraphList() ([]string, error)
+	GraphProfile(key Key, query string) ([]string, error)
+	GraphQuery(key Key, query string) ([]map[string]any, error)
+	GraphROQuery(key Key, query string) ([]map[string]any, error)
+	GraphSlowlog(key Key) ([]any, error)
+
 	Eval(script string, numkeys int, keys []string, args []string) (any, error)
 	EvalSha(sha1 string, numkeys int, keys []string, args []string) (any, error)
 	EvalRO(script string, numkeys int, keys []string, args []string) (any, error)

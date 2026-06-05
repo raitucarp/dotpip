@@ -1,0 +1,192 @@
+package fs
+
+import (
+	"dotpip"
+	"encoding/json"
+	"fmt"
+)
+
+type Graph struct {
+	Nodes []*GraphNode `json:"nodes"`
+	Edges []*GraphEdge `json:"edges"`
+}
+
+type GraphNode struct {
+	ID         int            `json:"id"`
+	Labels     []string       `json:"labels"`
+	Properties map[string]any `json:"properties"`
+}
+
+type GraphEdge struct {
+	ID         int            `json:"id"`
+	Type       string         `json:"type"`
+	SourceNode int            `json:"source"`
+	TargetNode int            `json:"target"`
+	Properties map[string]any `json:"properties"`
+}
+
+func (f *FileSystem) GraphDelete(key dotpip.Key) (int, error) {
+	return f.Del(key), nil
+}
+
+func (f *FileSystem) GraphExplain(key dotpip.Key, query string) ([]string, error) {
+	q, err := dotpip.CypherParser.ParseString("", query)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []string{}
+	for _, clause := range q.Clauses {
+		if clause.Create != nil {
+			result = append(result, "CREATE")
+		} else if clause.Match != nil {
+			result = append(result, "MATCH")
+		} else if clause.Return != nil {
+			result = append(result, "RETURN")
+		} else if clause.Delete != nil {
+			result = append(result, "DELETE")
+		} else if clause.Set != nil {
+			result = append(result, "SET")
+		}
+	}
+	return result, nil
+}
+
+func (f *FileSystem) GraphList() ([]string, error) {
+	return []string{}, nil
+}
+
+func (f *FileSystem) GraphProfile(key dotpip.Key, query string) ([]string, error) {
+	q, err := dotpip.CypherParser.ParseString("", query)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []string{}
+	for _, clause := range q.Clauses {
+		if clause.Create != nil {
+			result = append(result, "CREATE")
+		} else if clause.Match != nil {
+			result = append(result, "MATCH")
+		} else if clause.Return != nil {
+			result = append(result, "RETURN")
+		} else if clause.Delete != nil {
+			result = append(result, "DELETE")
+		} else if clause.Set != nil {
+			result = append(result, "SET")
+		}
+	}
+	return result, nil
+}
+
+func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any, error) {
+	q, err := dotpip.CypherParser.ParseString("", query)
+	if err != nil {
+		return nil, err
+	}
+
+	// Try reading graph
+	var graph Graph
+	val, err := f.Get(key)
+	if err == nil && val != "" {
+		_ = json.Unmarshal([]byte(val), &graph)
+	}
+
+	result := []map[string]any{}
+
+	for _, clause := range q.Clauses {
+		if clause.Create != nil {
+			m := make(map[string]any)
+
+			if clause.Create.Pattern != nil && clause.Create.Pattern.Node != nil {
+				labels := clause.Create.Pattern.Node.Labels
+
+				node := &GraphNode{
+					ID:         len(graph.Nodes) + 1,
+					Labels:     labels,
+					Properties: make(map[string]any),
+				}
+				graph.Nodes = append(graph.Nodes, node)
+
+				if len(labels) > 0 {
+					m["LabelsAdded"] = len(labels)
+				}
+				m["NodesCreated"] = 1
+				m["PropertiesSet"] = 0
+
+				if clause.Create.Pattern.Node.Properties != nil {
+					m["PropertiesSet"] = len(clause.Create.Pattern.Node.Properties.Props)
+				}
+
+				if len(clause.Create.Pattern.Chain) > 0 {
+					m["RelationshipsCreated"] = len(clause.Create.Pattern.Chain)
+					m["NodesCreated"] = m["NodesCreated"].(int) + len(clause.Create.Pattern.Chain)
+				}
+			}
+
+			result = append(result, m)
+		} else if clause.Match != nil {
+			m := make(map[string]any)
+			m["NodesFound"] = len(graph.Nodes)
+			result = append(result, m)
+		} else if clause.Return != nil {
+
+		} else if clause.Delete != nil {
+			m := make(map[string]any)
+			m["NodesDeleted"] = len(graph.Nodes)
+			graph.Nodes = []*GraphNode{}
+			result = append(result, m)
+		} else if clause.Set != nil {
+			m := make(map[string]any)
+			m["PropertiesSet"] = len(clause.Set.Items)
+			result = append(result, m)
+		}
+	}
+
+	b, _ := json.Marshal(graph)
+	f.Set(key, string(b))
+
+	if len(result) == 0 {
+		return []map[string]any{{"Query Execution Time": "0ms"}}, nil
+	}
+
+	return result, nil
+}
+
+func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]any, error) {
+	q, err := dotpip.CypherParser.ParseString("", query)
+	if err != nil {
+		return nil, err
+	}
+
+	// Try reading graph
+	var graph Graph
+	val, err := f.Get(key)
+	if err == nil && val != "" {
+		_ = json.Unmarshal([]byte(val), &graph)
+	}
+
+	result := []map[string]any{}
+
+	for _, clause := range q.Clauses {
+		if clause.Match != nil {
+			m := make(map[string]any)
+			m["NodesFound"] = len(graph.Nodes)
+			result = append(result, m)
+		} else if clause.Return != nil {
+
+		} else if clause.Create != nil || clause.Delete != nil || clause.Set != nil {
+			return nil, fmt.Errorf("read-only query contains write operations")
+		}
+	}
+
+	if len(result) == 0 {
+		return []map[string]any{{"Query Execution Time": "0ms"}}, nil
+	}
+
+	return result, nil
+}
+
+func (f *FileSystem) GraphSlowlog(key dotpip.Key) ([]any, error) {
+	return []any{}, nil
+}
