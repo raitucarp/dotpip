@@ -28,6 +28,25 @@ const (
 	ObjectEncodingRAW  ObjectEncoding = "raw"
 )
 
+type GraphKeyword string
+
+const (
+	GraphKeywordCreate               GraphKeyword = "CREATE"
+	GraphKeywordMatch                GraphKeyword = "MATCH"
+	GraphKeywordReturn               GraphKeyword = "RETURN"
+	GraphKeywordDelete               GraphKeyword = "DELETE"
+	GraphKeywordSet                  GraphKeyword = "SET"
+	GraphKeywordNodesFound           GraphKeyword = "NodesFound"
+	GraphKeywordPathsMatched         GraphKeyword = "PathsMatched"
+	GraphKeywordNodesCalculated      GraphKeyword = "NodesCalculated"
+	GraphKeywordEdgesCalculated      GraphKeyword = "EdgesCalculated"
+	GraphKeywordLabelsAdded          GraphKeyword = "LabelsAdded"
+	GraphKeywordNodesCreated         GraphKeyword = "NodesCreated"
+	GraphKeywordPropertiesSet        GraphKeyword = "PropertiesSet"
+	GraphKeywordRelationshipsCreated GraphKeyword = "RelationshipsCreated"
+	GraphKeywordNodesDeleted         GraphKeyword = "NodesDeleted"
+)
+
 type ErrorMessage string
 
 const (
@@ -70,4 +89,6 @@ const (
 	ErrMsgRAWStringDecodeExpected ErrorMessage = "RAW stringDecode expected []byte or string, got %T"
 	ErrMsgGeospatialDecoderNot    ErrorMessage = "geospatial decoder not configured"
 	ErrMsgGeospatialEncoderNot    ErrorMessage = "geospatial encoder not configured"
+
+	ErrMsgReadOnlyQuery ErrorMessage = "read-only query contains write operations"
 )
