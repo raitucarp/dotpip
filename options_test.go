@@ -246,3 +246,21 @@ func TestScriptFlushOptions(t *testing.T) {
 		t.Errorf("Expected Sync and Async to be true")
 	}
 }
+
+func TestVectorOptionsCoverage(t *testing.T) {
+    WithVAddCas(true)(&VAddOptions{})
+    WithVAddEF(1)(&VAddOptions{})
+    WithVAddM(1)(&VAddOptions{})
+    WithVAddQuant("q")(&VAddOptions{})
+    WithVAddReduceDim(1)(&VAddOptions{})
+
+    WithVSimCount(1)(&VSimOptions{})
+    WithVSimEF(1)(&VSimOptions{})
+    WithVSimEpsilon(1.0)(&VSimOptions{})
+    WithVSimFilter("test")(&VSimOptions{})
+    WithVSimFilterEF(1)(&VSimOptions{})
+    WithVSimNoThread(true)(&VSimOptions{})
+    WithVSimTruth(true)(&VSimOptions{})
+    WithVSimWithAttribs(true)(&VSimOptions{})
+    WithVSimWithScores(true)(&VSimOptions{})
+}
