@@ -264,14 +264,14 @@ func (f *FileSystem) XGroupCreate(key dotpip.Key, group string, id string, mkStr
 	}
 
 	var lastDeliveredID string
-	switch id {
-	case "$":
+	switch {
+	case id == "$":
 		if len(stream.Entries) > 0 {
 			lastDeliveredID = stream.Entries[len(stream.Entries)-1].ID
 		} else {
 			lastDeliveredID = "0-0"
 		}
-	case "0":
+	case id == "0":
 		lastDeliveredID = "0-0"
 	default:
 		// Validating format
@@ -389,14 +389,14 @@ func (f *FileSystem) XGroupSetID(key dotpip.Key, group string, id string) (strin
 	}
 
 	var lastDeliveredID string
-	switch id {
-	case "$":
+	switch {
+	case id == "$":
 		if len(stream.Entries) > 0 {
 			lastDeliveredID = stream.Entries[len(stream.Entries)-1].ID
 		} else {
 			lastDeliveredID = "0-0"
 		}
-	case "0":
+	case id == "0":
 		lastDeliveredID = "0-0"
 	default:
 		_, _, err := f.parseStreamID(id)

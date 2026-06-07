@@ -31,8 +31,6 @@ func (f *FileSystem) setBitmapBytes(key dotpip.Key, b []byte) error {
 	return err
 }
 
-// SetBit sets or clears the bit at offset in the string value stored at key.
-// SetBit sets or clears the bit at offset in the string value stored at key.
 func (f *FileSystem) SetBit(key dotpip.Key, offset int, value int) (int, error) {
 	b, err := f.getBitmapBytes(key)
 	if err != nil {
@@ -65,8 +63,6 @@ func (f *FileSystem) SetBit(key dotpip.Key, offset int, value int) (int, error) 
 	return origBit, nil
 }
 
-// GetBit returns the bit value at offset in the string value stored at key.
-// GetBit returns the bit value at offset in the string value stored at key.
 func (f *FileSystem) GetBit(key dotpip.Key, offset int) (int, error) {
 	b, err := f.getBitmapBytes(key)
 	if err != nil {
@@ -83,8 +79,6 @@ func (f *FileSystem) GetBit(key dotpip.Key, offset int) (int, error) {
 	return bit, nil
 }
 
-// BitCount counts the number of set bits (population counting) in a string.
-// BitCount counts the number of set bits (population counting) in a string.
 func (f *FileSystem) BitCount(key dotpip.Key, start int, end int) (int, error) {
 	b, err := f.getBitmapBytes(key)
 	if err != nil {
@@ -134,8 +128,6 @@ func (f *FileSystem) BitCount(key dotpip.Key, start int, end int) (int, error) {
 	return count, nil
 }
 
-// BitOp performs a bitwise operation between multiple keys.
-// BitOp performs a bitwise operation between multiple keys.
 func (f *FileSystem) BitOp(operation dotpip.BitOp, destKey dotpip.Key, keys ...dotpip.Key) (int, error) {
 	var maxLen int
 	var byteArrays [][]byte
@@ -207,8 +199,6 @@ func (f *FileSystem) BitOp(operation dotpip.BitOp, destKey dotpip.Key, keys ...d
 	return maxLen, nil
 }
 
-// BitPos returns the position of the first bit set to 1 or 0 in a string.
-// BitPos returns the position of the first bit set to 1 or 0 in a string.
 func (f *FileSystem) BitPos(key dotpip.Key, bit int, start int, end int) (int, error) {
 	// We need to implement BITPOS properly with the start/end options which are byte indexes
 	b, err := f.getBitmapBytes(key)

@@ -71,7 +71,6 @@ func (f *FileSystem) writeGeo(key dotpip.Key, geo map[string]dotpip.GeoLocation)
 	return errors.New(string(dotpip.ErrMsgGeospatialEncoderNot))
 }
 
-// GeoAdd adds the specified geospatial items to the specified key.
 func (f *FileSystem) GeoAdd(key dotpip.Key, members []dotpip.GeoLocation, options ...dotpip.GeoAddOption) (int, error) {
 	cmd := &dotpip.GeoAddCommand{}
 	for _, opt := range options {
@@ -123,7 +122,6 @@ func (f *FileSystem) GeoAdd(key dotpip.Key, members []dotpip.GeoLocation, option
 	return added, nil
 }
 
-// GeoDist returns the distance between two members in the geospatial index.
 func (f *FileSystem) GeoDist(key dotpip.Key, member1 string, member2 string, unit dotpip.GeoUnit) (float64, error) {
 	geoMap, err := f.readGeo(key)
 	if err != nil {
@@ -153,7 +151,6 @@ func (f *FileSystem) GeoDist(key dotpip.Key, member1 string, member2 string, uni
 	}
 }
 
-// GeoHash returns valid Geohash strings representing the position of one or more elements.
 func (f *FileSystem) GeoHash(key dotpip.Key, members ...string) ([]string, error) {
 	geoMap, err := f.readGeo(key)
 	if err != nil {
@@ -174,7 +171,6 @@ func (f *FileSystem) GeoHash(key dotpip.Key, members ...string) ([]string, error
 	return hashes, nil
 }
 
-// GeoPos returns the positions of all the specified members of the geospatial index.
 func (f *FileSystem) GeoPos(key dotpip.Key, members ...string) ([]*dotpip.GeoLocation, error) {
 	geoMap, err := f.readGeo(key)
 	if err != nil {
@@ -224,7 +220,6 @@ func convertFromKmToUnit(distKm float64, unit dotpip.GeoUnit) float64 {
 	}
 }
 
-// GeoSearch queries a geospatial index for members within a bounding box or radius.
 func (f *FileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption) ([]dotpip.GeoSearchResult, error) {
 	cmd := &dotpip.GeoSearchCommand{}
 	for _, opt := range options {
@@ -336,7 +331,6 @@ func (f *FileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption
 	return results, nil
 }
 
-// GeoSearchStore queries a geospatial index and stores the results.
 func (f *FileSystem) GeoSearchStore(destination dotpip.Key, source dotpip.Key, searchOptions []dotpip.GeoSearchOption, storeOptions ...dotpip.GeoSearchStoreOption) (int, error) {
 	// First, run the search but make sure we get the distance and coordinates
 	// since we need them to store them as a ZSet.

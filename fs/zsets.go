@@ -36,7 +36,6 @@ func (f *FileSystem) writeSortedSet(key dotpip.Key, zset map[string]float64) err
 	return f.writeFileByKey(key, content.([]byte))
 }
 
-// ZAdd adds one or more members to a sorted set.
 func (f *FileSystem) ZAdd(key dotpip.Key, members []dotpip.Z, options ...dotpip.ZAddOption) (int, error) {
 	cmd := &dotpip.ZAddCommand{}
 	for _, opt := range options {
@@ -94,7 +93,6 @@ func (f *FileSystem) ZAdd(key dotpip.Key, members []dotpip.Z, options ...dotpip.
 	return added, nil
 }
 
-// ZCard returns the number of members in a sorted set.
 func (f *FileSystem) ZCard(key dotpip.Key) (int, error) {
 	zset, err := f.readSortedSet(key)
 	if err != nil {
@@ -103,7 +101,6 @@ func (f *FileSystem) ZCard(key dotpip.Key) (int, error) {
 	return len(zset), nil
 }
 
-// ZCount returns the number of members in a sorted set with scores within the given values.
 func (f *FileSystem) ZCount(key dotpip.Key, minVal float64, maxVal float64) (int, error) {
 	zset, err := f.readSortedSet(key)
 	if err != nil {
@@ -119,7 +116,6 @@ func (f *FileSystem) ZCount(key dotpip.Key, minVal float64, maxVal float64) (int
 	return count, nil
 }
 
-// ZDiff returns the difference between multiple sorted sets.
 func (f *FileSystem) ZDiff(keys ...dotpip.Key) ([]string, error) {
 	diff, err := f.ZDiffWithScores(keys...)
 	if err != nil {
@@ -132,7 +128,6 @@ func (f *FileSystem) ZDiff(keys ...dotpip.Key) ([]string, error) {
 	return res, nil
 }
 
-// ZDiffWithScores returns the difference between multiple sorted sets with scores.
 func (f *FileSystem) ZDiffWithScores(keys ...dotpip.Key) ([]dotpip.Z, error) {
 	if len(keys) == 0 {
 		return []dotpip.Z{}, nil
@@ -173,7 +168,6 @@ func (f *FileSystem) ZDiffWithScores(keys ...dotpip.Key) ([]dotpip.Z, error) {
 	return result, nil
 }
 
-// ZIncrBy increments the score of a member in a sorted set.
 func (f *FileSystem) ZIncrBy(key dotpip.Key, increment float64, member string) (float64, error) {
 	zset, err := f.readSortedSet(key)
 	if err != nil {
@@ -192,7 +186,6 @@ func (f *FileSystem) ZIncrBy(key dotpip.Key, increment float64, member string) (
 	return newScore, nil
 }
 
-// ZInter returns the intersection of multiple sorted sets.
 func (f *FileSystem) ZInter(keys ...dotpip.Key) ([]string, error) {
 	inter, err := f.ZInterWithScores(keys...)
 	if err != nil {
@@ -205,7 +198,6 @@ func (f *FileSystem) ZInter(keys ...dotpip.Key) ([]string, error) {
 	return res, nil
 }
 
-// ZInterWithScores returns the intersection of multiple sorted sets with scores.
 func (f *FileSystem) ZInterWithScores(keys ...dotpip.Key) ([]dotpip.Z, error) {
 	if len(keys) == 0 {
 		return []dotpip.Z{}, nil
@@ -251,7 +243,6 @@ func (f *FileSystem) ZInterWithScores(keys ...dotpip.Key) ([]dotpip.Z, error) {
 	return result, nil
 }
 
-// ZLexCount returns the number of members in a sorted set within the given lexicographical range.
 func (f *FileSystem) ZLexCount(key dotpip.Key, minVal string, maxVal string) (int, error) {
 	// A simplified implementation. Redis supports [min, (min, +, -
 	zset, err := f.readSortedSet(key)
@@ -289,7 +280,6 @@ func (f *FileSystem) getSortedZSet(key dotpip.Key) ([]dotpip.Z, error) {
 	return result, nil
 }
 
-// ZPopMax removes and returns the members with the highest scores in a sorted set.
 func (f *FileSystem) ZPopMax(key dotpip.Key, count int) ([]dotpip.Z, error) {
 	sorted, err := f.getSortedZSet(key)
 	if err != nil {
@@ -323,7 +313,6 @@ func (f *FileSystem) ZPopMax(key dotpip.Key, count int) ([]dotpip.Z, error) {
 	return popped, nil
 }
 
-// ZPopMin removes and returns the members with the lowest scores in a sorted set.
 func (f *FileSystem) ZPopMin(key dotpip.Key, count int) ([]dotpip.Z, error) {
 	sorted, err := f.getSortedZSet(key)
 	if err != nil {
@@ -357,7 +346,6 @@ func (f *FileSystem) ZPopMin(key dotpip.Key, count int) ([]dotpip.Z, error) {
 	return popped, nil
 }
 
-// ZRandMember returns random members from a sorted set.
 func (f *FileSystem) ZRandMember(key dotpip.Key, count int) ([]string, error) {
 	randZ, err := f.ZRandMemberWithScores(key, count)
 	if err != nil {
@@ -370,7 +358,6 @@ func (f *FileSystem) ZRandMember(key dotpip.Key, count int) ([]string, error) {
 	return res, nil
 }
 
-// ZRandMemberWithScores returns random members with scores from a sorted set.
 func (f *FileSystem) ZRandMemberWithScores(key dotpip.Key, count int) ([]dotpip.Z, error) {
 	zset, err := f.readSortedSet(key)
 	if err != nil {
@@ -413,7 +400,6 @@ func (f *FileSystem) ZRandMemberWithScores(key dotpip.Key, count int) ([]dotpip.
 	return members[:limit], nil
 }
 
-// ZRange returns members in a sorted set within a range.
 func (f *FileSystem) ZRange(key dotpip.Key, start string, stop string, options ...dotpip.ZRangeOption) ([]string, error) {
 	resZ, err := f.ZRangeWithScores(key, start, stop, options...)
 	if err != nil {
@@ -426,7 +412,6 @@ func (f *FileSystem) ZRange(key dotpip.Key, start string, stop string, options .
 	return res, nil
 }
 
-// ZRangeWithScores returns members with scores in a sorted set within a range.
 func (f *FileSystem) ZRangeWithScores(key dotpip.Key, start string, stop string, options ...dotpip.ZRangeOption) ([]dotpip.Z, error) {
 	sorted, err := f.getSortedZSet(key)
 	if err != nil {
@@ -528,7 +513,6 @@ func (f *FileSystem) ZRangeWithScores(key dotpip.Key, start string, stop string,
 	return sorted, nil
 }
 
-// ZRank returns the rank of a member in a sorted set.
 func (f *FileSystem) ZRank(key dotpip.Key, member string) (int, error) {
 	sorted, err := f.getSortedZSet(key)
 	if err != nil {
@@ -543,7 +527,6 @@ func (f *FileSystem) ZRank(key dotpip.Key, member string) (int, error) {
 	return -1, nil // not found
 }
 
-// ZRem removes one or more members from a sorted set.
 func (f *FileSystem) ZRem(key dotpip.Key, members ...string) (int, error) {
 	zset, err := f.readSortedSet(key)
 	if err != nil {
@@ -568,7 +551,6 @@ func (f *FileSystem) ZRem(key dotpip.Key, members ...string) (int, error) {
 	return removed, nil
 }
 
-// ZRevRank returns the reverse rank of a member in a sorted set.
 func (f *FileSystem) ZRevRank(key dotpip.Key, member string) (int, error) {
 	sorted, err := f.getSortedZSet(key)
 	if err != nil {
@@ -583,7 +565,6 @@ func (f *FileSystem) ZRevRank(key dotpip.Key, member string) (int, error) {
 	return -1, nil
 }
 
-// ZScore returns the score of a member in a sorted set.
 func (f *FileSystem) ZScore(key dotpip.Key, member string) (float64, error) {
 	zset, err := f.readSortedSet(key)
 	if err != nil {
@@ -597,7 +578,6 @@ func (f *FileSystem) ZScore(key dotpip.Key, member string) (float64, error) {
 	return 0, nil
 }
 
-// ZUnion returns the union of multiple sorted sets.
 func (f *FileSystem) ZUnion(keys ...dotpip.Key) ([]string, error) {
 	union, err := f.ZUnionWithScores(keys...)
 	if err != nil {
@@ -610,7 +590,6 @@ func (f *FileSystem) ZUnion(keys ...dotpip.Key) ([]string, error) {
 	return res, nil
 }
 
-// ZUnionWithScores returns the union of multiple sorted sets with scores.
 func (f *FileSystem) ZUnionWithScores(keys ...dotpip.Key) ([]dotpip.Z, error) {
 	union := make(map[string]float64)
 
@@ -639,7 +618,6 @@ func (f *FileSystem) ZUnionWithScores(keys ...dotpip.Key) ([]dotpip.Z, error) {
 	return result, nil
 }
 
-// ZScan incrementally iterates over a sorted set.
 func (f *FileSystem) ZScan(key dotpip.Key, cursor uint64, options ...dotpip.ScanOption) (uint64, []dotpip.Z, error) {
 	cmd := &dotpip.ScanCommand{Count: 10}
 	for _, option := range options {

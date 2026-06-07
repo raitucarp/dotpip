@@ -11,28 +11,24 @@ import (
 	"gonum.org/v1/gonum/graph/simple"
 )
 
-// Graph represents a graph database structure.
 type Graph struct {
 	Nodes   []*GraphNode `json:"nodes"`
 	Edges   []*GraphEdge `json:"edges"`
 	Slowlog []GraphLog   `json:"slowlog"`
 }
 
-// GraphLog represents a log entry for graph operations.
 type GraphLog struct {
 	Timestamp int64  `json:"timestamp"`
 	Query     string `json:"query"`
 	ExecTime  int64  `json:"exec_time"`
 }
 
-// GraphNode represents a node in a graph.
 type GraphNode struct {
 	ID         int            `json:"id"`
 	Labels     []string       `json:"labels"`
 	Properties map[string]any `json:"properties"`
 }
 
-// GraphEdge represents an edge between graph nodes.
 type GraphEdge struct {
 	ID         int            `json:"id"`
 	Type       string         `json:"type"`
@@ -118,12 +114,10 @@ func countPaths(dg *simple.DirectedGraph, nodeID int64, depth int) int {
 	return count
 }
 
-// GraphDelete completely removes the graph and all of its data.
 func (f *FileSystem) GraphDelete(key dotpip.Key) (int, error) {
 	return f.Del(key), nil
 }
 
-// GraphExplain returns the execution plan for a given query.
 func (f *FileSystem) GraphExplain(_ dotpip.Key, query string) ([]string, error) {
 	q, err := dotpip.CypherParser.ParseString("", query)
 	if err != nil {
@@ -148,7 +142,6 @@ func (f *FileSystem) GraphExplain(_ dotpip.Key, query string) ([]string, error) 
 	return result, nil
 }
 
-// GraphList lists all graph keys in the keyspace.
 func (f *FileSystem) GraphList() ([]string, error) {
 	keys, err := f.Keys("*")
 	if err != nil {
@@ -168,7 +161,6 @@ func (f *FileSystem) GraphList() ([]string, error) {
 	return graphKeys, nil
 }
 
-// GraphProfile executes a query and returns an execution plan with timing info.
 func (f *FileSystem) GraphProfile(_ dotpip.Key, query string) ([]string, error) {
 	q, err := dotpip.CypherParser.ParseString("", query)
 	if err != nil {
@@ -193,7 +185,6 @@ func (f *FileSystem) GraphProfile(_ dotpip.Key, query string) ([]string, error) 
 	return result, nil
 }
 
-// GraphQuery executes a query against the specified graph.
 func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any, error) {
 	start := time.Now()
 
@@ -356,7 +347,6 @@ func (f *FileSystem) GraphQuery(key dotpip.Key, query string) ([]map[string]any,
 	return result, nil
 }
 
-// GraphROQuery executes a read-only query against the specified graph.
 func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]any, error) {
 	start := time.Now()
 
@@ -419,7 +409,6 @@ func (f *FileSystem) GraphROQuery(key dotpip.Key, query string) ([]map[string]an
 	return result, nil
 }
 
-// GraphSlowlog returns a list of the slowest queries executed against a graph.
 func (f *FileSystem) GraphSlowlog(key dotpip.Key) ([]any, error) {
 	var graph Graph
 	val, err := f.Get(key)

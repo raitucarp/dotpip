@@ -50,7 +50,6 @@ func (f *FileSystem) writeJSON(key dotpip.Key, value any) error {
 	return err
 }
 
-// JSONSet sets the JSON value at path in key.
 func (f *FileSystem) JSONSet(key dotpip.Key, path string, value any) (string, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -83,7 +82,6 @@ func (f *FileSystem) JSONSet(key dotpip.Key, path string, value any) (string, er
 	return string(dotpip.StatusOK), nil
 }
 
-// JSONGet returns the value at path in JSON serialized form.
 func (f *FileSystem) JSONGet(key dotpip.Key, paths ...string) (any, error) {
 	doc, err := f.readJSON(key)
 	if err != nil {
@@ -133,7 +131,6 @@ func (f *FileSystem) JSONGet(key dotpip.Key, paths ...string) (any, error) {
 	return result, nil
 }
 
-// JSONDel deletes a value.
 func (f *FileSystem) JSONDel(key dotpip.Key, path string) (int, error) {
 	if path == "" {
 		path = "$"
@@ -171,7 +168,6 @@ func (f *FileSystem) JSONDel(key dotpip.Key, path string) (int, error) {
 	return deletedCount, err
 }
 
-// JSONArrAppend appends the json values into the array at path.
 func (f *FileSystem) JSONArrAppend(key dotpip.Key, path string, values ...any) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -202,7 +198,6 @@ func (f *FileSystem) JSONArrAppend(key dotpip.Key, path string, values ...any) (
 	return results, err
 }
 
-// JSONArrIndex searches for the first occurrence of a JSON value in an array.
 func (f *FileSystem) JSONArrIndex(key dotpip.Key, path string, value any, startAndStop ...int) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -273,7 +268,6 @@ func (f *FileSystem) JSONArrIndex(key dotpip.Key, path string, value any, startA
 	return results, nil
 }
 
-// JSONArrInsert inserts the json values into the array at path before the index.
 func (f *FileSystem) JSONArrInsert(key dotpip.Key, path string, index int, values ...any) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -320,7 +314,6 @@ func (f *FileSystem) JSONArrInsert(key dotpip.Key, path string, index int, value
 	return results, err
 }
 
-// JSONArrLen reports the length of the JSON array at path in key.
 func (f *FileSystem) JSONArrLen(key dotpip.Key, path string) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -344,7 +337,6 @@ func (f *FileSystem) JSONArrLen(key dotpip.Key, path string) ([]any, error) {
 	return results, nil
 }
 
-// JSONArrPop removes and returns an element from the index in the array.
 func (f *FileSystem) JSONArrPop(key dotpip.Key, path string, index ...int) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -401,7 +393,6 @@ func (f *FileSystem) JSONArrPop(key dotpip.Key, path string, index ...int) ([]an
 	return results, err
 }
 
-// JSONArrTrim trims an array so that it contains only the specified inclusive range of elements.
 func (f *FileSystem) JSONArrTrim(key dotpip.Key, path string, start int, stop int) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -464,7 +455,6 @@ func (f *FileSystem) JSONArrTrim(key dotpip.Key, path string, start int, stop in
 	return results, err
 }
 
-// JSONClear clear container values (arrays/objects) and set numeric values to 0.
 func (f *FileSystem) JSONClear(key dotpip.Key, path string) (int, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -511,12 +501,10 @@ func (f *FileSystem) JSONClear(key dotpip.Key, path string) (int, error) {
 	return clearedCount, err
 }
 
-// JSONForget is an alias for JSONDel.
 func (f *FileSystem) JSONForget(key dotpip.Key, path string) (int, error) {
 	return f.JSONDel(key, path)
 }
 
-// JSONMerge merges a given JSON value into matching paths.
 func (f *FileSystem) JSONMerge(key dotpip.Key, path string, value any) (string, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -560,7 +548,6 @@ func (f *FileSystem) JSONMerge(key dotpip.Key, path string, value any) (string, 
 	return string(dotpip.StatusOK), err
 }
 
-// JSONMGet returns the values at path from multiple key arguments.
 func (f *FileSystem) JSONMGet(path string, keys ...dotpip.Key) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -588,7 +575,6 @@ func (f *FileSystem) JSONMGet(path string, keys ...dotpip.Key) ([]any, error) {
 	return results, nil
 }
 
-// JSONMSet sets or updates one or more JSON values according to the specified key-path-value triplets.
 func (f *FileSystem) JSONMSet(args ...dotpip.JSONMSetArg) (string, error) {
 	for _, arg := range args {
 		_, err := f.JSONSet(arg.Key, arg.Path, arg.Value)
@@ -599,7 +585,6 @@ func (f *FileSystem) JSONMSet(args ...dotpip.JSONMSetArg) (string, error) {
 	return string(dotpip.StatusOK), nil
 }
 
-// JSONNumIncrBy increments the number value stored at path by number.
 func (f *FileSystem) JSONNumIncrBy(key dotpip.Key, path string, value float64) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -646,7 +631,6 @@ func (f *FileSystem) JSONNumIncrBy(key dotpip.Key, path string, value float64) (
 	return results, err
 }
 
-// JSONNumMultBy multiplies the number value stored at path by number.
 func (f *FileSystem) JSONNumMultBy(key dotpip.Key, path string, value float64) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -693,7 +677,6 @@ func (f *FileSystem) JSONNumMultBy(key dotpip.Key, path string, value float64) (
 	return results, err
 }
 
-// JSONObjKeys returns the keys in the object that s referenced by path.
 func (f *FileSystem) JSONObjKeys(key dotpip.Key, path string) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -721,7 +704,6 @@ func (f *FileSystem) JSONObjKeys(key dotpip.Key, path string) ([]any, error) {
 	return results, nil
 }
 
-// JSONObjLen report the number of keys in the JSON object at path in key.
 func (f *FileSystem) JSONObjLen(key dotpip.Key, path string) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -745,7 +727,6 @@ func (f *FileSystem) JSONObjLen(key dotpip.Key, path string) ([]any, error) {
 	return results, nil
 }
 
-// JSONStrAppend appends the json-string values to the string at path.
 func (f *FileSystem) JSONStrAppend(key dotpip.Key, path string, value string) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -776,7 +757,6 @@ func (f *FileSystem) JSONStrAppend(key dotpip.Key, path string, value string) ([
 	return results, err
 }
 
-// JSONStrLen report the length of the JSON String at path in key.
 func (f *FileSystem) JSONStrLen(key dotpip.Key, path string) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -800,7 +780,6 @@ func (f *FileSystem) JSONStrLen(key dotpip.Key, path string) ([]any, error) {
 	return results, nil
 }
 
-// JSONToggle toggles a boolean value stored at path.
 func (f *FileSystem) JSONToggle(key dotpip.Key, path string) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -831,7 +810,6 @@ func (f *FileSystem) JSONToggle(key dotpip.Key, path string) ([]any, error) {
 	return results, err
 }
 
-// JSONType reports the type of JSON value at path.
 func (f *FileSystem) JSONType(key dotpip.Key, path string) ([]any, error) {
 	expr, err := jp.ParseString(path)
 	if err != nil {
@@ -866,7 +844,6 @@ func (f *FileSystem) JSONType(key dotpip.Key, path string) ([]any, error) {
 	return results, nil
 }
 
-// JSONResp returns the JSON in key in Redis Serialization Protocol (RESP).
 func (f *FileSystem) JSONResp(key dotpip.Key, path string) (any, error) {
 	if path == "" {
 		path = "$"
@@ -889,7 +866,6 @@ func (f *FileSystem) JSONResp(key dotpip.Key, path string) (any, error) {
 	return res, nil
 }
 
-// JSONDebug reports memory usage.
 func (f *FileSystem) JSONDebug(subcommand string, key dotpip.Key, path string) (any, error) {
 	// For MEMORY subcommand, return an estimated size
 	if subcommand == "MEMORY" {

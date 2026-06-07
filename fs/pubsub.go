@@ -10,8 +10,6 @@ import (
 
 // ensure FileSystem implements PubSub interface.
 
-// PubSubSubscription represents a file system backed pubsub subscription.
-// PubSubSubscription represents a file system backed pubsub subscription.
 type PubSubSubscription struct {
 	fs            *FileSystem
 	channels      map[string]struct{}
@@ -22,14 +20,10 @@ type PubSubSubscription struct {
 	mu            sync.RWMutex
 }
 
-// Channel returns a channel to receive messages.
-// Channel returns a channel to receive messages.
 func (s *PubSubSubscription) Channel() <-chan dotpip.PubSubMessage {
 	return s.ch
 }
 
-// Unsubscribe unsubscribes from channels.
-// Unsubscribe unsubscribes from channels.
 func (s *PubSubSubscription) Unsubscribe(channels ...string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -45,8 +39,6 @@ func (s *PubSubSubscription) Unsubscribe(channels ...string) error {
 	return nil
 }
 
-// PUnsubscribe unsubscribes from patterns.
-// PUnsubscribe unsubscribes from patterns.
 func (s *PubSubSubscription) PUnsubscribe(patterns ...string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -62,8 +54,6 @@ func (s *PubSubSubscription) PUnsubscribe(patterns ...string) error {
 	return nil
 }
 
-// SUnsubscribe unsubscribes from shard channels.
-// SUnsubscribe unsubscribes from shard channels.
 func (s *PubSubSubscription) SUnsubscribe(shardChannels ...string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -79,8 +69,6 @@ func (s *PubSubSubscription) SUnsubscribe(shardChannels ...string) error {
 	return nil
 }
 
-// Close closes the subscription.
-// Close closes the subscription.
 func (s *PubSubSubscription) Close() error {
 	select {
 	case <-s.closeCh:
@@ -97,8 +85,6 @@ func matchPattern(pattern, str string) bool {
 	return matched
 }
 
-// Subscribe subscribes to channels.
-// Subscribe subscribes to channels.
 func (f *FileSystem) Subscribe(channels ...string) (dotpip.PubSubSubscription, error) {
 	sub := &PubSubSubscription{
 		fs:            f,
@@ -117,8 +103,6 @@ func (f *FileSystem) Subscribe(channels ...string) (dotpip.PubSubSubscription, e
 	return sub, nil
 }
 
-// PSubscribe subscribes to patterns.
-// PSubscribe subscribes to patterns.
 func (f *FileSystem) PSubscribe(patterns ...string) (dotpip.PubSubSubscription, error) {
 	sub := &PubSubSubscription{
 		fs:            f,
@@ -137,8 +121,6 @@ func (f *FileSystem) PSubscribe(patterns ...string) (dotpip.PubSubSubscription, 
 	return sub, nil
 }
 
-// SSubscribe subscribes to shard channels.
-// SSubscribe subscribes to shard channels.
 func (f *FileSystem) SSubscribe(shardChannels ...string) (dotpip.PubSubSubscription, error) {
 	sub := &PubSubSubscription{
 		fs:            f,
@@ -157,8 +139,6 @@ func (f *FileSystem) SSubscribe(shardChannels ...string) (dotpip.PubSubSubscript
 	return sub, nil
 }
 
-// Publish publishes a message to a channel.
-// Publish publishes a message to a channel.
 func (f *FileSystem) Publish(channel string, message string) (int, error) {
 	// Write to file for fsnotify if it's not a keyspace notification
 	// We use a specific directory or pattern for pubsub.
@@ -201,8 +181,6 @@ func (f *FileSystem) Publish(channel string, message string) (int, error) {
 	return receivers, nil
 }
 
-// PubSubChannels lists active channels.
-// PubSubChannels lists active channels.
 func (f *FileSystem) PubSubChannels(pattern string) ([]string, error) {
 	f.subMutex.RLock()
 	defer f.subMutex.RUnlock()
@@ -225,8 +203,6 @@ func (f *FileSystem) PubSubChannels(pattern string) ([]string, error) {
 	return res, nil
 }
 
-// PubSubNumPat returns the number of active patterns.
-// PubSubNumPat returns the number of active patterns.
 func (f *FileSystem) PubSubNumPat() (int, error) {
 	f.subMutex.RLock()
 	defer f.subMutex.RUnlock()
@@ -243,8 +219,6 @@ func (f *FileSystem) PubSubNumPat() (int, error) {
 	return len(patternsMap), nil
 }
 
-// PubSubNumSub returns the number of subscribers for channels.
-// PubSubNumSub returns the number of subscribers for channels.
 func (f *FileSystem) PubSubNumSub(channels ...string) (map[string]int, error) {
 	f.subMutex.RLock()
 	defer f.subMutex.RUnlock()
@@ -267,8 +241,6 @@ func (f *FileSystem) PubSubNumSub(channels ...string) (map[string]int, error) {
 	return res, nil
 }
 
-// PubSubShardChannels lists shard channels.
-// PubSubShardChannels lists shard channels.
 func (f *FileSystem) PubSubShardChannels(pattern string) ([]string, error) {
 	f.subMutex.RLock()
 	defer f.subMutex.RUnlock()
@@ -291,8 +263,6 @@ func (f *FileSystem) PubSubShardChannels(pattern string) ([]string, error) {
 	return res, nil
 }
 
-// PubSubShardNumSub gets subscription count for shard channels.
-// PubSubShardNumSub gets subscription count for shard channels.
 func (f *FileSystem) PubSubShardNumSub(shardChannels ...string) (map[string]int, error) {
 	f.subMutex.RLock()
 	defer f.subMutex.RUnlock()

@@ -2,30 +2,20 @@ package dotpip
 
 import "strings"
 
-// Key represents a parsed key array.
-// Key represents a parsed key array.
 type Key []string
 
-// BitOp represents a bitwise operation.
-// BitOp represents a bitwise operation.
 type BitOp string
 
 const (
-	// BitOpAnd represents AND.
-	// BitOpAnd represents the AND operation.
 	BitOpAnd BitOp = "AND"
 	// BitOpOr represents the OR operation.
-	// BitOpOr represents the OR operation.
 	BitOpOr  BitOp = "OR"
-	// BitOpXor represents the XOR operation.
 	// BitOpXor represents the XOR operation.
 	BitOpXor BitOp = "XOR"
 	// BitOpNot represents the NOT operation.
 	BitOpNot BitOp = "NOT"
 )
 
-// NewKey creates a Key from string parts.
-// NewKey creates a Key from string parts.
 func NewKey(s ...string) Key {
 	var k Key
 	for _, part := range s {
@@ -34,8 +24,6 @@ func NewKey(s ...string) Key {
 	return k
 }
 
-// NewKeyWithDelimiter creates a Key using a specified delimiter.
-// NewKeyWithDelimiter creates a Key using a specified delimiter.
 func NewKeyWithDelimiter(args ...string) Key {
 	if len(args) == 0 {
 		return Key{}
@@ -51,8 +39,6 @@ func NewKeyWithDelimiter(args ...string) Key {
 	return k
 }
 
-// DataTypeFormatter handles formatting data for different encodings.
-// DataTypeFormatter handles formatting data for different encodings.
 type DataTypeFormatter struct {
 	StringEncode func(value string) (any, error)
 	StringDecode func(value any) (string, error)
@@ -94,15 +80,11 @@ type DataTypeFormatter struct {
 	HyperLogLogDecode func(value any) ([]byte, error)
 }
 
-// KV represents a generic key-value pair.
-// KV represents a generic key-value pair.
 type KV struct {
 	Key   Key
 	Value string
 }
 
-// DotPip is the main interface for dotpip operations.
-// DotPip is the main interface for dotpip operations.
 type DotPip interface {
 	Append(key Key, value string) int
 	Get(key Key) (string, error)
@@ -409,14 +391,10 @@ type DotPip interface {
 	Formatter(fmap DataTypeFormatter)
 }
 
-// New creates a new DotPip instance.
-// New creates a new DotPip instance.
 func New(dotface DotPip) DotPip {
 	return dotface
 }
 
-// JSONSetEncode formats a value for JSON storage.
-// JSONSetEncode formats a value for JSON storage.
 func (f *DataTypeFormatter) JSONSetEncode(value any) (any, error) {
 	if f.JSONEncode != nil {
 		return f.JSONEncode(value)
