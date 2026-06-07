@@ -12,7 +12,7 @@ func testHLL(t *testing.T, encodeType FileEncodeType) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer os.RemoveAll(tempDir)
+		defer func() { _ = os.RemoveAll(tempDir) }()
 
 		f := NewFileSystem(tempDir)
 		f.EncodeType(encodeType)

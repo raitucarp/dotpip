@@ -15,7 +15,7 @@ func TestJSONMore(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_more_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -53,7 +53,7 @@ func TestJSONObjLenAndDel(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_more2_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -87,7 +87,7 @@ func TestJSONTypeGet(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_type_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -131,7 +131,7 @@ func TestJSONGetMorePaths(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_more_paths_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -165,7 +165,7 @@ func TestJSONClearAndMSet(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_clearmset_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -203,7 +203,7 @@ func TestJSONClearTrimErrors(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_more_cov_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()

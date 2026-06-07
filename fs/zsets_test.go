@@ -15,7 +15,7 @@ func TestZSetsCommands(t *testing.T) {
 		t.Run(string(encoding), func(t *testing.T) {
 			pathRoot := filepath.Join(os.TempDir(), "dotpip_zsets_test_"+string(encoding))
 			_ = os.MkdirAll(pathRoot, os.ModePerm)
-			defer os.RemoveAll(pathRoot)
+			defer func() { _ = os.RemoveAll(pathRoot) }()
 
 			db := fs.NewFileSystem(pathRoot)
 			db.EncodeType(encoding)
@@ -134,7 +134,7 @@ func TestZRangeCommands(t *testing.T) {
 		t.Run(string(encoding), func(t *testing.T) {
 			pathRoot := filepath.Join(os.TempDir(), "dotpip_zrange_test_"+string(encoding))
 			_ = os.MkdirAll(pathRoot, os.ModePerm)
-			defer os.RemoveAll(pathRoot)
+			defer func() { _ = os.RemoveAll(pathRoot) }()
 
 			db := fs.NewFileSystem(pathRoot)
 			db.EncodeType(encoding)

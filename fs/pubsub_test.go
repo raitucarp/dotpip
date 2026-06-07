@@ -12,7 +12,7 @@ import (
 func TestFileSystem_PubSub(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip-pubsub-test")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	fsys := NewFileSystem(tmpDir)
 	defer fsys.Close()
@@ -20,7 +20,7 @@ func TestFileSystem_PubSub(t *testing.T) {
 	// Ensure subscriptions are working
 	sub, err := fsys.Subscribe("channel1", "channel2")
 	assert.NoError(t, err)
-	defer sub.Close()
+	defer func() { _ = sub.Close() }()
 
 	// Wait a bit to ensure subscription is registered
 	time.Sleep(10 * time.Millisecond)
@@ -61,7 +61,7 @@ func TestFileSystem_PubSub(t *testing.T) {
 func TestFileSystem_KeyspaceNotifications(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip-keyspace-test")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	fsys := NewFileSystem(tmpDir)
 	defer fsys.Close()
@@ -69,7 +69,7 @@ func TestFileSystem_KeyspaceNotifications(t *testing.T) {
 
 	sub, err := fsys.PSubscribe("__keyspace@0__:*", "__keyevent@0__:*")
 	assert.NoError(t, err)
-	defer sub.Close()
+	defer func() { _ = sub.Close() }()
 
 	// Wait for fsnotify to settle
 	time.Sleep(100 * time.Millisecond)
@@ -113,7 +113,7 @@ func TestFileSystem_PubSub_Encodings(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip-pubsub-enc-test")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			fsys := NewFileSystem(tmpDir)
 			fsys.EncodeType(enc)
@@ -121,7 +121,7 @@ func TestFileSystem_PubSub_Encodings(t *testing.T) {
 
 			sub, err := fsys.Subscribe("channel_enc")
 			assert.NoError(t, err)
-			defer sub.Close()
+			defer func() { _ = sub.Close() }()
 
 			time.Sleep(10 * time.Millisecond)
 
@@ -143,14 +143,14 @@ func TestFileSystem_PubSub_Encodings(t *testing.T) {
 func TestFileSystem_PSubscribe(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip-psubscribe-test")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	fsys := NewFileSystem(tmpDir)
 	defer fsys.Close()
 
 	sub, err := fsys.PSubscribe("user_*")
 	assert.NoError(t, err)
-	defer sub.Close()
+	defer func() { _ = sub.Close() }()
 
 	time.Sleep(10 * time.Millisecond)
 
@@ -177,19 +177,19 @@ func TestFileSystem_PSubscribe(t *testing.T) {
 func TestFileSystem_PubSubStats(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip-pubsubstats-test")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	fsys := NewFileSystem(tmpDir)
 	defer fsys.Close()
 
 	sub1, _ := fsys.Subscribe("ch1", "ch2")
-	defer sub1.Close()
+	defer func() { _ = sub1.Close() }()
 
 	sub2, _ := fsys.Subscribe("ch2")
-	defer sub2.Close()
+	defer func() { _ = sub2.Close() }()
 
 	sub3, _ := fsys.PSubscribe("ch*")
-	defer sub3.Close()
+	defer func() { _ = sub3.Close() }()
 
 	time.Sleep(10 * time.Millisecond)
 

@@ -10,6 +10,7 @@ import (
 	"github.com/zeebo/xxh3"
 )
 
+// Append appends a value to a key.
 func (f *FileSystem) Append(key dotpip.Key, value string) (appendedString int) {
 	defer func() {
 		if appendedString > 0 {
@@ -36,6 +37,7 @@ func (f *FileSystem) Append(key dotpip.Key, value string) (appendedString int) {
 	return len(newValue)
 }
 
+// Get gets the value of a key.
 func (f *FileSystem) Get(key dotpip.Key) (result string, err error) {
 	content, err := f.readFileByKey(key)
 
@@ -146,6 +148,7 @@ func (f *FileSystem) internalSet(key dotpip.Key, value string, options ...dotpip
 	return value, nil
 }
 
+// Digest gets the hex hash of a value.
 func (f *FileSystem) Digest(key dotpip.Key) (hexHash string, err error) {
 	content, err := f.readFileByKey(key)
 	if err != nil {
@@ -158,6 +161,7 @@ func (f *FileSystem) Digest(key dotpip.Key) (hexHash string, err error) {
 	return hexHash, nil
 }
 
+// StrLen returns the string length.
 func (f *FileSystem) StrLen(key dotpip.Key) int {
 	val, err := f.Get(key)
 	if err != nil {
@@ -166,10 +170,12 @@ func (f *FileSystem) StrLen(key dotpip.Key) int {
 	return len(val)
 }
 
+// Incr increments the integer value of a key by one.
 func (f *FileSystem) Incr(key dotpip.Key) (int, error) {
 	return f.IncrBy(key, 1)
 }
 
+// IncrBy increments the integer value of a key by a number.
 func (f *FileSystem) IncrBy(key dotpip.Key, increment int) (ret int, err error) {
 	defer func() {
 		if err == nil {
@@ -198,6 +204,7 @@ func (f *FileSystem) IncrBy(key dotpip.Key, increment int) (ret int, err error) 
 	return num, nil
 }
 
+// IncrByFloat increments the float value of a key by a number.
 func (f *FileSystem) IncrByFloat(key dotpip.Key, increment float64) (ret float64, err error) {
 	defer func() {
 		if err == nil {
@@ -227,14 +234,18 @@ func (f *FileSystem) IncrByFloat(key dotpip.Key, increment float64) (ret float64
 	return num, nil
 }
 
+// Decr decrements the integer value of a key by one.
 func (f *FileSystem) Decr(key dotpip.Key) (int, error) {
 	return f.DecrBy(key, 1)
 }
 
+// DecrBy decrements the integer value of a key by a number.
 func (f *FileSystem) DecrBy(key dotpip.Key, decrement int) (int, error) {
 	return f.IncrBy(key, -decrement)
 }
 
+
+// GetDel gets the value of a key and deletes it.
 func (f *FileSystem) GetDel(key dotpip.Key) (string, error) {
 	val, err := f.Get(key)
 	if err != nil {
@@ -244,6 +255,8 @@ func (f *FileSystem) GetDel(key dotpip.Key) (string, error) {
 	return val, nil
 }
 
+
+// GetRange gets a substring of the string stored at a key.
 func (f *FileSystem) GetRange(key dotpip.Key, start int, end int) (string, error) {
 	val, err := f.Get(key)
 	if err != nil {
@@ -283,6 +296,8 @@ func (f *FileSystem) GetRange(key dotpip.Key, start int, end int) (string, error
 	return val[start : end+1], nil
 }
 
+// SetRange overwrites part of a string.
+// Set sets the string value of a key.
 func (f *FileSystem) SetRange(key dotpip.Key, offset int, value string) (ret int, err error) {
 	defer func() {
 		if err == nil {
@@ -325,6 +340,7 @@ func (f *FileSystem) SetRange(key dotpip.Key, offset int, value string) (ret int
 	return len(newVal), nil
 }
 
+// MGet returns the values of all specified keys.
 func (f *FileSystem) MGet(keys ...dotpip.Key) ([]string, error) {
 	res := make([]string, len(keys))
 	for i, key := range keys {
@@ -340,6 +356,7 @@ func (f *FileSystem) MGet(keys ...dotpip.Key) ([]string, error) {
 	return res, nil
 }
 
+// MSet sets the given keys to their respective values.
 func (f *FileSystem) MSet(kvs ...dotpip.KV) error {
 	for _, kv := range kvs {
 		_, err := f.Set(kv.Key, kv.Value)
@@ -350,6 +367,7 @@ func (f *FileSystem) MSet(kvs ...dotpip.KV) error {
 	return nil
 }
 
+// MSetNX sets the given keys to their respective values, only if none of the keys exist.
 func (f *FileSystem) MSetNX(kvs ...dotpip.KV) (bool, error) {
 	// First check if any keys exist
 	keys := make([]dotpip.Key, len(kvs))
@@ -380,6 +398,7 @@ func (f *FileSystem) MSetNX(kvs ...dotpip.KV) (bool, error) {
 	return true, nil
 }
 
+// Set sets the string value of a key.
 func (f *FileSystem) Set(key dotpip.Key, value string, options ...dotpip.SetOption) (result string, err error) {
 	res, err := f.internalSet(key, value, options...)
 	if err == nil {

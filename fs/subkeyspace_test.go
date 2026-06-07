@@ -13,7 +13,7 @@ import (
 func TestFileSystem_SubkeyspaceNotifications(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip-subkeyspace-test")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	fsys := NewFileSystem(tmpDir)
 	defer fsys.Close()
@@ -23,7 +23,7 @@ func TestFileSystem_SubkeyspaceNotifications(t *testing.T) {
 
 	sub, err := fsys.PSubscribe("__subkeyspace@0__:*", "__subkeyevent@0__:*", "__subkeyspaceitem@0__:*", "__subkeyspaceevent@0__:*")
 	assert.NoError(t, err)
-	defer sub.Close()
+	defer func() { _ = sub.Close() }()
 
 	// Wait for subscription to settle
 	time.Sleep(10 * time.Millisecond)

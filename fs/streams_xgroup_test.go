@@ -12,7 +12,7 @@ import (
 func TestStreamsXGroupDestroyAndSetID(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_streams_xgroup_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -61,7 +61,7 @@ func TestStreamsXGroupDestroyAndSetID(t *testing.T) {
 func TestStreamsXInfo(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_streams_xinfo_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()

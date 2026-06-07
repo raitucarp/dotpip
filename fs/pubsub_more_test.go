@@ -11,7 +11,7 @@ import (
 func TestPubSubMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_pubsub_more_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -69,13 +69,13 @@ func TestPubSubMore(t *testing.T) {
 func TestPubSubShardChannels(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_pubsub_shard_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
 
 	sub, _ := dotfs.SSubscribe("channel1", "channel2")
-	defer sub.Close()
+	defer func() { _ = sub.Close() }()
 
 	chans, err := dotfs.PubSubShardChannels("")
 	assert.NoError(t, err)
@@ -93,7 +93,7 @@ func TestPubSubShardChannels(t *testing.T) {
 func TestPubSubUnsubscribeEmptyArgs(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_pubsub_empty_args_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()

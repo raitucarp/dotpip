@@ -13,7 +13,7 @@ import (
 func runJSONTests(t *testing.T, encoding fs.FileEncodeType) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -53,7 +53,7 @@ func TestJSONGet(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -87,7 +87,7 @@ func TestJSONArrAppend(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -115,7 +115,7 @@ func TestJSONNumIncrBy(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -141,7 +141,7 @@ func TestJSONObjKeys(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -167,7 +167,7 @@ func TestJSONMerge(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -198,7 +198,7 @@ func TestJSONNumMultBy(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -224,7 +224,7 @@ func TestJSONType(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -254,7 +254,7 @@ func TestJSONClear(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -286,7 +286,7 @@ func TestJSONDel(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -319,7 +319,7 @@ func TestJSONStrAppendAndLen(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -345,7 +345,7 @@ func TestJSONToggle(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -371,7 +371,7 @@ func TestJSONArrIndexLenPopTrim(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()
@@ -419,7 +419,7 @@ func TestJSONMGetMSet(t *testing.T) {
 		t.Run(string(enc), func(t *testing.T) {
 			tmpDir, err := os.MkdirTemp("", "dotpip_json_test_")
 			assert.NoError(t, err)
-			defer os.RemoveAll(tmpDir)
+			defer func() { _ = os.RemoveAll(tmpDir) }()
 
 			dotfs := fs.NewFileSystem(tmpDir)
 			defer dotfs.Close()

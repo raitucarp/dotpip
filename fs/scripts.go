@@ -104,7 +104,7 @@ func (f *FileSystem) invokeGoMethodArgs(l *lua.LState, fVal reflect.Value, metho
 		case i < numIn:
 			argType = methodType.In(i)
 		default:
-			break // Too many arguments passed
+			continue // Too many arguments passed
 		}
 
 		if argType == nil {
@@ -319,6 +319,7 @@ func (f *FileSystem) convertLuaToGo(val lua.LValue) any {
 	return nil
 }
 
+// Eval evaluates a lua script.
 func (f *FileSystem) Eval(script string, _ int, keys []string, args []string) (any, error) {
 	L := f.initLuaState()
 	defer L.Close()
@@ -347,6 +348,7 @@ func (f *FileSystem) Eval(script string, _ int, keys []string, args []string) (a
 	return f.convertLuaToGo(ret), nil
 }
 
+// EvalSha evaluates a Lua script from its SHA1 digest.
 func (f *FileSystem) EvalSha(sha1Str string, numkeys int, keys []string, args []string) (any, error) {
 	path := getScriptPath(f.pathRoot, sha1Str)
 	b, err := os.ReadFile(path)
@@ -359,14 +361,17 @@ func (f *FileSystem) EvalSha(sha1Str string, numkeys int, keys []string, args []
 	return f.Eval(string(b), numkeys, keys, args)
 }
 
+// EvalRO evaluates a read-only Lua script.
 func (f *FileSystem) EvalRO(script string, numkeys int, keys []string, args []string) (any, error) {
 	return f.Eval(script, numkeys, keys, args)
 }
 
+// EvalShaRO evaluates a read-only Lua script from its SHA1 digest.
 func (f *FileSystem) EvalShaRO(sha1Str string, numkeys int, keys []string, args []string) (any, error) {
 	return f.EvalSha(sha1Str, numkeys, keys, args)
 }
 
+// ScriptExists checks existence of scripts in the script cache.
 func (f *FileSystem) ScriptExists(scripts ...string) ([]bool, error) {
 	dir := getScriptsDir(f.pathRoot)
 	res := make([]bool, len(scripts))
@@ -378,11 +383,13 @@ func (f *FileSystem) ScriptExists(scripts ...string) ([]bool, error) {
 	return res, nil
 }
 
+// ScriptFlush removes all scripts from the script cache.
 func (f *FileSystem) ScriptFlush(_ ...dotpip.ScriptFlushOption) error {
 	dir := getScriptsDir(f.pathRoot)
 	return os.RemoveAll(dir)
 }
 
+// ScriptLoad loads a script into the scripts cache.
 func (f *FileSystem) ScriptLoad(script string) (string, error) {
 	hash := sha1.Sum([]byte(script))
 	hashStr := hex.EncodeToString(hash[:])
@@ -400,6 +407,7 @@ func (f *FileSystem) ScriptLoad(script string) (string, error) {
 	return hashStr, nil
 }
 
+// ScriptKill kills the currently executing Lua script.
 func (f *FileSystem) ScriptKill() error {
 	return nil
 }

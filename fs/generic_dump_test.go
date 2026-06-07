@@ -12,7 +12,7 @@ import (
 func TestGenericDumpRestore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_generic_dump_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -43,7 +43,7 @@ func TestGenericDumpRestore(t *testing.T) {
 func TestGenericMigrateSort(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_generic_migrate_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -53,7 +53,7 @@ func TestGenericMigrateSort(t *testing.T) {
 
 	// Migrate
 	tmpDirDB2, _ := os.MkdirTemp("", "dotpip_generic_migrate_test_db2_")
-	defer os.RemoveAll(tmpDirDB2)
+	defer func() { _ = os.RemoveAll(tmpDirDB2) }()
 	db2 := fs.NewFileSystem(tmpDirDB2)
 	defer db2.Close()
 
@@ -76,7 +76,7 @@ func TestGenericMigrateSort(t *testing.T) {
 func TestGenericRestoreMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_generic_restore_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()

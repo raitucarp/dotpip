@@ -14,6 +14,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+// FileSystem represents a file-system backed DotPip implementation.
 type FileSystem struct {
 	pathRoot   string
 	formatter  *dotpip.DataTypeFormatter
@@ -31,6 +32,7 @@ type FileSystem struct {
 	config        map[string]string
 }
 
+// NewFileSystem creates a new FileSystem.
 func NewFileSystem(pathRoot string) *FileSystem {
 	watcher, _ := fsnotify.NewWatcher()
 	if watcher != nil {
@@ -81,6 +83,7 @@ func NewFileSystem(pathRoot string) *FileSystem {
 	return &f
 }
 
+// Close closes the FileSystem and cleans up resources.
 func (f *FileSystem) Close() {
 	if f.expStop != nil {
 		close(f.expStop)
@@ -260,7 +263,7 @@ func (f *FileSystem) readTail(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	offset := f.pubsubOffsets[path]
 	_, err = file.Seek(offset, 0)
@@ -282,6 +285,7 @@ func (f *FileSystem) readTail(path string) ([]string, error) {
 	return newLines, scanner.Err()
 }
 
+// ConfigSet sets a configuration parameter.
 func (f *FileSystem) ConfigSet(parameter string, value string) error {
 	f.subMutex.Lock()
 	defer f.subMutex.Unlock()
@@ -289,6 +293,7 @@ func (f *FileSystem) ConfigSet(parameter string, value string) error {
 	return nil
 }
 
+// ConfigGet gets a configuration parameter.
 func (f *FileSystem) ConfigGet(parameter string) (map[string]string, error) {
 	f.subMutex.RLock()
 	defer f.subMutex.RUnlock()
@@ -327,7 +332,7 @@ func (f *FileSystem) emitKeyspaceEvent(key []string, event string, typeChar rune
 	matchAll := strings.Contains(notifyEvents, "A")
 	isExcludedFromA := typeChar == 'm' || typeChar == 'n' || typeChar == 'o' || typeChar == 'c'
 
-	if !(matchAll && !isExcludedFromA) && !strings.ContainsRune(notifyEvents, typeChar) {
+	if (!matchAll || isExcludedFromA) && !strings.ContainsRune(notifyEvents, typeChar) {
 		return // Not enabled
 	}
 

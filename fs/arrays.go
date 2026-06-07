@@ -1,3 +1,4 @@
+// Package fs provides a file-system backed dotpip implementation.
 package fs
 
 import "errors"
@@ -36,6 +37,8 @@ func (f *FileSystem) setArray(key dotpip.Key, array []string) error {
 	return errors.New(string(dotpip.ErrMsgFailedToEncodeArray))
 }
 
+// ARCount returns the array count.
+// ARCount returns the array count.
 func (f *FileSystem) ARCount(key dotpip.Key) (int, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -50,6 +53,8 @@ func (f *FileSystem) ARCount(key dotpip.Key) (int, error) {
 	return count, nil
 }
 
+// ARDel deletes elements.
+// ARDel deletes elements.
 func (f *FileSystem) ARDel(key dotpip.Key, indices ...int) (int, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -81,6 +86,8 @@ func (f *FileSystem) ARDel(key dotpip.Key, indices ...int) (int, error) {
 	return deletedCount, nil
 }
 
+// ARDelRange deletes element ranges.
+// ARDelRange deletes element ranges.
 func (f *FileSystem) ARDelRange(key dotpip.Key, ranges ...[2]int) (int, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -125,6 +132,8 @@ func (f *FileSystem) ARDelRange(key dotpip.Key, ranges ...[2]int) (int, error) {
 	return deletedCount, nil
 }
 
+// ARGet returns the element.
+// ARGet returns the element.
 func (f *FileSystem) ARGet(key dotpip.Key, index int) (string, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -137,6 +146,8 @@ func (f *FileSystem) ARGet(key dotpip.Key, index int) (string, error) {
 	return "", nil // Or a specific not found error depending on implementation details. Usually nil.
 }
 
+// ARGetRange returns range of elements.
+// ARGetRange returns range of elements.
 func (f *FileSystem) ARGetRange(key dotpip.Key, start, end int) ([]string, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -173,6 +184,8 @@ func (f *FileSystem) ARGetRange(key dotpip.Key, start, end int) ([]string, error
 	return result, nil
 }
 
+// ARGrep greps elements.
+// ARGrep greps elements.
 func (f *FileSystem) ARGrep(key dotpip.Key, startStr, endStr string, predicates []dotpip.ARGrepPredicate, options dotpip.ARGrepOptions) ([]any, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -194,10 +207,7 @@ func (f *FileSystem) ARGrep(key dotpip.Key, startStr, endStr string, predicates 
 		_, _ = fmt.Sscanf(endStr, "%d", &end)
 	}
 
-	reverse := false
-	if start > end {
-		reverse = true
-	}
+	reverse := start > end
 
 	var compiledPredicates []func(string) bool
 	for _, p := range predicates {
@@ -323,6 +333,8 @@ func (f *FileSystem) ARGrep(key dotpip.Key, startStr, endStr string, predicates 
 	return result, nil
 }
 
+// ARInfo returns array info.
+// ARInfo returns array info.
 func (f *FileSystem) ARInfo(key dotpip.Key, _ bool) (map[string]any, error) {
 	// Minimal stub info for array based on the command reference
 	arr, err := f.getArray(key)
@@ -339,6 +351,8 @@ func (f *FileSystem) ARInfo(key dotpip.Key, _ bool) (map[string]any, error) {
 	return info, nil
 }
 
+// ARInsert inserts elements.
+// ARInsert inserts elements.
 func (f *FileSystem) ARInsert(key dotpip.Key, values ...string) (int, error) {
 	// Basic append behavior as ARINSERT appends at the cursor.
 	// The specification says "appends to the current insert cursor position" and defaults to length
@@ -358,6 +372,8 @@ func (f *FileSystem) ARInsert(key dotpip.Key, values ...string) (int, error) {
 	return len(arr) - 1, nil // returns last index
 }
 
+// ARLastItems returns the last items.
+// ARLastItems returns the last items.
 func (f *FileSystem) ARLastItems(key dotpip.Key, count int) ([]string, error) {
 	// Not fully specced in given commands, but implied by name. Return last N non-empty.
 	arr, err := f.getArray(key)
@@ -379,6 +395,8 @@ func (f *FileSystem) ARLastItems(key dotpip.Key, count int) ([]string, error) {
 	return result, nil
 }
 
+// ARLen returns the array length.
+// ARLen returns the array length.
 func (f *FileSystem) ARLen(key dotpip.Key) (int, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -387,6 +405,8 @@ func (f *FileSystem) ARLen(key dotpip.Key) (int, error) {
 	return len(arr), nil
 }
 
+// ARMGet gets multiple array elements.
+// ARMGet gets multiple array elements.
 func (f *FileSystem) ARMGet(key dotpip.Key, indices ...int) ([]string, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -404,6 +424,8 @@ func (f *FileSystem) ARMGet(key dotpip.Key, indices ...int) ([]string, error) {
 	return result, nil
 }
 
+// ARMSet sets multiple array elements.
+// ARMSet sets multiple array elements.
 func (f *FileSystem) ARMSet(key dotpip.Key, indexValues []dotpip.ARIndexValue) (int, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -440,6 +462,8 @@ func (f *FileSystem) ARMSet(key dotpip.Key, indexValues []dotpip.ARIndexValue) (
 	return newSlots, nil
 }
 
+// ARNext gets the next array index.
+// ARNext gets the next array index.
 func (f *FileSystem) ARNext(key dotpip.Key) (int, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -448,6 +472,8 @@ func (f *FileSystem) ARNext(key dotpip.Key) (int, error) {
 	return len(arr), nil
 }
 
+// AROp performs an array operation.
+// AROp performs an array operation.
 func (f *FileSystem) AROp(key dotpip.Key, start, end int, operation string, matchValue *string) (any, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -571,6 +597,8 @@ func (f *FileSystem) AROp(key dotpip.Key, start, end int, operation string, matc
 	return nil, fmt.Errorf(string(dotpip.ErrMsgUnknownOperation), operation)
 }
 
+// ARRing performs ring buffering.
+// ARRing performs ring buffering.
 func (f *FileSystem) ARRing(key dotpip.Key, size int, values ...string) (int, error) {
 	// A simple append with left-trim to size
 	arr, err := f.getArray(key)
@@ -592,6 +620,8 @@ func (f *FileSystem) ARRing(key dotpip.Key, size int, values ...string) (int, er
 	return len(arr) - 1, nil // Assume returning the last index
 }
 
+// ARScan scans an array.
+// ARScan scans an array.
 func (f *FileSystem) ARScan(key dotpip.Key, start, end int, limit *int) ([]any, error) {
 	arr, err := f.getArray(key)
 	if err != nil {
@@ -602,10 +632,7 @@ func (f *FileSystem) ARScan(key dotpip.Key, start, end int, limit *int) ([]any, 
 		return []any{}, nil
 	}
 
-	reverse := false
-	if start > end {
-		reverse = true
-	}
+	reverse := start > end
 
 	minIdx, maxIdx := start, end
 	if reverse {
@@ -646,12 +673,16 @@ func (f *FileSystem) ARScan(key dotpip.Key, start, end int, limit *int) ([]any, 
 	return result, nil
 }
 
+// ARSeek seeks an array.
+// ARSeek seeks an array.
 func (f *FileSystem) ARSeek(_ dotpip.Key, index int) (int, error) {
 	// Cursor management can be just returning the passed index as a simple implementation
 	// unless actual cursor state needs to be persisted.
 	return index, nil
 }
 
+// ARSet sets elements in an array.
+// ARSet sets elements in an array.
 func (f *FileSystem) ARSet(key dotpip.Key, index int, values ...string) (int, error) {
 	if index < 0 {
 		return 0, errors.New(string(dotpip.ErrMsgIndexOutOfBounds))

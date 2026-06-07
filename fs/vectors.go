@@ -40,6 +40,7 @@ func (f *FileSystem) writeVectorSet(key dotpip.Key, vectorSet map[string]dotpip.
 	return f.writeFileByKey(key, encoded.([]byte))
 }
 
+// VAdd adds an element with a vector to a vector index.
 func (f *FileSystem) VAdd(key dotpip.Key, element string, vector []float32, _ ...dotpip.VAddOption) (int, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
@@ -73,6 +74,7 @@ func (f *FileSystem) VAdd(key dotpip.Key, element string, vector []float32, _ ..
 	return 0, nil
 }
 
+// VCard returns the number of vectors in a vector index.
 func (f *FileSystem) VCard(key dotpip.Key) (int, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
@@ -81,6 +83,7 @@ func (f *FileSystem) VCard(key dotpip.Key) (int, error) {
 	return len(vs), nil
 }
 
+// VDim returns the dimension of the vectors in a vector index.
 func (f *FileSystem) VDim(key dotpip.Key) (int, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
@@ -92,6 +95,7 @@ func (f *FileSystem) VDim(key dotpip.Key) (int, error) {
 	return 0, errors.New("ERR no elements")
 }
 
+// VEmb returns the vector embeddings for the given elements.
 func (f *FileSystem) VEmb(key dotpip.Key, elements ...string) ([][]float32, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
@@ -108,6 +112,7 @@ func (f *FileSystem) VEmb(key dotpip.Key, elements ...string) ([][]float32, erro
 	return res, nil
 }
 
+// VGetAttr returns the attributes for the given elements.
 func (f *FileSystem) VGetAttr(key dotpip.Key, elements ...string) ([]*string, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
@@ -126,6 +131,7 @@ func (f *FileSystem) VGetAttr(key dotpip.Key, elements ...string) ([]*string, er
 	return res, nil
 }
 
+// VInfo returns information and statistics about a vector index.
 func (f *FileSystem) VInfo(key dotpip.Key) (map[string]any, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
@@ -145,6 +151,7 @@ func (f *FileSystem) VInfo(key dotpip.Key) (map[string]any, error) {
 	}, nil
 }
 
+// VIsMember returns whether each element is a member of the vector index.
 func (f *FileSystem) VIsMember(key dotpip.Key, elements ...string) ([]bool, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
@@ -157,10 +164,12 @@ func (f *FileSystem) VIsMember(key dotpip.Key, elements ...string) ([]bool, erro
 	return res, nil
 }
 
+// VLinks returns the links for an element in the vector index.
 func (f *FileSystem) VLinks(_ dotpip.Key, _ string) (map[int][]string, error) {
 	return make(map[int][]string), nil
 }
 
+// VRandMember returns random elements from a vector index.
 func (f *FileSystem) VRandMember(key dotpip.Key, count int, _ ...dotpip.VRandMemberOption) ([]string, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
@@ -176,6 +185,7 @@ func (f *FileSystem) VRandMember(key dotpip.Key, count int, _ ...dotpip.VRandMem
 	return res[:count], nil
 }
 
+// VRange returns elements from a vector index within a range.
 func (f *FileSystem) VRange(key dotpip.Key, start string, end string, _ ...dotpip.VRangeOption) ([]string, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
@@ -197,6 +207,7 @@ func (f *FileSystem) VRange(key dotpip.Key, start string, end string, _ ...dotpi
 	return filtered, nil
 }
 
+// VRem removes the specified elements from the vector index.
 func (f *FileSystem) VRem(key dotpip.Key, elements ...string) (int, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
@@ -215,6 +226,7 @@ func (f *FileSystem) VRem(key dotpip.Key, elements ...string) (int, error) {
 	return count, err
 }
 
+// VSetAttr sets the attributes for an element in the vector index.
 func (f *FileSystem) VSetAttr(key dotpip.Key, element string, attributes string) (int, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {
@@ -237,6 +249,7 @@ func (f *FileSystem) VSetAttr(key dotpip.Key, element string, attributes string)
 	return 1, nil
 }
 
+// VSim returns the most similar vectors to a reference vector.
 func (f *FileSystem) VSim(key dotpip.Key, reference any, _ ...dotpip.VSimOption) ([]dotpip.VSimResult, error) {
 	vs, err := f.readVectorSet(key)
 	if err != nil {

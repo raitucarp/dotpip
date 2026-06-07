@@ -6,6 +6,7 @@ import (
 	"github.com/axiomhq/hyperloglog"
 )
 
+// PFAdd adds elements to a HyperLogLog.
 func (f *FileSystem) PFAdd(key dotpip.Key, elements ...string) (int, error) {
 	// 1. Get or create the sketch
 	var sk *hyperloglog.Sketch
@@ -54,6 +55,7 @@ func (f *FileSystem) PFAdd(key dotpip.Key, elements ...string) (int, error) {
 	return changed, nil
 }
 
+// PFCount returns the approximated cardinality computed by the HyperLogLog data structure stored at the specified variable.
 func (f *FileSystem) PFCount(keys ...dotpip.Key) (int, error) {
 	if len(keys) == 0 {
 		return 0, nil
@@ -78,6 +80,7 @@ func (f *FileSystem) PFCount(keys ...dotpip.Key) (int, error) {
 	return int(mergedSketch.Estimate()), nil
 }
 
+// PFMerge merges multiple HyperLogLog values into a unique value.
 func (f *FileSystem) PFMerge(destKey dotpip.Key, sourceKeys ...dotpip.Key) error {
 	destSketch := hyperloglog.New14()
 	content, err := f.readFileByKey(destKey)

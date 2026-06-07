@@ -12,7 +12,7 @@ import (
 func TestListsMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_lists_more_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -54,7 +54,7 @@ func TestListsMore(t *testing.T) {
 func TestArraysMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_arrays_more_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -88,7 +88,7 @@ func TestArraysMore(t *testing.T) {
 func TestListsLRangeLIndexLInsert(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_lists_more2_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -133,7 +133,7 @@ func TestListsLRangeLIndexLInsert(t *testing.T) {
 func TestListsLPopRPopLMove(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_lists_more3_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -174,7 +174,7 @@ func TestListsLPopRPopLMove(t *testing.T) {
 func TestListsLRemAndLRange(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_lists_lrem_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -202,7 +202,7 @@ func TestListsLRemAndLRange(t *testing.T) {
 func TestArraysScanOp(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_arrays_scan_op_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -236,7 +236,7 @@ func TestArraysScanOp(t *testing.T) {
 func TestListsRPushXMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_lists_rpushx_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()

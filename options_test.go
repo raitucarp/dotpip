@@ -247,7 +247,7 @@ func TestScriptFlushOptions(t *testing.T) {
 	}
 }
 
-func TestVectorOptionsCoverage(t *testing.T) {
+func TestVectorOptionsCoverage(_ *testing.T) {
     WithVAddCas(true)(&VAddOptions{})
     WithVAddEF(1)(&VAddOptions{})
     WithVAddM(1)(&VAddOptions{})

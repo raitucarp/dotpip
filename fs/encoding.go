@@ -11,15 +11,21 @@ import (
 	toml "github.com/pelletier/go-toml/v2"
 )
 
+// FileEncodeType represents a file encoding type.
 type FileEncodeType string
 
 const (
+	// JSON represents JSON encoding type.
 	JSON FileEncodeType = "json"
+	// YAML represents YAML encoding type.
 	YAML FileEncodeType = "yaml"
+	// TOML represents TOML encoding type.
 	TOML FileEncodeType = "toml"
+	// RAW represents RAW encoding type.
 	RAW  FileEncodeType = "raw"
 )
 
+// EncodeType configures the encoding type.
 func (f *FileSystem) EncodeType(typeName FileEncodeType) {
 	f.encodeType = typeName
 }
@@ -381,6 +387,7 @@ func (f *FileSystem) streamDecode(value any) (dotpip.Stream, error) {
 	}
 }
 
+// JSONEncode encodes a value to JSON.
 func (f *FileSystem) JSONEncode(value any) (any, error) {
 	switch f.encodeType {
 	case JSON:
@@ -401,6 +408,7 @@ func (f *FileSystem) JSONEncode(value any) (any, error) {
 	}
 }
 
+// JSONDecode decodes a JSON value.
 func (f *FileSystem) JSONDecode(value any) (any, error) {
 	var finalValue any
 	switch f.encodeType {

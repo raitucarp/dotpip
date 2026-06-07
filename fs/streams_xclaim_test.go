@@ -13,7 +13,7 @@ import (
 func TestStreamsXClaim(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_streams_xclaim_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -47,7 +47,7 @@ func TestStreamsXClaim(t *testing.T) {
 func TestStreamsXAutoClaim(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_streams_xautoclaim_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()

@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// Copy copies a key to another.
 func (f *FileSystem) Copy(source dotpip.Key, destination dotpip.Key, options ...dotpip.CopyOption) int {
 	cmd := &dotpip.CopyCommand{}
 	for _, option := range options {
@@ -54,6 +55,7 @@ func (f *FileSystem) Copy(source dotpip.Key, destination dotpip.Key, options ...
 	return 1
 }
 
+// Del deletes keys.
 func (f *FileSystem) Del(keys ...dotpip.Key) int {
 	count := 0
 	for _, key := range keys {
@@ -70,6 +72,7 @@ func (f *FileSystem) Del(keys ...dotpip.Key) int {
 	return count
 }
 
+// Exists checks if a key exists.
 func (f *FileSystem) Exists(keys ...dotpip.Key) ([]bool, error) {
 	results := make([]bool, len(keys))
 	for i, key := range keys {
@@ -80,6 +83,7 @@ func (f *FileSystem) Exists(keys ...dotpip.Key) ([]bool, error) {
 	return results, nil
 }
 
+// FlushAll flushes all keys.
 func (f *FileSystem) FlushAll() (err error) {
 	err = os.RemoveAll(f.pathRoot)
 	if err != nil {
@@ -89,6 +93,7 @@ func (f *FileSystem) FlushAll() (err error) {
 	return os.MkdirAll(f.pathRoot, 0755)
 }
 
+// Rename renames a key.
 func (f *FileSystem) Rename(key dotpip.Key, newKey dotpip.Key) error {
 	exist, err := f.checkExistByKey(key)
 	if err != nil {
@@ -129,6 +134,7 @@ func (f *FileSystem) Rename(key dotpip.Key, newKey dotpip.Key) error {
 	return nil
 }
 
+// RenameNX renames a key only if the new key does not exist.
 func (f *FileSystem) RenameNX(key dotpip.Key, newKey dotpip.Key) (bool, error) {
 	exist, err := f.checkExistByKey(newKey)
 	if err != nil {
@@ -144,6 +150,7 @@ func (f *FileSystem) RenameNX(key dotpip.Key, newKey dotpip.Key) (bool, error) {
 	return true, nil
 }
 
+// Keys returns all keys matching a pattern.
 func (f *FileSystem) Keys(pattern string) ([]dotpip.Key, error) {
 	var keys []dotpip.Key
 	err := filepath.Walk(f.pathRoot, func(path string, info os.FileInfo, err error) error {
@@ -174,6 +181,7 @@ func (f *FileSystem) Keys(pattern string) ([]dotpip.Key, error) {
 	return keys, err
 }
 
+// Type returns the string representation of the type of the value stored at key.
 func (f *FileSystem) Type(key dotpip.Key) (dotpip.ObjectType, error) {
 	// Determine type by trying to decode it
 	// First, check if it exists
@@ -213,6 +221,7 @@ func (f *FileSystem) Type(key dotpip.Key) (dotpip.ObjectType, error) {
 	return dotpip.ObjectTypeUnknown, nil
 }
 
+// RandomKey returns a random key from the currently selected database.
 func (f *FileSystem) RandomKey() (dotpip.Key, error) {
 	var keys []dotpip.Key
 	err := filepath.Walk(f.pathRoot, func(path string, info os.FileInfo, err error) error {
@@ -247,6 +256,7 @@ func (f *FileSystem) RandomKey() (dotpip.Key, error) {
 	return keys[idx], nil
 }
 
+// Touch alters the last access time of a key.
 func (f *FileSystem) Touch(keys ...dotpip.Key) (int, error) {
 	count := 0
 	now := time.Now().Local()
@@ -262,11 +272,13 @@ func (f *FileSystem) Touch(keys ...dotpip.Key) (int, error) {
 	return count, nil
 }
 
+// Unlink deletes a key without blocking.
 func (f *FileSystem) Unlink(keys ...dotpip.Key) int {
 	// Unlink is usually async, but for fs backend we can just use Del
 	return f.Del(keys...)
 }
 
+// Dump serializes the value stored at key in a dotpip-specific format.
 func (f *FileSystem) Dump(key dotpip.Key) ([]byte, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {
@@ -283,6 +295,7 @@ func (f *FileSystem) Dump(key dotpip.Key) ([]byte, error) {
 	return content, nil
 }
 
+// Restore creates a key associated with a value that is obtained by deserializing the provided serialized value.
 func (f *FileSystem) Restore(key dotpip.Key, ttl int, serializedValue []byte, options ...dotpip.RestoreOption) error {
 	cmd := &dotpip.RestoreCommand{}
 	for _, option := range options {
@@ -317,6 +330,7 @@ func (f *FileSystem) Restore(key dotpip.Key, ttl int, serializedValue []byte, op
 	return nil
 }
 
+// Sort returns or stores the elements contained in the list, set or sorted set at key.
 func (f *FileSystem) Sort(key dotpip.Key) ([]string, error) {
 	typ, err := f.Type(key)
 	if err != nil {
@@ -353,6 +367,7 @@ func (f *FileSystem) Sort(key dotpip.Key) ([]string, error) {
 	return items, nil
 }
 
+// Scan incrementally iterates the keys space.
 func (f *FileSystem) Scan(cursor uint64, options ...dotpip.ScanOption) (uint64, []dotpip.Key, error) {
 	cmd := &dotpip.ScanCommand{Count: 10}
 	for _, option := range options {
@@ -411,6 +426,7 @@ func (f *FileSystem) Scan(cursor uint64, options ...dotpip.ScanOption) (uint64, 
 	return nextCursor, allKeys[cursor:end], nil
 }
 
+// Move moves a key to another dotpip instance.
 func (f *FileSystem) Move(key dotpip.Key, db dotpip.DotPip) (int, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil {
@@ -447,16 +463,19 @@ func (f *FileSystem) Move(key dotpip.Key, db dotpip.DotPip) (int, error) {
 	return 1, nil
 }
 
+// Wait blocks the current client until all the previous write commands are successfully transferred.
 func (f *FileSystem) Wait(_ int, _ int) (int, error) {
 	// No replication supported in FS backend
 	return 0, nil
 }
 
+// WaitAOF blocks the current client until all the previous write commands are synced to the AOF.
 func (f *FileSystem) WaitAOF(_ int, _ int, _ int) (int, int, error) {
 	// No AOF/replication supported in FS backend
 	return 0, 0, nil
 }
 
+// DBSize returns the number of keys in the selected database.
 func (f *FileSystem) DBSize() (int, error) {
 	count := 0
 	err := filepath.Walk(f.pathRoot, func(_ string, info os.FileInfo, err error) error {
@@ -471,6 +490,7 @@ func (f *FileSystem) DBSize() (int, error) {
 	return count, err
 }
 
+// ObjectEncoding returns the internal encoding for the object associated with key.
 func (f *FileSystem) ObjectEncoding(key dotpip.Key) (dotpip.ObjectEncoding, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {
@@ -489,6 +509,7 @@ func (f *FileSystem) ObjectEncoding(key dotpip.Key) (dotpip.ObjectEncoding, erro
 	}
 }
 
+// ObjectFreq returns the logarithmic access frequency counter of the object stored at key.
 func (f *FileSystem) ObjectFreq(key dotpip.Key) (int, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {
@@ -497,6 +518,7 @@ func (f *FileSystem) ObjectFreq(key dotpip.Key) (int, error) {
 	return 0, errors.New(string(dotpip.ErrMsgLFUEviction))
 }
 
+// ObjectIdletime returns the time in seconds since the last access to the value stored at key.
 func (f *FileSystem) ObjectIdletime(key dotpip.Key) (int, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {
@@ -514,6 +536,7 @@ func (f *FileSystem) ObjectIdletime(key dotpip.Key) (int, error) {
 	return int(idle), nil
 }
 
+// ObjectRefcount returns the reference count of the object stored at key.
 func (f *FileSystem) ObjectRefcount(key dotpip.Key) (int, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {
@@ -522,6 +545,7 @@ func (f *FileSystem) ObjectRefcount(key dotpip.Key) (int, error) {
 	return 1, nil // Refcount is typically 1 since we don't share objects
 }
 
+// Migrate atomically transfers a key from a source dotpip instance to a destination dotpip instance.
 func (f *FileSystem) Migrate(_ string, _ int, _ dotpip.Key, _ dotpip.DotPip, _ int, _ ...dotpip.MigrateOption) error {
 	return errors.New(string(dotpip.ErrMsgMigrateNotSupported))
 }

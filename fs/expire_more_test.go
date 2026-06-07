@@ -13,7 +13,7 @@ import (
 func TestExpireMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_expire_more_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -117,7 +117,7 @@ func TestExpireMore(t *testing.T) {
 func TestPExpireAtOptions(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_expire_opts_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -170,7 +170,7 @@ func TestPExpireAtOptions(t *testing.T) {
 func TestPExpireAtPast(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_expire_past_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()

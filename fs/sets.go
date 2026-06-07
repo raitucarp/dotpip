@@ -35,6 +35,7 @@ func (f *FileSystem) writeSet(key dotpip.Key, set map[string]any) error {
 	return f.writeFileByKey(key, content.([]byte))
 }
 
+// SAdd adds the specified members to the set stored at key.
 func (f *FileSystem) SAdd(key dotpip.Key, members ...string) (int, error) {
 	set, err := f.readSet(key)
 	if err != nil {
@@ -62,6 +63,7 @@ func (f *FileSystem) SAdd(key dotpip.Key, members ...string) (int, error) {
 	return added, nil
 }
 
+// SCard returns the set cardinality (number of elements) of the set stored at key.
 func (f *FileSystem) SCard(key dotpip.Key) (int, error) {
 	set, err := f.readSet(key)
 	if err != nil {
@@ -70,6 +72,7 @@ func (f *FileSystem) SCard(key dotpip.Key) (int, error) {
 	return len(set), nil
 }
 
+// SDiff returns the members of the set resulting from the difference between the first set and all the successive sets.
 func (f *FileSystem) SDiff(keys ...dotpip.Key) ([]string, error) {
 	if len(keys) == 0 {
 		return []string{}, nil
@@ -103,6 +106,7 @@ func (f *FileSystem) SDiff(keys ...dotpip.Key) ([]string, error) {
 	return result, nil
 }
 
+// SDiffStore this command is equal to SDiff, but instead of returning the resulting set, it is stored in destination.
 func (f *FileSystem) SDiffStore(destination dotpip.Key, keys ...dotpip.Key) (int, error) {
 	diff, err := f.SDiff(keys...)
 	if err != nil {
@@ -125,6 +129,7 @@ func (f *FileSystem) SDiffStore(destination dotpip.Key, keys ...dotpip.Key) (int
 	return len(diff), nil
 }
 
+// SInter returns the members of the set resulting from the intersection of all the given sets.
 func (f *FileSystem) SInter(keys ...dotpip.Key) ([]string, error) {
 	if len(keys) == 0 {
 		return []string{}, nil
@@ -160,6 +165,7 @@ func (f *FileSystem) SInter(keys ...dotpip.Key) ([]string, error) {
 	return result, nil
 }
 
+// SInterCard returns the cardinality of the set which would result from the intersection of all the given sets.
 func (f *FileSystem) SInterCard(limit int, keys ...dotpip.Key) (int, error) {
 	inter, err := f.SInter(keys...)
 	if err != nil {
@@ -174,6 +180,7 @@ func (f *FileSystem) SInterCard(limit int, keys ...dotpip.Key) (int, error) {
 	return count, nil
 }
 
+// SInterStore this command is equal to SInter, but instead of returning the resulting set, it is stored in destination.
 func (f *FileSystem) SInterStore(destination dotpip.Key, keys ...dotpip.Key) (int, error) {
 	inter, err := f.SInter(keys...)
 	if err != nil {
@@ -196,6 +203,7 @@ func (f *FileSystem) SInterStore(destination dotpip.Key, keys ...dotpip.Key) (in
 	return len(inter), nil
 }
 
+// SIsMember returns if member is a member of the set stored at key.
 func (f *FileSystem) SIsMember(key dotpip.Key, member string) (bool, error) {
 	set, err := f.readSet(key)
 	if err != nil {
@@ -205,6 +213,7 @@ func (f *FileSystem) SIsMember(key dotpip.Key, member string) (bool, error) {
 	return exists, nil
 }
 
+// SMembers returns all the members of the set value stored at key.
 func (f *FileSystem) SMembers(key dotpip.Key) ([]string, error) {
 	set, err := f.readSet(key)
 	if err != nil {
@@ -219,6 +228,7 @@ func (f *FileSystem) SMembers(key dotpip.Key) ([]string, error) {
 	return result, nil
 }
 
+// SMIsMember returns whether each member is a member of the set stored at key.
 func (f *FileSystem) SMIsMember(key dotpip.Key, members ...string) ([]bool, error) {
 	set, err := f.readSet(key)
 	if err != nil {
@@ -234,6 +244,7 @@ func (f *FileSystem) SMIsMember(key dotpip.Key, members ...string) ([]bool, erro
 	return result, nil
 }
 
+// SMove moves member from the set at source to the set at destination.
 func (f *FileSystem) SMove(source dotpip.Key, destination dotpip.Key, member string) (bool, error) {
 	sourceSet, err := f.readSet(source)
 	if err != nil {
@@ -269,6 +280,7 @@ func (f *FileSystem) SMove(source dotpip.Key, destination dotpip.Key, member str
 	return true, nil
 }
 
+// SPop removes and returns one or more random members from the set value store at key.
 func (f *FileSystem) SPop(key dotpip.Key, count int) ([]string, error) {
 	set, err := f.readSet(key)
 	if err != nil {
@@ -313,6 +325,7 @@ func (f *FileSystem) SPop(key dotpip.Key, count int) ([]string, error) {
 	return popped, nil
 }
 
+// SRandMember returns random elements from the set value stored at key.
 func (f *FileSystem) SRandMember(key dotpip.Key, count int) ([]string, error) {
 	set, err := f.readSet(key)
 	if err != nil {
@@ -355,6 +368,7 @@ func (f *FileSystem) SRandMember(key dotpip.Key, count int) ([]string, error) {
 	return members[:limit], nil
 }
 
+// SRem removes the specified members from the set stored at key.
 func (f *FileSystem) SRem(key dotpip.Key, members ...string) (int, error) {
 	set, err := f.readSet(key)
 	if err != nil {
@@ -382,6 +396,7 @@ func (f *FileSystem) SRem(key dotpip.Key, members ...string) (int, error) {
 	return removed, nil
 }
 
+// SUnion returns the members of the set resulting from the union of all the given sets.
 func (f *FileSystem) SUnion(keys ...dotpip.Key) ([]string, error) {
 	union := make(map[string]any)
 
@@ -403,6 +418,7 @@ func (f *FileSystem) SUnion(keys ...dotpip.Key) ([]string, error) {
 	return result, nil
 }
 
+// SUnionStore this command is equal to SUnion, but instead of returning the resulting set, it is stored in destination.
 func (f *FileSystem) SUnionStore(destination dotpip.Key, keys ...dotpip.Key) (int, error) {
 	union, err := f.SUnion(keys...)
 	if err != nil {
@@ -425,6 +441,7 @@ func (f *FileSystem) SUnionStore(destination dotpip.Key, keys ...dotpip.Key) (in
 	return len(union), nil
 }
 
+// SScan incrementally iterates over a set.
 func (f *FileSystem) SScan(key dotpip.Key, cursor uint64, options ...dotpip.ScanOption) (uint64, []string, error) {
 	cmd := &dotpip.ScanCommand{Count: 10}
 	for _, option := range options {

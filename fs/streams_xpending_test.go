@@ -12,7 +12,7 @@ import (
 func TestStreamsXPending(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_streams_xpending_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -55,7 +55,7 @@ func TestStreamsXPending(t *testing.T) {
 func TestStreamsXRangeRevRange(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_streams_xrange_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -91,7 +91,7 @@ func TestStreamsXRangeRevRange(t *testing.T) {
 func TestStreamsXTrim(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_streams_xtrim_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()

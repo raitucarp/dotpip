@@ -31,10 +31,12 @@ func (f *FileSystem) applyExpireOptions(key dotpip.Key, expireAt int64, cmd *dot
 	return true, nil
 }
 
+// Expire sets the expiration time.
 func (f *FileSystem) Expire(key dotpip.Key, seconds int, options ...dotpip.ExpireOption) (bool, error) {
 	return f.PExpire(key, seconds*1000, options...)
 }
 
+// PExpire sets the expiration time in milliseconds.
 func (f *FileSystem) PExpire(key dotpip.Key, milliseconds int, options ...dotpip.ExpireOption) (bool, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {
@@ -50,10 +52,12 @@ func (f *FileSystem) PExpire(key dotpip.Key, milliseconds int, options ...dotpip
 	return f.applyExpireOptions(key, expireAt, cmd)
 }
 
+// ExpireAt sets the expiration to a specific unix time.
 func (f *FileSystem) ExpireAt(key dotpip.Key, timestamp int, options ...dotpip.ExpireOption) (bool, error) {
 	return f.PExpireAt(key, timestamp*1000, options...)
 }
 
+// PExpireAt sets the expiration to a specific unix time in milliseconds.
 func (f *FileSystem) PExpireAt(key dotpip.Key, timestamp int, options ...dotpip.ExpireOption) (bool, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {
@@ -92,6 +96,7 @@ func (f *FileSystem) PExpireAt(key dotpip.Key, timestamp int, options ...dotpip.
 	return f.applyExpireOptions(key, expireAt, cmd)
 }
 
+// ExpireTime returns the absolute Unix timestamp in seconds at which the given key will expire.
 func (f *FileSystem) ExpireTime(key dotpip.Key) (int64, error) {
 	res, err := f.PExpireTime(key)
 	if res > 0 {
@@ -100,6 +105,7 @@ func (f *FileSystem) ExpireTime(key dotpip.Key) (int64, error) {
 	return res, err
 }
 
+// PExpireTime returns the absolute Unix timestamp in milliseconds at which the given key will expire.
 func (f *FileSystem) PExpireTime(key dotpip.Key) (int64, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil {
@@ -118,6 +124,7 @@ func (f *FileSystem) PExpireTime(key dotpip.Key) (int64, error) {
 	return expireAt, nil
 }
 
+// TTL returns the remaining time to live of a key that has a timeout.
 func (f *FileSystem) TTL(key dotpip.Key) (int64, error) {
 	res, err := f.PTTL(key)
 	if res > 0 {
@@ -126,6 +133,7 @@ func (f *FileSystem) TTL(key dotpip.Key) (int64, error) {
 	return res, err
 }
 
+// PTTL returns the remaining time to live of a key that has a timeout, in milliseconds.
 func (f *FileSystem) PTTL(key dotpip.Key) (int64, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil {
@@ -150,6 +158,7 @@ func (f *FileSystem) PTTL(key dotpip.Key) (int64, error) {
 	return ttl, nil
 }
 
+// Persist removes the expiration from a key.
 func (f *FileSystem) Persist(key dotpip.Key) (bool, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil || !exist {

@@ -59,6 +59,7 @@ func (f *FileSystem) writeList(key dotpip.Key, list []string) error {
 	return f.writeFileByKey(key, encoded.([]byte))
 }
 
+// LIndex returns the element at index in the list stored at key.
 func (f *FileSystem) LIndex(key dotpip.Key, index int) (string, error) {
 	list, err := f.readList(key)
 	if err != nil {
@@ -81,6 +82,7 @@ func (f *FileSystem) LIndex(key dotpip.Key, index int) (string, error) {
 	return list[index], nil
 }
 
+// LInsert inserts element in the list stored at key either before or after the reference value pivot.
 func (f *FileSystem) LInsert(key dotpip.Key, option dotpip.LInsertOption, pivot string, element string) (int, error) {
 	list, err := f.readList(key)
 	if err != nil {
@@ -121,6 +123,7 @@ func (f *FileSystem) LInsert(key dotpip.Key, option dotpip.LInsertOption, pivot 
 	return len(list), nil
 }
 
+// LLen returns the length of the list stored at key.
 func (f *FileSystem) LLen(key dotpip.Key) (int, error) {
 	list, err := f.readList(key)
 	if err != nil {
@@ -129,6 +132,7 @@ func (f *FileSystem) LLen(key dotpip.Key) (int, error) {
 	return len(list), nil
 }
 
+// LMove atomically returns and removes the first/last element of the list stored at source.
 func (f *FileSystem) LMove(source dotpip.Key, destination dotpip.Key, srcDir dotpip.LMoveDir, destDir dotpip.LMoveDir) (string, error) {
 	srcList, err := f.readList(source)
 	if err != nil {
@@ -195,6 +199,7 @@ func (f *FileSystem) LMove(source dotpip.Key, destination dotpip.Key, srcDir dot
 	return val, nil
 }
 
+// LPop removes and returns the first elements of the list stored at key.
 func (f *FileSystem) LPop(key dotpip.Key, count int) ([]string, error) {
 	list, err := f.readList(key)
 	if err != nil {
@@ -227,6 +232,7 @@ func (f *FileSystem) LPop(key dotpip.Key, count int) ([]string, error) {
 	return popped, nil
 }
 
+// LPos returns the index of matching elements inside a Redis list.
 func (f *FileSystem) LPos(key dotpip.Key, element string, options ...dotpip.LPosOption) ([]int, error) {
 	cmd := &dotpip.LPosCommand{
 		Rank:   1,
@@ -293,6 +299,7 @@ func (f *FileSystem) LPos(key dotpip.Key, element string, options ...dotpip.LPos
 	return results, nil
 }
 
+// LPush insert all the specified values at the head of the list stored at key.
 func (f *FileSystem) LPush(key dotpip.Key, elements ...string) (int, error) {
 	if len(elements) == 0 {
 		return f.LLen(key)
@@ -320,6 +327,7 @@ func (f *FileSystem) LPush(key dotpip.Key, elements ...string) (int, error) {
 	return len(list), nil
 }
 
+// LPushX inserts specified values at the head of the list stored at key, only if key already exists.
 func (f *FileSystem) LPushX(key dotpip.Key, elements ...string) (int, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil {
@@ -331,6 +339,7 @@ func (f *FileSystem) LPushX(key dotpip.Key, elements ...string) (int, error) {
 	return f.LPush(key, elements...)
 }
 
+// LRange returns the specified elements of the list stored at key.
 func (f *FileSystem) LRange(key dotpip.Key, start int, stop int) ([]string, error) {
 	list, err := f.readList(key)
 	if err != nil {
@@ -367,6 +376,7 @@ func (f *FileSystem) LRange(key dotpip.Key, start int, stop int) ([]string, erro
 	return list[start : stop+1], nil
 }
 
+// LRem removes the first count occurrences of elements equal to element from the list.
 func (f *FileSystem) LRem(key dotpip.Key, count int, element string) (int, error) {
 	list, err := f.readList(key)
 	if err != nil {
@@ -419,6 +429,7 @@ func (f *FileSystem) LRem(key dotpip.Key, count int, element string) (int, error
 	return removed, nil
 }
 
+// LSet sets the list element at index to element.
 func (f *FileSystem) LSet(key dotpip.Key, index int, element string) error {
 	list, err := f.readList(key)
 	if err != nil {
@@ -442,6 +453,7 @@ func (f *FileSystem) LSet(key dotpip.Key, index int, element string) error {
 	return f.writeList(key, list)
 }
 
+// LTrim trim an existing list so that it will contain only the specified range of elements.
 func (f *FileSystem) LTrim(key dotpip.Key, start int, stop int) error {
 	list, err := f.readList(key)
 	if err != nil {
@@ -476,6 +488,7 @@ func (f *FileSystem) LTrim(key dotpip.Key, start int, stop int) error {
 	return f.writeList(key, list[start:stop+1])
 }
 
+// RPop removes and returns the last elements of the list stored at key.
 func (f *FileSystem) RPop(key dotpip.Key, count int) ([]string, error) {
 	list, err := f.readList(key)
 	if err != nil {
@@ -514,6 +527,7 @@ func (f *FileSystem) RPop(key dotpip.Key, count int) ([]string, error) {
 	return popped, nil
 }
 
+// RPush insert all the specified values at the tail of the list stored at key.
 func (f *FileSystem) RPush(key dotpip.Key, elements ...string) (int, error) {
 	if len(elements) == 0 {
 		return f.LLen(key)
@@ -537,6 +551,7 @@ func (f *FileSystem) RPush(key dotpip.Key, elements ...string) (int, error) {
 	return len(list), nil
 }
 
+// RPushX inserts specified values at the tail of the list stored at key, only if key already exists.
 func (f *FileSystem) RPushX(key dotpip.Key, elements ...string) (int, error) {
 	exist, err := f.checkExistByKey(key)
 	if err != nil {

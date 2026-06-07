@@ -12,7 +12,7 @@ import (
 func TestHashesHKeysHVals(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_hashes_keysvals_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -30,7 +30,7 @@ func TestHashesHKeysHVals(t *testing.T) {
 func TestHashesHStrLenAndHRandField(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_hashes_strlen_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -57,7 +57,7 @@ func TestHashesHStrLenAndHRandField(t *testing.T) {
 func TestSetsMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_sets_more_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -109,7 +109,7 @@ func TestSetsMore(t *testing.T) {
 func TestZSetsMoreCoverage(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_zsets_morecov_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -159,7 +159,7 @@ func TestZSetsMoreCoverage(t *testing.T) {
 func TestZSetsMoreCoverage2(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_zsets_morecov2_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -204,7 +204,7 @@ func TestZSetsMoreCoverage2(t *testing.T) {
 func TestStreamsMoreCoverage(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_streams_morecov_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -230,7 +230,7 @@ func TestStreamsMoreCoverage(t *testing.T) {
 func TestListLPos(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_list_lpos_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -257,7 +257,7 @@ func TestListLPos(t *testing.T) {
 func TestStringsMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_strings_more_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -320,7 +320,7 @@ func TestStringsMore(t *testing.T) {
 func TestStringsMoreCoverage(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_strings_more2_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -365,7 +365,7 @@ func TestStringsMoreCoverage(t *testing.T) {
 func TestStringsMoreCoverage3(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_strings_more3_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -404,7 +404,7 @@ func TestStringsMoreCoverage3(t *testing.T) {
 func TestStringsMoreCoverage4(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_strings_more4_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()

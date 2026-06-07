@@ -37,6 +37,7 @@ func (f *FileSystem) writeHash(key dotpip.Key, hash map[string]string) error {
 	return f.writeFileByKey(key, encoded.([]byte))
 }
 
+// HDel deletes fields from a hash.
 func (f *FileSystem) HDel(key dotpip.Key, fields ...string) (int, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -69,6 +70,7 @@ func (f *FileSystem) HDel(key dotpip.Key, fields ...string) (int, error) {
 	return deleted, nil
 }
 
+// HExists checks if a hash field exists.
 func (f *FileSystem) HExists(key dotpip.Key, field string) (bool, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -81,6 +83,7 @@ func (f *FileSystem) HExists(key dotpip.Key, field string) (bool, error) {
 	return exists, nil
 }
 
+// HGet gets a hash field value.
 func (f *FileSystem) HGet(key dotpip.Key, field string) (string, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -92,6 +95,9 @@ func (f *FileSystem) HGet(key dotpip.Key, field string) (string, error) {
 	return hash[field], nil
 }
 
+// HGetAll gets all hash fields and values.
+// HGet gets a hash field value.
+// HGetAll gets all hash fields and values.
 func (f *FileSystem) HGetAll(key dotpip.Key) (map[string]string, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -100,6 +106,7 @@ func (f *FileSystem) HGetAll(key dotpip.Key) (map[string]string, error) {
 	return hash, nil
 }
 
+// HIncrBy increments a hash field.
 func (f *FileSystem) HIncrBy(key dotpip.Key, field string, increment int) (int, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -130,6 +137,7 @@ func (f *FileSystem) HIncrBy(key dotpip.Key, field string, increment int) (int, 
 	return current, nil
 }
 
+// HIncrByFloat increments a hash field by float.
 func (f *FileSystem) HIncrByFloat(key dotpip.Key, field string, increment float64) (float64, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -161,6 +169,7 @@ func (f *FileSystem) HIncrByFloat(key dotpip.Key, field string, increment float6
 	return current, nil
 }
 
+// HKeys gets all hash fields.
 func (f *FileSystem) HKeys(key dotpip.Key) ([]string, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -174,6 +183,7 @@ func (f *FileSystem) HKeys(key dotpip.Key) ([]string, error) {
 	return keys, nil
 }
 
+// HLen gets hash length.
 func (f *FileSystem) HLen(key dotpip.Key) (int, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -182,6 +192,7 @@ func (f *FileSystem) HLen(key dotpip.Key) (int, error) {
 	return len(hash), nil
 }
 
+// HMGet gets multiple hash fields.
 func (f *FileSystem) HMGet(key dotpip.Key, fields ...string) ([]string, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -199,6 +210,7 @@ func (f *FileSystem) HMGet(key dotpip.Key, fields ...string) ([]string, error) {
 	return results, nil
 }
 
+// HRandField gets random hash fields.
 func (f *FileSystem) HRandField(key dotpip.Key, count int, options ...dotpip.HRandFieldOption) ([]string, error) {
 	cmd := &dotpip.HRandFieldCommand{}
 	for _, opt := range options {
@@ -257,6 +269,7 @@ func (f *FileSystem) HRandField(key dotpip.Key, count int, options ...dotpip.HRa
 	return selectedKeys, nil
 }
 
+// HSet sets hash fields.
 func (f *FileSystem) HSet(key dotpip.Key, values map[string]string) (int, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -288,6 +301,7 @@ func (f *FileSystem) HSet(key dotpip.Key, values map[string]string) (int, error)
 	return added, nil
 }
 
+// HSetNX sets a hash field if it does not exist.
 func (f *FileSystem) HSetNX(key dotpip.Key, field string, value string) (bool, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -311,6 +325,7 @@ func (f *FileSystem) HSetNX(key dotpip.Key, field string, value string) (bool, e
 	return true, nil
 }
 
+// HStrLen gets hash field string length.
 func (f *FileSystem) HStrLen(key dotpip.Key, field string) (int, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -325,6 +340,7 @@ func (f *FileSystem) HStrLen(key dotpip.Key, field string) (int, error) {
 	return len(val), nil
 }
 
+// HVals gets all hash values.
 func (f *FileSystem) HVals(key dotpip.Key) ([]string, error) {
 	hash, err := f.readHash(key)
 	if err != nil {
@@ -339,6 +355,7 @@ func (f *FileSystem) HVals(key dotpip.Key) ([]string, error) {
 	return vals, nil
 }
 
+// HScan iterates hash fields.
 func (f *FileSystem) HScan(key dotpip.Key, cursor uint64, options ...dotpip.ScanOption) (uint64, map[string]string, error) {
 	cmd := &dotpip.ScanCommand{Count: 10}
 	for _, option := range options {

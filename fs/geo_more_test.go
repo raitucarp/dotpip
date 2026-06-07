@@ -12,7 +12,7 @@ import (
 func TestGeoDistOptions(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_geo_dist_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -48,7 +48,7 @@ func TestGeoDistOptions(t *testing.T) {
 func TestGeoSearchMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_geo_search_more_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()

@@ -12,7 +12,7 @@ import (
 func TestTOMLOtherCommands(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_toml_other_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()

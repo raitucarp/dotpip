@@ -12,7 +12,7 @@ import (
 func TestGenericMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_generic_more_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -52,7 +52,7 @@ func TestGenericMore(t *testing.T) {
 func TestZSetsMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_zsets_more_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -84,7 +84,7 @@ func TestZSetsMore(t *testing.T) {
 func TestGenericRestoreScan(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_generic_more_cov_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -119,7 +119,7 @@ func TestGenericRestoreScan(t *testing.T) {
 func TestGenericTypeCopyRename(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_generic_more2_cov_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -152,7 +152,7 @@ func TestGenericTypeCopyRename(t *testing.T) {
 	// RandomKey empty db
 	dotfs2 := fs.NewFileSystem(tmpDir + "_empty")
 	defer dotfs2.Close()
-	defer os.RemoveAll(tmpDir + "_empty")
+	defer func() { _ = os.RemoveAll(tmpDir + "_empty") }()
 	rk, _ := dotfs2.RandomKey()
 	assert.Nil(t, rk)
 }

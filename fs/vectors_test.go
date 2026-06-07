@@ -9,11 +9,11 @@ import (
 )
 
 func TestVectors(t *testing.T) {
-	os.RemoveAll("test_data_vectors")
+	_ = os.RemoveAll("test_data_vectors")
 	db := fs.NewFileSystem("test_data_vectors")
 	defer func() {
 		db.Close()
-		os.RemoveAll("test_data_vectors")
+		_ = os.RemoveAll("test_data_vectors")
 	}()
 
 	key := dotpip.NewKey("my_vector")
@@ -132,7 +132,7 @@ func TestVectors(t *testing.T) {
 	assert.Equal(t, 1, len(randM))
 
 	// Test VRange
-	db.VAdd(key, "item2", []float32{1.1, 2.1, 3.1})
+	_, _ = db.VAdd(key, "item2", []float32{1.1, 2.1, 3.1})
 	rng, err := db.VRange(key, "item1", "item2")
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(rng))
@@ -165,11 +165,11 @@ func TestVectors(t *testing.T) {
 
 func TestVectorsExtraCoverage(t *testing.T) {
     // cover untested lines
-	os.RemoveAll("test_data_vectors_extra")
+	_ = os.RemoveAll("test_data_vectors_extra")
 	db := fs.NewFileSystem("test_data_vectors_extra")
 	defer func() {
 		db.Close()
-		os.RemoveAll("test_data_vectors_extra")
+		_ = os.RemoveAll("test_data_vectors_extra")
 	}()
 
 	key := dotpip.NewKey("my_vector2")
@@ -183,28 +183,28 @@ func TestVectorsExtraCoverage(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, [][]float32{nil}, e)
 
-	db.VAdd(key, "item1", []float32{1, 2})
+	_, _ = db.VAdd(key, "item1", []float32{1, 2})
 
 	// VGetAttr non existent attributes
 	a, err := db.VGetAttr(key, "item1")
 	assert.NoError(t, err)
 	assert.Nil(t, a[0])
 
-	db.VRem(key, "item1") // empty it
+	_, _ = db.VRem(key, "item1") // empty it
 
 	// writeVectorSet empty
-	db.VRem(key, "item1")
-	db.VAdd(key, "item1", []float32{1})
-	db.VRem(key, "item1")
+	_, _ = db.VRem(key, "item1")
+	_, _ = db.VAdd(key, "item1", []float32{1})
+	_, _ = db.VRem(key, "item1")
 
 }
 
 func TestVLinks(t *testing.T) {
-	os.RemoveAll("test_data_vlinks")
+	_ = os.RemoveAll("test_data_vlinks")
 	db := fs.NewFileSystem("test_data_vlinks")
 	defer func() {
 		db.Close()
-		os.RemoveAll("test_data_vlinks")
+		_ = os.RemoveAll("test_data_vlinks")
 	}()
 
 	key := dotpip.NewKey("my_vector")

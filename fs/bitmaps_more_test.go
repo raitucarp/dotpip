@@ -12,7 +12,7 @@ import (
 func TestBitmapsMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_bitmaps_more_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -80,7 +80,7 @@ func TestBitmapsMore(t *testing.T) {
 func TestBitmapsBitPosBitField(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_bitmaps_more2_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -125,7 +125,7 @@ func TestBitmapsBitPosBitField(t *testing.T) {
 func TestBitmapsBitPosMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_bitmaps_more3_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
@@ -154,7 +154,7 @@ func TestBitmapsBitPosMore(t *testing.T) {
 func TestBitmapsBitCountMore(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "dotpip_bitmaps_more4_test_")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	dotfs := fs.NewFileSystem(tmpDir)
 	defer dotfs.Close()
