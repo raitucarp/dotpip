@@ -1,0 +1,25 @@
+name: NilAway
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  nilaway:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Install NilAway
+        run: go install go.uber.org/nilaway/cmd/nilaway@latest
+
+      - name: Run NilAway
+        run: nilaway ./...

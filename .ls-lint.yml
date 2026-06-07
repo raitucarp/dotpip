@@ -1,0 +1,15 @@
+ls:
+  .dir: kebab-case|snake_case|lowercase
+  .go: snake_case|lowercase
+  .md: UPPERCASE|kebab-case|lowercase
+  .yml: kebab-case|lowercase
+  .yaml: kebab-case|lowercase
+  .lua: snake_case|lowercase
+  .mod: lowercase
+  .sum: lowercase
+  LICENSE: UPPERCASE
+  Dockerfile: PascalCase
+
+ignore:
+  - .git
+  - .github

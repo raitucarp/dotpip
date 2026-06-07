@@ -1,0 +1,37 @@
+name: Go Fmt & Mod Tidy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  check-formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Run go fmt
+        run: |
+          go fmt ./...
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Run 'go fmt ./...' and commit the changes."
+            git status
+            exit 1
+          fi
+
+      - name: Run go mod tidy
+        run: |
+          go mod tidy
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Run 'go mod tidy' and commit the changes."
+            git status
+            exit 1
+          fi

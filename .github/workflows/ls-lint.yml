@@ -1,0 +1,16 @@
+name: ls-lint
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  ls-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ls-lint
+        uses: loeffel-io/ls-lint-action@v2.2.3

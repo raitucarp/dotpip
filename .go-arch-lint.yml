@@ -1,0 +1,26 @@
+version: 3
+
+allow:
+  depOnAnyVendor: false
+
+vendors:
+  github.com:
+    in: github.com
+
+excludeFiles:
+  - "^.*_test\\.go$"
+
+components:
+  main:
+    in: .
+  fs:
+    in: fs
+
+deps:
+  main:
+    anyVendor: true
+    mayDependOn:
+      - fs
+  fs:
+    anyVendor: true
+    mayDependOn: []
