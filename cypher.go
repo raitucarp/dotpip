@@ -1,7 +1,7 @@
 package dotpip
 
 import (
-	"github.com/alecthomas/participle/v2"
+	participle "github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 )
 

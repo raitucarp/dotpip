@@ -132,7 +132,7 @@ func TestVectors(t *testing.T) {
 	assert.Equal(t, 1, len(randM))
 
 	// Test VRange
-	db.VAdd(key, "item2", []float32{1.1, 2.1, 3.1})
+	_, _ = db.VAdd(key, "item2", []float32{1.1, 2.1, 3.1})
 	rng, err := db.VRange(key, "item1", "item2")
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(rng))
@@ -183,19 +183,19 @@ func TestVectorsExtraCoverage(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, [][]float32{nil}, e)
 
-	db.VAdd(key, "item1", []float32{1, 2})
+	_, _ = db.VAdd(key, "item1", []float32{1, 2})
 
 	// VGetAttr non existent attributes
 	a, err := db.VGetAttr(key, "item1")
 	assert.NoError(t, err)
 	assert.Nil(t, a[0])
 
-	db.VRem(key, "item1") // empty it
+	_, _ = db.VRem(key, "item1") // empty it
 
 	// writeVectorSet empty
-	db.VRem(key, "item1")
-	db.VAdd(key, "item1", []float32{1})
-	db.VRem(key, "item1")
+	_, _ = db.VRem(key, "item1")
+	_, _ = db.VAdd(key, "item1", []float32{1})
+	_, _ = db.VRem(key, "item1")
 
 }
 
