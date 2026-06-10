@@ -58,7 +58,7 @@ func (f *FileSystem) VAdd(key dotpip.Key, element string, vector []float32, _ ..
 
 	_, exists := vs[element]
 	vs[element] = dotpip.VectorSetElement{
-		Vector: vector,
+		Vector:  vector,
 		Element: element,
 	}
 
@@ -141,7 +141,7 @@ func (f *FileSystem) VInfo(key dotpip.Key) (map[string]any, error) {
 	}
 	return map[string]any{
 		"dimensions": dim,
-		"count": len(vs),
+		"count":      len(vs),
 	}, nil
 }
 
@@ -259,16 +259,16 @@ func (f *FileSystem) VSim(key dotpip.Key, reference any, _ ...dotpip.VSimOption)
 
 	res := make([]dotpip.VSimResult, 0, len(vs))
 
-    // Perform bulk conversion once for the reference vector
-    ref64 := vek.FromFloat32(refVector)
+	// Perform bulk conversion once for the reference vector
+	ref64 := vek.FromFloat32(refVector)
 
 	for _, el := range vs {
-        el64 := vek.FromFloat32(el.Vector)
+		el64 := vek.FromFloat32(el.Vector)
 		sim := vek.CosineSimilarity(ref64, el64)
 		score := float64(sim)
 		res = append(res, dotpip.VSimResult{
 			Element: el.Element,
-			Score: &score,
+			Score:   &score,
 		})
 	}
 	sort.Slice(res, func(i, j int) bool {
