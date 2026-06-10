@@ -1,8 +1,8 @@
 package dotpip
 
 type VectorSetElement struct {
-	Vector []float32
-	Element string
+	Vector     []float32
+	Element    string
 	Attributes map[string]any
 }
 
@@ -49,15 +49,15 @@ func WithVAddM(m int) VAddOption {
 type VSimOption func(*VSimOptions)
 
 type VSimOptions struct {
-	WithScores   bool
-	WithAttribs  bool
-	Count        *int
-	Epsilon      *float64
-	EF           *int
-	Filter       *string
-	FilterEF     *int
-	Truth        bool
-	NoThread     bool
+	WithScores  bool
+	WithAttribs bool
+	Count       *int
+	Epsilon     *float64
+	EF          *int
+	Filter      *string
+	FilterEF    *int
+	Truth       bool
+	NoThread    bool
 }
 
 func WithVSimWithScores(withScores bool) VSimOption {

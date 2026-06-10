@@ -43,6 +43,15 @@ func runGeoTests(t *testing.T, encodeType FileEncodeType) {
 
 	key := dotpip.NewKey("Sicily")
 
+	// GeoSearch on empty key should return empty array
+	emptyResults, err := fs.GeoSearch(dotpip.NewKey("EmptyGeo"), dotpip.WithGeoSearchFromLonLat(15.0, 37.5), dotpip.WithGeoSearchByBox(50, 50, dotpip.GeoUnitKM))
+	if err != nil {
+		t.Fatalf("GeoSearch empty key failed: %v", err)
+	}
+	if len(emptyResults) != 0 || emptyResults == nil {
+		t.Fatalf("Expected empty array for missing key, got %v", emptyResults)
+	}
+
 	// GeoAdd
 	added, err := fs.GeoAdd(key, []dotpip.GeoLocation{
 		{Longitude: 13.361389, Latitude: 38.115556, Name: "Palermo"},
