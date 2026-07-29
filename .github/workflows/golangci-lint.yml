@@ -25,4 +25,4 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
-          install-mode: 'goinstall'   # ← correct value: builds from source using the Go version from setup-go
+          install-mode: 'goinstall'
