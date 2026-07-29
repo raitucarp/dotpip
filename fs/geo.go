@@ -228,7 +228,7 @@ func (f *FileSystem) GeoSearch(key dotpip.Key, options ...dotpip.GeoSearchOption
 
 	geoMap, err := f.readGeo(key)
 	if err != nil {
-		return nil, nil // Or error? Redis returns empty array if key does not exist
+		return []dotpip.GeoSearchResult{}, nil
 	}
 
 	var centerLat, centerLon float64

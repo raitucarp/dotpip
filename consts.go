@@ -94,5 +94,5 @@ const (
 )
 const (
 	ErrWrongTypeVectorSet ErrorMessage = "WRONGTYPE Operation against a key holding the wrong kind of value"
-	ObjectVectorSet ObjectType = "vector_set"
+	ObjectVectorSet       ObjectType   = "vector_set"
 )

@@ -164,7 +164,7 @@ func TestVectors(t *testing.T) {
 }
 
 func TestVectorsExtraCoverage(t *testing.T) {
-    // cover untested lines
+	// cover untested lines
 	os.RemoveAll("test_data_vectors_extra")
 	db := fs.NewFileSystem("test_data_vectors_extra")
 	defer func() {
@@ -176,7 +176,7 @@ func TestVectorsExtraCoverage(t *testing.T) {
 
 	// VCard empty
 	c, _ := db.VCard(key)
-    assert.Equal(t, 0, c)
+	assert.Equal(t, 0, c)
 
 	// VEmb non existent
 	e, err := db.VEmb(key, "item1")
