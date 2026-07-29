@@ -17,12 +17,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+
+      # actions/setup-go@v7 — latest version, runs on Node.js 24
+      - uses: actions/setup-go@v7
         with:
-          go-version-file: 'go.mod'
+          go-version: '1.26'
           cache: false
+
+      # golangci/golangci-lint-action@v9 — latest version, runs on Node.js 24
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
-          install-mode: 'go'   # Build from source to use Go 1.26
+          install-mode: 'goinstall'   # Build from source using Go 1.26
