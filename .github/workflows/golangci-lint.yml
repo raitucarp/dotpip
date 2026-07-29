@@ -17,12 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-go@v5
         with:
-          go-version-file: 'go.mod'
+          go-version: '1.26'
           cache: false
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
-          install-mode: 'go'   # Build from source to use Go 1.26
+          install-mode: 'goinstall'   # Build from source using Go 1.26
